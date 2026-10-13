@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bàn rà soát SME</title>
-  <meta name="description" content="Demo đối chiếu hồ sơ vay SME: phát hiện có nguồn, yêu cầu bổ sung và kiểm tra lại.">
+  <title>Kiểm tra hồ sơ vay</title>
+  <meta name="description" content="Thử kiểm tra hồ sơ vay SME: chọn ví dụ hoặc tự điền, hệ thống chỉ ra điểm thiếu và chưa khớp kèm nguồn.">
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
@@ -12,56 +12,115 @@
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">◆</span>
       <div>
-        <h1>Bàn rà soát hồ sơ vay SME</h1>
-        <p class="tagline">Đối chiếu R01–R10 · mỗi phát hiện có nguồn · chuyên viên quyết định</p>
+        <h1>Kiểm tra hồ sơ vay doanh nghiệp nhỏ</h1>
+        <p class="tagline">Tìm giấy tờ thiếu và số liệu chưa khớp · mỗi phát hiện có nguồn · chuyên viên quyết định</p>
       </div>
     </div>
-    <span class="badge-synthetic">Dữ liệu giả lập</span>
+    <div class="topbar-actions">
+      <a class="link" href="/advanced">Chế độ chuyên sâu →</a>
+      <span class="badge-synthetic">Dữ liệu giả lập</span>
+    </div>
   </header>
 
-  <div class="layout">
-    <aside class="sidebar" aria-label="Kịch bản">
-      <h2 class="section-title">Kịch bản demo</h2>
-      <ul id="scenario-list" class="scenario-list"></ul>
-      <button id="open-json" class="btn btn-ghost" type="button">Tự nhập JSON…</button>
-    </aside>
+  <main class="simple">
+    <ol class="steps" aria-label="Cách dùng">
+      <li><b>1</b><span><strong>Chọn một ví dụ</strong> bên dưới, hoặc tự sửa hồ sơ trong form.</span></li>
+      <li><b>2</b><span>Bấm <strong>Kiểm tra hồ sơ</strong>.</span></li>
+      <li><b>3</b><span>Đọc <strong>việc cần làm</strong> và bấm “Xem căn cứ” để thấy nguồn.</span></li>
+    </ol>
 
-    <main class="main">
-      <div id="banner" class="banner" role="alert" hidden></div>
-      <section id="summary" class="summary" aria-live="polite">
-        <p class="muted">Chọn một kịch bản bên trái để chạy đối chiếu.</p>
+    <section aria-labelledby="story-title">
+      <h2 id="story-title" class="section-title">Câu chuyện 3 bước · Công ty Sao Mai xin vay 300 triệu</h2>
+      <div id="story" class="story"></div>
+    </section>
+
+    <section aria-labelledby="quick-title">
+      <h2 id="quick-title" class="section-title">Ví dụ nhanh</h2>
+      <div id="quick" class="example-grid"></div>
+    </section>
+
+    <div class="workspace">
+      <form id="case-form" class="panel case-form" novalidate>
+        <h2 class="form-title">Hồ sơ đang kiểm tra</h2>
+        <p class="muted small">Số tiền tính bằng <strong>triệu đồng</strong>. Ví dụ: 500 nghĩa là 500 triệu.</p>
+
+        <fieldset>
+          <legend>Doanh nghiệp</legend>
+          <label>Tên công ty <input name="company_name" autocomplete="off"></label>
+          <label>Mã số thuế <input name="tax_id" inputmode="numeric" autocomplete="off"></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Giấy tờ đã nộp</legend>
+          <label class="check"><input type="checkbox" name="has_registration"> Giấy đăng ký doanh nghiệp</label>
+          <label class="check"><input type="checkbox" name="has_loan_request"> Đề nghị vay</label>
+          <label class="check"><input type="checkbox" name="has_financials"> Báo cáo tài chính</label>
+          <label class="check"><input type="checkbox" name="has_contract"> Hợp đồng HĐ01 với khách hàng</label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Báo cáo tài chính</legend>
+          <label>Năm báo cáo
+            <select name="fs_year"><option value="2025">2025 (đúng kỳ cần xem)</option><option value="2024">2024</option></select>
+          </label>
+          <div class="row3">
+            <label>Tổng tài sản <input name="total_assets" inputmode="decimal"></label>
+            <label>Nợ phải trả <input name="total_liabilities" inputmode="decimal"></label>
+            <label>Vốn chủ sở hữu <input name="equity" inputmode="decimal"></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Khoản thu doanh nghiệp khai trong đề nghị vay</legend>
+          <div class="radios">
+            <label class="check"><input type="radio" name="claim_type" value="expected"> Dự kiến sẽ thu</label>
+            <label class="check"><input type="radio" name="claim_type" value="due"> Đã đến hạn thu</label>
+            <label class="check"><input type="radio" name="claim_type" value="received"> Đã thu tiền</label>
+          </div>
+          <div class="row2">
+            <label>Số tiền khoản thu <input name="claim_amount" inputmode="decimal"></label>
+            <label>Giá trị hợp đồng HĐ01 <input name="contract_amount" inputmode="decimal"></label>
+          </div>
+          <p class="muted small">HĐ01: khách trả tiền trong 30 ngày sau khi nghiệm thu.</p>
+        </fieldset>
+
+        <fieldset>
+          <legend>Chứng từ kèm theo</legend>
+          <label>Biên bản nghiệm thu
+            <select name="acceptance">
+              <option value="none">Chưa có</option>
+              <option value="in_file">Có sẵn trong hồ sơ (đúng HĐ01)</option>
+              <option value="supplement_wrong">Nộp bổ sung nhưng của HĐ02 (nhầm)</option>
+              <option value="supplement_correct">Nộp bổ sung đúng HĐ01</option>
+            </select>
+          </label>
+          <label>Chứng từ ngân hàng đã nhận <span class="muted">(để trống nếu không có)</span>
+            <input name="payment_amount" inputmode="decimal" placeholder="ví dụ 200">
+          </label>
+          <div class="row2">
+            <label>Hóa đơn, tổng tiền gồm VAT <span class="muted">(trống = không có)</span>
+              <input name="invoice_amount" inputmode="decimal" placeholder="ví dụ 220">
+            </label>
+            <label>MST người bán trên hóa đơn <span class="muted">(trống = đúng MST)</span>
+              <input name="invoice_seller_tax_id" inputmode="numeric" placeholder="ví dụ 0000000007">
+            </label>
+          </div>
+          <label class="check"><input type="checkbox" name="invoice_two_scans"> Hóa đơn được nộp 2 bản scan</label>
+        </fieldset>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary btn-lg">Kiểm tra hồ sơ</button>
+          <button type="button" id="reset-form" class="btn">Đặt lại</button>
+        </div>
+      </form>
+
+      <section id="result" class="panel result" aria-live="polite">
+        <p class="muted">Chọn một ví dụ ở trên để bắt đầu.</p>
       </section>
-      <nav id="coverage" class="coverage" aria-label="Kết quả theo quy tắc"></nav>
+    </div>
+  </main>
 
-      <div class="tabs" role="tablist">
-        <button role="tab" data-tab="desk" aria-selected="true">Bàn rà soát</button>
-        <button role="tab" data-tab="results" aria-selected="false">Kết quả rule</button>
-        <button role="tab" data-tab="inputs" aria-selected="false">Hồ sơ đầu vào</button>
-        <button role="tab" data-tab="json" aria-selected="false">JSON</button>
-      </div>
-
-      <div class="desk">
-        <section id="tab-panel" class="panel" role="tabpanel"></section>
-        <aside id="detail" class="panel detail" aria-label="Chi tiết và nguồn">
-          <p class="muted">Chọn một phát hiện để xem căn cứ và nguồn.</p>
-        </aside>
-      </div>
-    </main>
-  </div>
-
-  <dialog id="json-dialog" class="dialog">
-    <form method="dialog" class="dialog-body">
-      <h2>Chạy với JSON tùy chỉnh</h2>
-      <p class="muted">Định dạng <code>{"snapshot": …, "facts": […]}</code> theo <code>packages/schemas/rules</code>.
-        Không dán hồ sơ khách hàng thật.</p>
-      <textarea id="json-input" spellcheck="false" aria-label="JSON đầu vào"></textarea>
-      <div class="dialog-actions">
-        <button value="cancel" class="btn btn-ghost">Hủy</button>
-        <button id="run-json" value="run" class="btn btn-primary">Chạy phân tích</button>
-      </div>
-    </form>
-  </dialog>
-
-  <script src="/static/app.js" defer></script>
+  <script src="/static/common.js" defer></script>
+  <script src="/static/simple.js" defer></script>
 </body>
 </html>

@@ -29,6 +29,27 @@ Các phần nói chuyện với nhau qua contract trong [packages/schemas](packa
 | [packages/](packages) | Contract dùng chung: JSON Schema và ví dụ |
 | `render.yaml` | Blueprint deploy demo lên Render |
 
+## Dùng thử demo (cho người xem)
+
+Mở link demo (ví dụ `https://sme-review-rules-demo.onrender.com`), không cần cài đặt hay đăng nhập.
+
+1. **Chọn một ví dụ**: bấm vào một thẻ, kết quả hiện ngay.
+2. **Hoặc tự sửa hồ sơ** trong form (bỏ tick giấy tờ, đổi số liệu) rồi bấm **Kiểm tra hồ sơ**.
+3. **Đọc kết quả**: hệ thống ghi rõ có bao nhiêu vấn đề, **việc nên làm**, và **Xem căn cứ** (trích dẫn từ tài liệu nào, trang nào).
+
+| Muốn xem | Làm thế này | Kết quả mong đợi |
+|---|---|---|
+| Cả vòng bổ sung hồ sơ | Bấm lần lượt Bước 1 → 2 → 3 (hoặc nút “Tiếp tục”) | Thiếu biên bản → nộp nhầm HĐ02 vẫn mở → nộp đúng thì chỉ *đề xuất* đóng |
+| Hồ sơ sạch không bị báo thừa | Ví dụ “Hồ sơ đầy đủ, khớp” | Không phát hiện vấn đề |
+| Thiếu giấy tờ | Bỏ tick “Báo cáo tài chính” → Kiểm tra | Thiếu BCTC + yêu cầu bổ sung |
+| BCTC không cân | Đổi “Vốn chủ sở hữu” từ 400 thành 390 | Chênh 10 triệu, kèm công thức |
+| MST sai | Điền hóa đơn 220, MST người bán `0000000007` | Mã số thuế chưa khớp (ưu tiên cao) |
+| Khai đã thu tiền | Chọn “Đã thu tiền”, biên bản “Có sẵn” | Chưa có chứng từ thanh toán phù hợp |
+| Thu một phần | Như trên + chứng từ ngân hàng 200 | 200 triệu có chứng từ, 300 triệu chưa rõ |
+| Hóa đơn vượt hợp đồng | Hóa đơn 600, hợp đồng 500 | Tổng hóa đơn vượt giá trị hợp đồng |
+
+Người cần xem chi tiết kỹ thuật (mã rule, số hạng tính, JSON, nhập JSON tùy chỉnh) mở **Chế độ chuyên sâu** ở góc trên (`/advanced`).
+
 ## Chạy nhanh trên máy
 
 Cần Python ≥ 3.9.

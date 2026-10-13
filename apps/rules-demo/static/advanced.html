@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bàn rà soát chuyên sâu</title>
+  <meta name="description" content="Demo đối chiếu hồ sơ vay SME: phát hiện có nguồn, yêu cầu bổ sung và kiểm tra lại.">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">◆</span>
+      <div>
+        <h1>Bàn rà soát hồ sơ vay SME</h1>
+        <p class="tagline">Đối chiếu R01–R10 · mỗi phát hiện có nguồn · chuyên viên quyết định</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <a class="link" href="/">← Chế độ đơn giản</a>
+      <span class="badge-synthetic">Dữ liệu giả lập</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar" aria-label="Kịch bản">
+      <h2 class="section-title">Ví dụ</h2>
+      <ul id="scenario-list" class="scenario-list"></ul>
+      <button id="open-json" class="btn btn-ghost" type="button">Tự nhập JSON…</button>
+    </aside>
+
+    <main class="main">
+      <div id="banner" class="banner" role="alert" hidden></div>
+      <section id="summary" class="summary" aria-live="polite">
+        <p class="muted">Chọn một kịch bản bên trái để chạy đối chiếu.</p>
+      </section>
+      <nav id="coverage" class="coverage" aria-label="Kết quả theo quy tắc"></nav>
+
+      <div class="tabs" role="tablist">
+        <button role="tab" data-tab="desk" aria-selected="true">Bàn rà soát</button>
+        <button role="tab" data-tab="results" aria-selected="false">Kết quả rule</button>
+        <button role="tab" data-tab="inputs" aria-selected="false">Hồ sơ đầu vào</button>
+        <button role="tab" data-tab="json" aria-selected="false">JSON</button>
+      </div>
+
+      <div class="desk">
+        <section id="tab-panel" class="panel" role="tabpanel"></section>
+        <aside id="detail" class="panel detail" aria-label="Chi tiết và nguồn">
+          <p class="muted">Chọn một phát hiện để xem căn cứ và nguồn.</p>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <dialog id="json-dialog" class="dialog">
+    <form method="dialog" class="dialog-body">
+      <h2>Chạy với JSON tùy chỉnh</h2>
+      <p class="muted">Định dạng <code>{"snapshot": …, "facts": […]}</code> theo <code>packages/schemas/rules</code>.
+        Không dán hồ sơ khách hàng thật.</p>
+      <textarea id="json-input" spellcheck="false" aria-label="JSON đầu vào"></textarea>
+      <div class="dialog-actions">
+        <button value="cancel" class="btn btn-ghost">Hủy</button>
+        <button id="run-json" value="run" class="btn btn-primary">Chạy phân tích</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="/static/common.js" defer></script>
+  <script src="/static/advanced.js" defer></script>
+</body>
+</html>

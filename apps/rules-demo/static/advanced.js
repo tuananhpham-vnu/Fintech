@@ -1,76 +1,16 @@
 "use strict";
 
-// Nhãn hiển thị. Màu luôn đi kèm chữ, không chỉ dựa vào màu.
-const STATUS = { issue: "Vấn đề", unknown: "Chưa rõ", pass: "Đạt", not_applicable: "Không áp dụng" };
-const STATUS_ORDER = ["issue", "unknown", "pass", "not_applicable"];
-const PRIORITY = { high: "Cao", medium: "Trung bình", low: "Thấp" };
-const PRIORITY_RANK = { high: 0, medium: 1, low: 2 };
-const PROPOSAL = { candidate_resolved: "Đề xuất đủ căn cứ", still_open: "Vẫn mở" };
-const DOC_TYPES = {
-  registration: "Giấy ĐKDN", loan_request: "Đề nghị vay", financial_statement: "BCTC",
-  contract: "Hợp đồng", invoice: "Hóa đơn", acceptance_record: "Biên bản nghiệm thu",
-  payment_record: "Chứng từ thanh toán", other: "Khác",
-};
-
 const state = {
   rules: [], scenarios: [], scenarioId: null,
   input: null, output: null, title: "", highlights: [],
   tab: "desk", ruleFilter: null, selected: null,
 };
 
-const $ = (id) => document.getElementById(id);
-
-// Tạo DOM bằng textContent để dữ liệu JSON tùy chỉnh không thể chèn HTML.
-function h(tag, props, ...children) {
-  const el = document.createElement(tag);
-  for (const [key, value] of Object.entries(props || {})) {
-    if (value == null || value === false) continue;
-    if (key === "class") el.className = value;
-    else if (key.startsWith("on")) el.addEventListener(key.slice(2), value);
-    else if (key === "style") Object.assign(el.style, value);
-    else el.setAttribute(key, value === true ? "" : value);
-  }
-  for (const child of children.flat(Infinity)) {
-    if (child == null || child === false) continue;
-    el.append(child instanceof Node ? child : String(child));
-  }
-  return el;
-}
-
-const chip = (kind, label) => h("span", { class: `chip ${kind}` }, label);
-
-async function api(path, options = {}) {
-  const res = await fetch(path, { headers: { "Content-Type": "application/json" }, ...options });
-  const body = await res.json().catch(() => null);
-  if (!res.ok) throw new Error((body && body.error && body.error.message) || `Lỗi HTTP ${res.status}`);
-  return body;
-}
-
 function showBanner(message, kind = "error") {
   const banner = $("banner");
   banner.textContent = message;
   banner.className = kind === "info" ? "banner info" : "banner";
   banner.hidden = !message;
-}
-
-// ---------- định dạng ----------
-
-function formatVnd(value) {
-  const [whole, frac] = String(value).split(".");
-  const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  return `${grouped}${frac ? "," + frac : ""} VND`;
-}
-
-function formatValue(key, value) {
-  if (value == null) return "—";
-  if (typeof value === "string" && key.endsWith("_vnd") && /^-?\d+(\.\d+)?$/.test(value)) return formatVnd(value);
-  if (typeof value === "object") {
-    if (key.endsWith("_vnd") && !Array.isArray(value)) {
-      return Object.entries(value).map(([k, v]) => `${k}: ${formatVnd(v)}`).join("\n");
-    }
-    return JSON.stringify(value, null, 1);
-  }
-  return String(value);
 }
 
 function ruleTitle(ruleId) {
@@ -92,7 +32,7 @@ async function init() {
   $("open-json").addEventListener("click", openJsonDialog);
   $("json-dialog").addEventListener("close", onJsonDialogClose);
   try {
-    [state.rules, state.scenarios] = await Promise.all([api("/api/v1/rules"), api("/api/v1/demo/scenarios")]);
+    [state.rules, state.scenarios] = await Promise.all([api("/api/v1/rules"), api("/api/v1/demo/examples")]);
     renderScenarios();
     if (state.scenarios.length) await runScenario(state.scenarios[0].id);
   } catch (err) {
@@ -105,9 +45,9 @@ async function runScenario(id) {
   renderScenarios();
   showBanner("Đang chạy đối chiếu…", "info");
   try {
-    const run = await api(`/api/v1/demo/scenarios/${encodeURIComponent(id)}/run`, { method: "POST" });
+    const run = await api(`/api/v1/demo/examples/${encodeURIComponent(id)}/run`, { method: "POST" });
     showBanner("");
-    setRun(run.input, run.output, run.scenario.title, run.scenario.highlights);
+    setRun(run.input, run.output, run.example.title, [run.example.expect]);
   } catch (err) {
     showBanner(err.message);
   }

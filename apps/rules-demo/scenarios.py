@@ -1,124 +1,79 @@
-"""Kịch bản demo dựng từ fixtures giả lập của sme_rules (mỗi kịch bản minh họa một rule)."""
+"""Ví dụ có sẵn cho người xem demo: mỗi ví dụ là một bộ giá trị điền sẵn cho form SimpleCase."""
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Callable, Dict, List, Tuple
+from dataclasses import dataclass, field
+from typing import Dict, List, Optional, Tuple
 
-from sme_rules.contracts import CaseSnapshot, DocType, Fact
-from sme_rules.fixtures import (
-    BORROWER_NAME,
-    BORROWER_TAX_ID,
-    BUYER,
-    SnapshotBuilder,
-    add_acceptance_record,
-    sao_mai_base,
-    sao_mai_golden,
-)
+from simple_case import SimpleCase
 
-Built = Tuple[CaseSnapshot, List[Fact]]
+STORY = "story"
+QUICK = "quick"
 
 
 @dataclass(frozen=True)
-class Scenario:
+class Example:
     id: str
     title: str
     description: str
-    highlights: Tuple[str, ...]
-    build: Callable[[], Built]
+    expect: str
+    form: SimpleCase
+    group: str = QUICK
+    next_id: Optional[str] = None
+    highlights: Tuple[str, ...] = field(default_factory=tuple)
 
 
-def _invoice(b: SnapshotBuilder, document_id: str, invoice_no: str, gross: str,
-             seller_tax: str = BORROWER_TAX_ID) -> None:
-    b.document(document_id, DocType.INVOICE).facts(
-        seller_name=BORROWER_NAME, seller_tax_id=seller_tax, buyer_name=BUYER["name"], buyer_tax_id=BUYER["tax_id"],
-        template_no="1", series="C26TSM", invoice_no=invoice_no, invoice_date="2026-10-20",
-        contract_ref="HĐ01", gross_amount=gross)
+def _form(**changes) -> SimpleCase:
+    return SimpleCase(**changes)
 
 
-def _payment(b: SnapshotBuilder, amount: str) -> None:
-    b.document("doc_payment", DocType.PAYMENT_RECORD).facts(
-        transaction_ref="FT-DEMO-001", payer_name=BUYER["name"], payee_name=BORROWER_NAME, date="2026-09-20",
-        contract_ref="HĐ01", description="Thanh toán HĐ01").fact("amount", amount, currency="VND")
-
-
-def _missing_fs() -> Built:
-    return sao_mai_base().remove_documents(DocType.FINANCIAL_STATEMENT).build()
-
-
-def _tax_mismatch() -> Built:
-    b = sao_mai_base()
-    _invoice(b, "doc_invoice", "0000123", "220000000", seller_tax="0000000007")
-    return b.build()
-
-
-def _fs_imbalance() -> Built:
-    b = sao_mai_base().remove_documents(DocType.FINANCIAL_STATEMENT)
-    b.document("doc_financials", DocType.FINANCIAL_STATEMENT).facts(
-        entity_name=BORROWER_NAME, tax_id=BORROWER_TAX_ID, period_start="2025-01-01", period_end="2025-12-31",
-        statement_scope="standalone", currency="VND", unit_multiplier="1000000",
-        total_assets="1000", total_liabilities="600", equity="390")
-    return b.build()
-
-
-def _received_unsupported() -> Built:
-    b = sao_mai_base(claim_type="received")
-    add_acceptance_record(b, "doc_record", "HĐ01")
-    return b.build()
-
-
-def _received_partial() -> Built:
-    b = sao_mai_base(claim_type="received")
-    add_acceptance_record(b, "doc_record", "HĐ01")
-    _payment(b, "200000000")
-    return b.build()
-
-
-def _duplicate_invoice() -> Built:
-    b = sao_mai_base()
-    _invoice(b, "doc_invoice_scan_a", "0000123", "220000000")
-    _invoice(b, "doc_invoice_scan_b", "0000123", "220000000")
-    return b.build()
-
-
-def _invoice_exceeds() -> Built:
-    b = sao_mai_base()
-    _invoice(b, "doc_invoice_1", "0000123", "330000000")
-    _invoice(b, "doc_invoice_2", "0000124", "270000000")
-    return b.build()
-
-
-SCENARIOS: List[Scenario] = [
-    Scenario("sao-mai-1", "Sao Mai · Hồ sơ ban đầu",
-             "Khoản dự kiến thu 500 triệu từ HĐ01, trả sau nghiệm thu 30 ngày; chưa có biên bản.",
-             ("R08 đề nghị bổ sung biên bản nghiệm thu",), lambda: sao_mai_golden(1)),
-    Scenario("sao-mai-2", "Sao Mai · Nộp nhầm biên bản HĐ02",
-             "Doanh nghiệp gửi biên bản của HĐ02 cho yêu cầu HĐ01.",
-             ("R10 giữ yêu cầu mở (still_open)", "R08 vẫn thiếu căn cứ"), lambda: sao_mai_golden(2)),
-    Scenario("sao-mai-3", "Sao Mai · Nộp biên bản đúng HĐ01",
-             "Bổ sung biên bản đúng hợp đồng, ngày 15/10/2026.",
-             ("R10 chỉ đề xuất candidate_resolved", "R08 hạn minh họa 14/11/2026, không ghi đã thu"),
-             lambda: sao_mai_golden(3)),
-    Scenario("missing-fs", "Thiếu BCTC", "Hồ sơ không có báo cáo tài chính kỳ được chọn.",
-             ("R01 báo đúng một mục thiếu, có căn cứ checklist",), _missing_fs),
-    Scenario("tax-mismatch", "MST bên bán lệch một chữ số",
-             "Hóa đơn ghi MST của doanh nghiệp vay sai một chữ số; MST bên mua khác là bình thường.",
-             ("R02 mức cao, kèm nguồn hai bên",), _tax_mismatch),
-    Scenario("fs-imbalance", "BCTC chênh 10 triệu", "Tài sản 1.000 = nợ 600 + vốn 390 (triệu VND).",
-             ("R05 hiện công thức, số chuẩn hóa và ngưỡng làm tròn",), _fs_imbalance),
-    Scenario("received-unsupported", "Khai đã thu, chỉ có nghiệm thu",
-             "Đề nghị vay khai đã thu 500 triệu nhưng chỉ nộp biên bản nghiệm thu.",
-             ("R09 mức cao: chưa có chứng từ phù hợp",), _received_unsupported),
-    Scenario("received-partial", "Khai đã thu, chứng từ một phần",
-             "Chứng từ thanh toán chỉ 200 triệu cho phát biểu đã thu 500 triệu.",
-             ("R09 hiện phần được hỗ trợ và phần chưa rõ",), _received_partial),
-    Scenario("duplicate-invoice", "Hai bản scan cùng hóa đơn", "Hai file khác nhau có cùng định danh hóa đơn.",
-             ("R06 có khả năng trùng", "R07 chưa cộng khi còn ứng viên trùng"), _duplicate_invoice),
-    Scenario("invoice-exceeds", "Tổng hóa đơn vượt hợp đồng", "Hai hóa đơn gồm VAT tổng 600 triệu, HĐ01 500 triệu.",
-             ("R07 vượt giá trị trên cùng cơ sở thuế",), _invoice_exceeds),
+EXAMPLES: List[Example] = [
+    Example("sao-mai-1", "Bước 1 · Hồ sơ ban đầu",
+            "Công ty Sao Mai dự kiến thu 500 triệu từ HĐ01, tiền về sau nghiệm thu 30 ngày. Chưa nộp biên bản nghiệm thu.",
+            "Hệ thống đề nghị bổ sung biên bản nghiệm thu HĐ01.",
+            _form(acceptance="none"), group=STORY, next_id="sao-mai-2"),
+    Example("sao-mai-2", "Bước 2 · Nộp nhầm biên bản",
+            "Doanh nghiệp gửi biên bản nghiệm thu của HĐ02 cho yêu cầu HĐ01.",
+            "Yêu cầu vẫn mở và hệ thống chỉ ra hợp đồng không khớp.",
+            _form(acceptance="supplement_wrong"), group=STORY, next_id="sao-mai-3"),
+    Example("sao-mai-3", "Bước 3 · Nộp đúng biên bản",
+            "Doanh nghiệp gửi lại biên bản đúng HĐ01, nghiệm thu ngày 15/10/2026.",
+            "Hệ thống đề xuất đã đủ căn cứ (hạn thanh toán minh họa 14/11/2026), chờ chuyên viên xác nhận. Không ghi là đã thu tiền.",
+            _form(acceptance="supplement_correct"), group=STORY),
+    Example("clean", "Hồ sơ đầy đủ, khớp",
+            "Đủ giấy tờ, số liệu khớp, có biên bản nghiệm thu đúng hợp đồng.",
+            "Không có vấn đề, và hệ thống không tạo cảnh báo thừa.",
+            _form(acceptance="in_file")),
+    Example("missing-fs", "Thiếu báo cáo tài chính", "Hồ sơ không có BCTC.",
+            "Báo đúng một mục thiếu, kèm yêu cầu bổ sung BCTC.",
+            _form(has_financials=False, acceptance="in_file")),
+    Example("fs-wrong-year", "BCTC sai năm", "Nộp BCTC năm 2024 trong khi kỳ cần xem là 2025.",
+            "Báo BCTC không đúng kỳ và không tự so số liệu.",
+            _form(fs_year=2024, acceptance="in_file")),
+    Example("fs-imbalance", "BCTC không cân", "Tài sản 1.000 triệu, nhưng nợ 600 + vốn 390 triệu.",
+            "Báo chênh 10 triệu, kèm công thức và ngưỡng làm tròn.",
+            _form(equity="390", acceptance="in_file")),
+    Example("tax-mismatch", "MST trên hóa đơn sai một số",
+            "Hóa đơn ghi mã số thuế của công ty là 0000000007 thay vì 0000000001.",
+            "Báo mã số thuế chưa khớp ở mức ưu tiên cao, kèm nguồn của cả hai tài liệu.",
+            _form(acceptance="in_file", invoice_amount="220", invoice_seller_tax_id="0000000007")),
+    Example("received-no-proof", "Khai đã thu tiền, chỉ có biên bản",
+            "Đề nghị vay ghi đã thu 500 triệu nhưng chỉ nộp biên bản nghiệm thu.",
+            "Báo chưa có chứng từ thanh toán phù hợp, không khẳng định doanh nghiệp chưa được trả.",
+            _form(claim_type="received", acceptance="in_file")),
+    Example("received-partial", "Khai đã thu, chứng từ chỉ một phần",
+            "Khai đã thu 500 triệu, chứng từ ngân hàng chỉ 200 triệu.",
+            "Báo 200 triệu có chứng từ, còn 300 triệu chưa rõ.",
+            _form(claim_type="received", acceptance="in_file", payment_amount="200")),
+    Example("invoice-twice", "Hóa đơn nộp hai lần", "Hai bản scan khác nhau của cùng một hóa đơn.",
+            "Báo có khả năng trùng và không cộng hai lần.",
+            _form(acceptance="in_file", invoice_amount="220", invoice_two_scans=True)),
+    Example("invoice-over", "Hóa đơn vượt hợp đồng", "Hóa đơn 600 triệu (gồm VAT) cho hợp đồng 500 triệu.",
+            "Báo tổng hóa đơn vượt giá trị hợp đồng.",
+            _form(acceptance="in_file", invoice_amount="600")),
 ]
 
-_BY_ID: Dict[str, Scenario] = {s.id: s for s in SCENARIOS}
+_BY_ID: Dict[str, Example] = {e.id: e for e in EXAMPLES}
 
 
-def get_scenario(scenario_id: str) -> Scenario:
-    return _BY_ID[scenario_id]
+def get_example(example_id: str) -> Example:
+    return _BY_ID[example_id]

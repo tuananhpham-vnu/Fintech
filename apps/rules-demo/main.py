@@ -11,7 +11,8 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from scenarios import SCENARIOS, get_scenario
+from scenarios import EXAMPLES, get_example
+from simple_case import SimpleCase, build_case
 from sme_rules import RuleConfig, run_analysis
 from sme_rules.contracts import CaseSnapshot, Fact, RunOutput
 from sme_rules.engine import load_default_registry
@@ -29,11 +30,14 @@ class AnalyzeRequest(BaseModel):
     enabled_rules: Optional[List[str]] = None
 
 
-class ScenarioSummary(BaseModel):
+class ExampleSummary(BaseModel):
     id: str
     title: str
     description: str
-    highlights: List[str]
+    expect: str
+    group: str
+    next_id: Optional[str] = None
+    form: SimpleCase
 
 
 class RuleInfo(BaseModel):
@@ -42,16 +46,19 @@ class RuleInfo(BaseModel):
     rule_version: str
 
 
-class DemoRun(BaseModel):
-    scenario: ScenarioSummary
+class CheckResult(BaseModel):
     input: AnalyzeRequest
     output: RunOutput
 
 
-def _error(status: int, code: str, message: str) -> JSONResponse:
+class DemoRun(CheckResult):
+    example: ExampleSummary
+
+
+def _error(status: int, code: str, message: str, details: Optional[dict] = None) -> JSONResponse:
     """Hình dạng lỗi thống nhất theo phần 16 của tài liệu triển khai."""
-    return JSONResponse(status_code=status, content={
-        "error": {"code": code, "message": message, "request_id": f"req_{uuid.uuid4().hex[:12]}"}})
+    return JSONResponse(status_code=status, content={"error": {
+        "code": code, "message": message, "request_id": f"req_{uuid.uuid4().hex[:12]}", "details": details or {}}})
 
 
 @app.middleware("http")
@@ -65,8 +72,9 @@ async def limit_body_size(request: Request, call_next):
 @app.exception_handler(RequestValidationError)
 async def validation_error(_: Request, exc: RequestValidationError) -> JSONResponse:
     first = exc.errors()[0] if exc.errors() else {}
-    where = ".".join(str(p) for p in first.get("loc", []))
-    return _error(422, "INVALID_INPUT", f"Dữ liệu không đúng contract tại {where}: {first.get('msg', '')}")
+    loc = [str(p) for p in first.get("loc", [])]
+    return _error(422, "INVALID_INPUT", f"Dữ liệu không hợp lệ tại {'.'.join(loc)}: {first.get('msg', '')}",
+                  {"field": loc[-1] if loc else None})
 
 
 @app.exception_handler(HTTPException)
@@ -74,9 +82,14 @@ async def http_error(_: Request, exc: HTTPException) -> JSONResponse:
     return _error(exc.status_code, "HTTP_ERROR", str(exc.detail))
 
 
-def _summary(scenario) -> ScenarioSummary:
-    return ScenarioSummary(id=scenario.id, title=scenario.title, description=scenario.description,
-                           highlights=list(scenario.highlights))
+def _summary(example) -> ExampleSummary:
+    return ExampleSummary(id=example.id, title=example.title, description=example.description,
+                          expect=example.expect, group=example.group, next_id=example.next_id, form=example.form)
+
+
+def _check(form: SimpleCase) -> CheckResult:
+    snapshot, facts = build_case(form)
+    return CheckResult(input=AnalyzeRequest(snapshot=snapshot, facts=facts), output=run_analysis(snapshot, facts))
 
 
 @app.get("/healthz")
@@ -89,20 +102,25 @@ def list_rules() -> List[RuleInfo]:
     return [RuleInfo(rule_id=r.rule_id, title=r.title, rule_version=r.rule_version) for r in load_default_registry().create()]
 
 
-@app.get("/api/v1/demo/scenarios", response_model=List[ScenarioSummary])
-def list_scenarios() -> List[ScenarioSummary]:
-    return [_summary(s) for s in SCENARIOS]
+@app.get("/api/v1/demo/examples", response_model=List[ExampleSummary])
+def list_examples() -> List[ExampleSummary]:
+    return [_summary(e) for e in EXAMPLES]
 
 
-@app.post("/api/v1/demo/scenarios/{scenario_id}/run", response_model=DemoRun)
-def run_scenario(scenario_id: str) -> DemoRun:
+@app.post("/api/v1/demo/examples/{example_id}/run", response_model=DemoRun)
+def run_example(example_id: str) -> DemoRun:
     try:
-        scenario = get_scenario(scenario_id)
+        example = get_example(example_id)
     except KeyError:
-        raise HTTPException(status_code=404, detail="Không có kịch bản này.")
-    snapshot, facts = scenario.build()
-    return DemoRun(scenario=_summary(scenario), input=AnalyzeRequest(snapshot=snapshot, facts=facts),
-                   output=run_analysis(snapshot, facts))
+        raise HTTPException(status_code=404, detail="Không có ví dụ này.")
+    result = _check(example.form)
+    return DemoRun(example=_summary(example), input=result.input, output=result.output)
+
+
+@app.post("/api/v1/demo/check", response_model=CheckResult)
+def check_simple_case(form: SimpleCase) -> CheckResult:
+    """Form đơn giản: chọn giấy tờ đã nộp và điền vài con số (triệu VND)."""
+    return _check(form)
 
 
 @app.post("/api/v1/analyze", response_model=RunOutput)
@@ -120,3 +138,8 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 @app.get("/", include_in_schema=False)
 def index() -> FileResponse:
     return FileResponse(STATIC_DIR / "index.html")
+
+
+@app.get("/advanced", include_in_schema=False)
+def advanced() -> FileResponse:
+    return FileResponse(STATIC_DIR / "advanced.html")
