@@ -1,0 +1,21 @@
+# Render Blueprint: một web service chạy demo đối chiếu (API + UI tĩnh).
+# Deploy: Render Dashboard -> New -> Blueprint -> chọn repo này.
+services:
+  - type: web
+    name: sme-review-rules-demo
+    runtime: python
+    plan: free
+    region: singapore
+    branch: main
+    buildCommand: pip install -r apps/rules-demo/requirements.txt ./services/rules
+    startCommand: uvicorn main:app --app-dir apps/rules-demo --host 0.0.0.0 --port $PORT
+    healthCheckPath: /healthz
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - apps/rules-demo/**
+        - services/rules/**
+        - render.yaml
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9

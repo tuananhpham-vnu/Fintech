@@ -1,0 +1,462 @@
+{
+  "run_id": "run_02",
+  "snapshot_hash": "snap_b10b6c55bd985ce8",
+  "rule_set_version": "1.0",
+  "status": "completed",
+  "rule_results": [
+    {
+      "run_id": "run_02",
+      "rule_id": "R01",
+      "rule_version": "1.0",
+      "status": "pass",
+      "reason_code": "DOCUMENT_PRESENT",
+      "message": "Đã có giấy đăng ký doanh nghiệp.",
+      "subject": "CL01.registration",
+      "operands": {
+        "checklist_item": "CL01.registration",
+        "checklist_version": "CL01-v1",
+        "ready_version_ids": [
+          "dv_doc_registration_v1"
+        ],
+        "pending_version_ids": [],
+        "failed_version_ids": [],
+        "unclassified_version_ids": []
+      },
+      "evidence_ids": [],
+      "finding": null,
+      "resolution": null
+    },
+    {
+      "run_id": "run_02",
+      "rule_id": "R01",
+      "rule_version": "1.0",
+      "status": "pass",
+      "reason_code": "DOCUMENT_PRESENT",
+      "message": "Đã có đề nghị vay.",
+      "subject": "CL01.loan_request",
+      "operands": {
+        "checklist_item": "CL01.loan_request",
+        "checklist_version": "CL01-v1",
+        "ready_version_ids": [
+          "dv_doc_loan_request_v1"
+        ],
+        "pending_version_ids": [],
+        "failed_version_ids": [],
+        "unclassified_version_ids": []
+      },
+      "evidence_ids": [],
+      "finding": null,
+      "resolution": null
+    },
+    {
+      "run_id": "run_02",
+      "rule_id": "R01",
+      "rule_version": "1.0",
+      "status": "pass",
+      "reason_code": "DOCUMENT_PRESENT",
+      "message": "Đã có bộ BCTC kỳ được chọn.",
+      "subject": "CL01.financial_statement",
+      "operands": {
+        "checklist_item": "CL01.financial_statement",
+        "checklist_version": "CL01-v1",
+        "ready_version_ids": [
+          "dv_doc_financials_v1"
+        ],
+        "pending_version_ids": [],
+        "failed_version_ids": [],
+        "unclassified_version_ids": []
+      },
+      "evidence_ids": [],
+      "finding": null,
+      "resolution": null
+    },
+    {
+      "run_id": "run_02",
+      "rule_id": "R01",
+      "rule_version": "1.0",
+      "status": "pass",
+      "reason_code": "DOCUMENT_PRESENT",
+      "message": "Đã có hợp đồng liên quan khoản thu.",
+      "subject": "CL01.contract",
+      "operands": {
+        "checklist_item": "CL01.contract",
+        "checklist_version": "CL01-v1",
+        "ready_version_ids": [
+          "dv_doc_contract_01_v1"
+        ],
+        "pending_version_ids": [],
+        "failed_version_ids": [],
+        "unclassified_version_ids": []
+      },
+      "evidence_ids": [],
+      "finding": null,
+      "resolution": null
+    },
+    {
+      "run_id": "run_02",
+      "rule_id": "R02",
+      "rule_version": "1.0",
+      "status": "pass",
+      "reason_code": "TAX_ID_CONSISTENT",
+      "message": "Mã số thuế doanh nghiệp vay khớp trên các tài liệu đã so.",
+      "subject": "case",
+      "operands": {
+        "compared_version_ids": [
+          "dv_doc_loan_request_v1",
+          "dv_doc_financials_v1",
+          "dv_doc_contract_01_v1",
+          "dv_doc_wrong_record_v1"
+        ]
+      },
+      "evidence_ids": [],
+      "finding": null,
+      "resolution": null
+    },
+    {
+      "run_id": "run_02",
+      "rule_id": "R03",
+      "rule_version": "1.0",
+      "status": "pass",
+      "reason_code": "NAME_CONSISTENT",
+      "message": "Tên doanh nghiệp vay khớp sau chuẩn hóa.",
+      "subject": "case",
+      "operands": {
+        "compared_version_ids": [
+          "dv_doc_loan_request_v1",
+          "dv_doc_financials_v1",
+          "dv_doc_contract_01_v1",
+          "dv_doc_wrong_record_v1"
+        ]
+      },
+      "evidence_ids": [],
+      "finding": null,
+      "resolution": null
+    },
+    {
+      "run_id": "run_02",
+      "rule_id": "R04",
+      "rule_version": "1.0",
+      "status": "pass",
+      "reason_code": "BASIS_OK",
+      "message": "BCTC đúng kỳ checklist và đủ nhãn để so sánh.",
+      "subject": "doc_financials",
+      "operands": {
+        "document_version_id": "dv_doc_financials_v1",
+        "expected_period": {
+          "start": "2025-01-01",
+          "end": "2025-12-31"
+        },
+        "period_start": "2025-01-01",
+        "period_end": "2025-12-31",
+        "statement_scope": "standalone",
+        "unit_multiplier": "1000000",
+        "currency": "VND",
+        "missing": []
+      },
+      "evidence_ids": [
+        "ev_dv_doc_financials_v1_period_start",
+        "ev_dv_doc_financials_v1_period_end",
+        "ev_dv_doc_financials_v1_statement_scope",
+        "ev_dv_doc_financials_v1_currency",
+        "ev_dv_doc_financials_v1_unit_multiplier"
+      ],
+      "finding": null,
+      "resolution": null
+    },
+    {
+      "run_id": "run_02",
+      "rule_id": "R05",
+      "rule_version": "1.0",
+      "status": "pass",
+      "reason_code": "EQUATION_BALANCED",
+      "message": "Phương trình BCTC cân trong ngưỡng làm tròn.",
+      "subject": "doc_financials",
+      "operands": {
+        "formula": "delta = total_assets - total_liabilities - equity",
+        "raw": {
+          "total_assets": "1.000",
+          "total_liabilities": "600",
+          "equity": "400"
+        },
+        "normalized_vnd": {
+          "total_assets": "1000000000",
+          "total_liabilities": "600000000",
+          "equity": "400000000"
+        },
+        "delta_vnd": "0",
+        "tolerance_vnd": "1500000"
+      },
+      "evidence_ids": [
+        "ev_dv_doc_financials_v1_total_assets",
+        "ev_dv_doc_financials_v1_total_liabilities",
+        "ev_dv_doc_financials_v1_equity"
+      ],
+      "finding": null,
+      "resolution": null
+    },
+    {
+      "run_id": "run_02",
+      "rule_id": "R06",
+      "rule_version": "1.0",
+      "status": "not_applicable",
+      "reason_code": "NO_INVOICE",
+      "message": "Hồ sơ chưa có hóa đơn.",
+      "subject": "case",
+      "operands": {},
+      "evidence_ids": [],
+      "finding": null,
+      "resolution": null
+    },
+    {
+      "run_id": "run_02",
+      "rule_id": "R07",
+      "rule_version": "1.0",
+      "status": "not_applicable",
+      "reason_code": "NO_LINKED_INVOICE",
+      "message": "Chưa có hóa đơn nối chắc với HD01.",
+      "subject": "doc_contract_01",
+      "operands": {},
+      "evidence_ids": [],
+      "finding": null,
+      "resolution": null
+    },
+    {
+      "run_id": "run_02",
+      "rule_id": "R08",
+      "rule_version": "1.0",
+      "status": "issue",
+      "reason_code": "ACCEPTANCE_NOT_PROVIDED",
+      "message": "Khoản dự kiến thu từ HĐ01 phụ thuộc nghiệm thu; chưa tìm thấy biên bản nghiệm thu trong hồ sơ đã cung cấp. Cần xác minh điều kiện thanh toán.",
+      "subject": "doc_contract_01",
+      "operands": {
+        "contract_ref": "HD01",
+        "claim_type": "expected",
+        "terms": [
+          {
+            "event_type": "acceptance",
+            "offset_days": 30,
+            "calendar_basis": "calendar_days",
+            "concurrent_conditions": []
+          }
+        ]
+      },
+      "evidence_ids": [
+        "ev_dv_doc_loan_request_v1_expected_receipts",
+        "ev_dv_doc_contract_01_v1_payment_terms"
+      ],
+      "finding": {
+        "issue_key": "R08:doc_contract_01:acceptance",
+        "priority": "medium",
+        "title": "Chưa có căn cứ nghiệm thu cho khoản dự kiến thu",
+        "description": "Khoản dự kiến thu từ HĐ01 phụ thuộc nghiệm thu; chưa tìm thấy biên bản nghiệm thu trong hồ sơ đã cung cấp. Cần xác minh điều kiện thanh toán.",
+        "evidence_ids": [
+          "ev_dv_doc_loan_request_v1_expected_receipts",
+          "ev_dv_doc_contract_01_v1_payment_terms"
+        ],
+        "absence_basis": null,
+        "suggested_request": {
+          "type": "acceptance_record",
+          "purpose": "Xác minh điều kiện thanh toán của HĐ01",
+          "contract_ref": "HD01"
+        },
+        "possible_related": []
+      },
+      "resolution": null
+    },
+    {
+      "run_id": "run_02",
+      "rule_id": "R09",
+      "rule_version": "1.0",
+      "status": "not_applicable",
+      "reason_code": "NO_RECEIVED_CLAIM",
+      "message": "Đề nghị vay không khai khoản đã thu.",
+      "subject": "case",
+      "operands": {},
+      "evidence_ids": [],
+      "finding": null,
+      "resolution": null
+    },
+    {
+      "run_id": "run_02",
+      "rule_id": "R10",
+      "rule_version": "1.0",
+      "status": "issue",
+      "reason_code": "SUPPLEMENT_DOES_NOT_MATCH",
+      "message": "Tài liệu bổ sung chưa phù hợp yêu cầu (CONTRACT_REF_MISMATCH); yêu cầu vẫn mở.",
+      "subject": "ri_acceptance_01",
+      "operands": {
+        "request_item_id": "ri_acceptance_01",
+        "expected_document_type": "acceptance_record",
+        "expected_contract_ref": "HĐ01",
+        "responses": [
+          {
+            "document_version_id": "dv_doc_wrong_record_v1",
+            "problems": [
+              "CONTRACT_REF_MISMATCH"
+            ],
+            "contract_ref": "HĐ02"
+          }
+        ],
+        "pending_version_ids": []
+      },
+      "evidence_ids": [
+        "ev_dv_doc_wrong_record_v1_contract_ref",
+        "ev_dv_doc_wrong_record_v1_parties",
+        "ev_dv_doc_contract_01_v1_contract_no"
+      ],
+      "finding": {
+        "issue_key": "R10:ri_acceptance_01:mismatch",
+        "priority": "medium",
+        "title": "Tài liệu bổ sung chưa khớp yêu cầu",
+        "description": "Tài liệu bổ sung chưa phù hợp yêu cầu (CONTRACT_REF_MISMATCH); yêu cầu vẫn mở.",
+        "evidence_ids": [
+          "ev_dv_doc_wrong_record_v1_contract_ref",
+          "ev_dv_doc_wrong_record_v1_parties",
+          "ev_dv_doc_contract_01_v1_contract_no"
+        ],
+        "absence_basis": null,
+        "suggested_request": null,
+        "possible_related": [
+          "R08:doc_contract_01:acceptance"
+        ]
+      },
+      "resolution": {
+        "request_item_id": "ri_acceptance_01",
+        "proposal": "still_open",
+        "related_issue_keys": [
+          "R08:doc_contract_01:acceptance"
+        ],
+        "evidence_ids": [
+          "ev_dv_doc_wrong_record_v1_contract_ref",
+          "ev_dv_doc_wrong_record_v1_parties",
+          "ev_dv_doc_contract_01_v1_contract_no"
+        ]
+      }
+    }
+  ],
+  "findings": [
+    {
+      "issue_key": "R08:doc_contract_01:acceptance",
+      "priority": "medium",
+      "title": "Chưa có căn cứ nghiệm thu cho khoản dự kiến thu",
+      "description": "Khoản dự kiến thu từ HĐ01 phụ thuộc nghiệm thu; chưa tìm thấy biên bản nghiệm thu trong hồ sơ đã cung cấp. Cần xác minh điều kiện thanh toán.",
+      "evidence_ids": [
+        "ev_dv_doc_loan_request_v1_expected_receipts",
+        "ev_dv_doc_contract_01_v1_payment_terms"
+      ],
+      "absence_basis": null,
+      "suggested_request": {
+        "type": "acceptance_record",
+        "purpose": "Xác minh điều kiện thanh toán của HĐ01",
+        "contract_ref": "HD01"
+      },
+      "possible_related": []
+    },
+    {
+      "issue_key": "R10:ri_acceptance_01:mismatch",
+      "priority": "medium",
+      "title": "Tài liệu bổ sung chưa khớp yêu cầu",
+      "description": "Tài liệu bổ sung chưa phù hợp yêu cầu (CONTRACT_REF_MISMATCH); yêu cầu vẫn mở.",
+      "evidence_ids": [
+        "ev_dv_doc_wrong_record_v1_contract_ref",
+        "ev_dv_doc_wrong_record_v1_parties",
+        "ev_dv_doc_contract_01_v1_contract_no"
+      ],
+      "absence_basis": null,
+      "suggested_request": null,
+      "possible_related": [
+        "R08:doc_contract_01:acceptance"
+      ]
+    }
+  ],
+  "suggested_requests": [
+    {
+      "request_key": "acceptance_record:HD01",
+      "document_type": "acceptance_record",
+      "contract_ref": "HD01",
+      "purposes": [
+        "Xác minh điều kiện thanh toán của HĐ01"
+      ],
+      "finding_issue_keys": [
+        "R08:doc_contract_01:acceptance"
+      ]
+    }
+  ],
+  "resolutions": [
+    {
+      "request_item_id": "ri_acceptance_01",
+      "proposal": "still_open",
+      "related_issue_keys": [
+        "R08:doc_contract_01:acceptance"
+      ],
+      "evidence_ids": [
+        "ev_dv_doc_wrong_record_v1_contract_ref",
+        "ev_dv_doc_wrong_record_v1_parties",
+        "ev_dv_doc_contract_01_v1_contract_no"
+      ]
+    }
+  ],
+  "input_issues": [],
+  "coverage": {
+    "R01": {
+      "pass": 4,
+      "issue": 0,
+      "unknown": 0,
+      "not_applicable": 0
+    },
+    "R02": {
+      "pass": 1,
+      "issue": 0,
+      "unknown": 0,
+      "not_applicable": 0
+    },
+    "R03": {
+      "pass": 1,
+      "issue": 0,
+      "unknown": 0,
+      "not_applicable": 0
+    },
+    "R04": {
+      "pass": 1,
+      "issue": 0,
+      "unknown": 0,
+      "not_applicable": 0
+    },
+    "R05": {
+      "pass": 1,
+      "issue": 0,
+      "unknown": 0,
+      "not_applicable": 0
+    },
+    "R06": {
+      "pass": 0,
+      "issue": 0,
+      "unknown": 0,
+      "not_applicable": 1
+    },
+    "R07": {
+      "pass": 0,
+      "issue": 0,
+      "unknown": 0,
+      "not_applicable": 1
+    },
+    "R08": {
+      "pass": 0,
+      "issue": 1,
+      "unknown": 0,
+      "not_applicable": 0
+    },
+    "R09": {
+      "pass": 0,
+      "issue": 0,
+      "unknown": 0,
+      "not_applicable": 1
+    },
+    "R10": {
+      "pass": 0,
+      "issue": 1,
+      "unknown": 0,
+      "not_applicable": 0
+    }
+  }
+}

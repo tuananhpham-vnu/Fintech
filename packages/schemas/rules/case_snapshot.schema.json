@@ -1,0 +1,384 @@
+{
+  "$defs": {
+    "ApprovedRequestItem": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "request_id": {
+          "title": "Request Id",
+          "type": "string"
+        },
+        "document_type": {
+          "$ref": "#/$defs/DocType"
+        },
+        "contract_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Contract Ref"
+        },
+        "finding_issue_keys": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Finding Issue Keys",
+          "type": "array"
+        },
+        "purpose": {
+          "default": "",
+          "title": "Purpose",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "request_id",
+        "document_type"
+      ],
+      "title": "ApprovedRequestItem",
+      "type": "object"
+    },
+    "CaseInfo": {
+      "additionalProperties": false,
+      "properties": {
+        "case_id": {
+          "title": "Case Id",
+          "type": "string"
+        },
+        "revision": {
+          "minimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "reporting_period": {
+          "$ref": "#/$defs/Period"
+        },
+        "checklist_version": {
+          "title": "Checklist Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "case_id",
+        "revision",
+        "reporting_period",
+        "checklist_version"
+      ],
+      "title": "CaseInfo",
+      "type": "object"
+    },
+    "Classification": {
+      "enum": [
+        "confirmed",
+        "needs_review"
+      ],
+      "title": "Classification",
+      "type": "string"
+    },
+    "ConfirmedLink": {
+      "additionalProperties": false,
+      "description": "Liên kết chứng từ do reviewer xác nhận (source = hợp đồng).",
+      "properties": {
+        "source_id": {
+          "title": "Source Id",
+          "type": "string"
+        },
+        "target_id": {
+          "title": "Target Id",
+          "type": "string"
+        },
+        "relation": {
+          "$ref": "#/$defs/LinkRelation"
+        }
+      },
+      "required": [
+        "source_id",
+        "target_id",
+        "relation"
+      ],
+      "title": "ConfirmedLink",
+      "type": "object"
+    },
+    "DocType": {
+      "enum": [
+        "registration",
+        "loan_request",
+        "financial_statement",
+        "contract",
+        "invoice",
+        "acceptance_record",
+        "payment_record",
+        "other"
+      ],
+      "title": "DocType",
+      "type": "string"
+    },
+    "DocumentVersion": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "document_id": {
+          "title": "Document Id",
+          "type": "string"
+        },
+        "version_no": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Version No",
+          "type": "integer"
+        },
+        "file_hash": {
+          "title": "File Hash",
+          "type": "string"
+        },
+        "doc_type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DocType"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "classification": {
+          "$ref": "#/$defs/Classification",
+          "default": "confirmed"
+        },
+        "processing_status": {
+          "$ref": "#/$defs/ProcessingStatus",
+          "default": "ready"
+        },
+        "relation": {
+          "$ref": "#/$defs/Relation",
+          "default": "new"
+        },
+        "replaces_version_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Replaces Version Id"
+        },
+        "request_item_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Item Id"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error Code"
+        }
+      },
+      "required": [
+        "id",
+        "document_id",
+        "file_hash"
+      ],
+      "title": "DocumentVersion",
+      "type": "object"
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "document_version_id": {
+          "title": "Document Version Id",
+          "type": "string"
+        },
+        "page": {
+          "minimum": 1,
+          "title": "Page",
+          "type": "integer"
+        },
+        "bbox": {
+          "anyOf": [
+            {
+              "maxItems": 4,
+              "minItems": 4,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bbox"
+        },
+        "quote": {
+          "default": "",
+          "title": "Quote",
+          "type": "string"
+        },
+        "precision": {
+          "$ref": "#/$defs/EvidencePrecision",
+          "default": "region"
+        }
+      },
+      "required": [
+        "id",
+        "document_version_id",
+        "page"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "EvidencePrecision": {
+      "enum": [
+        "region",
+        "page"
+      ],
+      "title": "EvidencePrecision",
+      "type": "string"
+    },
+    "LinkRelation": {
+      "enum": [
+        "contract_invoice",
+        "acceptance",
+        "payment"
+      ],
+      "title": "LinkRelation",
+      "type": "string"
+    },
+    "Period": {
+      "additionalProperties": false,
+      "properties": {
+        "start": {
+          "format": "date",
+          "title": "Start",
+          "type": "string"
+        },
+        "end": {
+          "format": "date",
+          "title": "End",
+          "type": "string"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "Period",
+      "type": "object"
+    },
+    "ProcessingStatus": {
+      "enum": [
+        "uploaded",
+        "processing",
+        "ready",
+        "failed"
+      ],
+      "title": "ProcessingStatus",
+      "type": "string"
+    },
+    "Relation": {
+      "enum": [
+        "new",
+        "replaces",
+        "supplements"
+      ],
+      "title": "Relation",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Snapshot bất biến của một run: manifest tài liệu, evidence, liên kết và request đã duyệt.",
+  "properties": {
+    "run_id": {
+      "title": "Run Id",
+      "type": "string"
+    },
+    "snapshot_hash": {
+      "title": "Snapshot Hash",
+      "type": "string"
+    },
+    "case": {
+      "$ref": "#/$defs/CaseInfo"
+    },
+    "documents": {
+      "items": {
+        "$ref": "#/$defs/DocumentVersion"
+      },
+      "title": "Documents",
+      "type": "array"
+    },
+    "evidence": {
+      "items": {
+        "$ref": "#/$defs/Evidence"
+      },
+      "title": "Evidence",
+      "type": "array"
+    },
+    "links": {
+      "items": {
+        "$ref": "#/$defs/ConfirmedLink"
+      },
+      "title": "Links",
+      "type": "array"
+    },
+    "request_items": {
+      "items": {
+        "$ref": "#/$defs/ApprovedRequestItem"
+      },
+      "title": "Request Items",
+      "type": "array"
+    }
+  },
+  "required": [
+    "run_id",
+    "snapshot_hash",
+    "case"
+  ],
+  "title": "CaseSnapshot",
+  "type": "object"
+}

@@ -1,0 +1,914 @@
+{
+  "snapshot": {
+    "run_id": "run_01",
+    "snapshot_hash": "snap_1187a3a10e8e71ca",
+    "case": {
+      "case_id": "case_sao_mai_demo",
+      "revision": 1,
+      "reporting_period": {
+        "start": "2025-01-01",
+        "end": "2025-12-31"
+      },
+      "checklist_version": "CL01-v1"
+    },
+    "documents": [
+      {
+        "id": "dv_doc_registration_v1",
+        "document_id": "doc_registration",
+        "version_no": 1,
+        "file_hash": "18e6cc35bace2df7179fe0d54aecd85384e54b827c3a78ac4b5dcb5d9da03d16",
+        "doc_type": "registration",
+        "classification": "confirmed",
+        "processing_status": "ready",
+        "relation": "new",
+        "replaces_version_id": null,
+        "request_item_id": null,
+        "error_code": null
+      },
+      {
+        "id": "dv_doc_financials_v1",
+        "document_id": "doc_financials",
+        "version_no": 1,
+        "file_hash": "95625f9f576521dba4674271ffc07911187b38140865987abf16023d776a863d",
+        "doc_type": "financial_statement",
+        "classification": "confirmed",
+        "processing_status": "ready",
+        "relation": "new",
+        "replaces_version_id": null,
+        "request_item_id": null,
+        "error_code": null
+      },
+      {
+        "id": "dv_doc_loan_request_v1",
+        "document_id": "doc_loan_request",
+        "version_no": 1,
+        "file_hash": "e6cf2950c21a4281b637a3ac9b2ad945a6b2115322465f421ba4e764b3502f44",
+        "doc_type": "loan_request",
+        "classification": "confirmed",
+        "processing_status": "ready",
+        "relation": "new",
+        "replaces_version_id": null,
+        "request_item_id": null,
+        "error_code": null
+      },
+      {
+        "id": "dv_doc_contract_01_v1",
+        "document_id": "doc_contract_01",
+        "version_no": 1,
+        "file_hash": "40e40d7f843c765791a6dee2ca10bbdf6edcf9d8cab41729b6b31093a1d6f167",
+        "doc_type": "contract",
+        "classification": "confirmed",
+        "processing_status": "ready",
+        "relation": "new",
+        "replaces_version_id": null,
+        "request_item_id": null,
+        "error_code": null
+      }
+    ],
+    "evidence": [
+      {
+        "id": "ev_dv_doc_registration_v1_borrower_name",
+        "document_version_id": "dv_doc_registration_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "Công ty TNHH Sao Mai Demo",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_registration_v1_tax_id",
+        "document_version_id": "dv_doc_registration_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "0000000001",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_registration_v1_registered_address",
+        "document_version_id": "dv_doc_registration_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "Số 1 Đường Demo",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_financials_v1_entity_name",
+        "document_version_id": "dv_doc_financials_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "Công ty TNHH Sao Mai Demo",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_financials_v1_tax_id",
+        "document_version_id": "dv_doc_financials_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "0000000001",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_financials_v1_period_start",
+        "document_version_id": "dv_doc_financials_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "2025-01-01",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_financials_v1_period_end",
+        "document_version_id": "dv_doc_financials_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "2025-12-31",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_financials_v1_statement_scope",
+        "document_version_id": "dv_doc_financials_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "standalone",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_financials_v1_currency",
+        "document_version_id": "dv_doc_financials_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "VND",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_financials_v1_unit_multiplier",
+        "document_version_id": "dv_doc_financials_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "1000000",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_financials_v1_total_assets",
+        "document_version_id": "dv_doc_financials_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "1.000",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_financials_v1_total_liabilities",
+        "document_version_id": "dv_doc_financials_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "600",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_financials_v1_equity",
+        "document_version_id": "dv_doc_financials_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "400",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_loan_request_v1_borrower_name",
+        "document_version_id": "dv_doc_loan_request_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "Công ty TNHH Sao Mai Demo",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_loan_request_v1_tax_id",
+        "document_version_id": "dv_doc_loan_request_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "0000000001",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_loan_request_v1_currency",
+        "document_version_id": "dv_doc_loan_request_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "VND",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_loan_request_v1_purpose",
+        "document_version_id": "dv_doc_loan_request_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "Bổ sung vốn lưu động",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_loan_request_v1_request_date",
+        "document_version_id": "dv_doc_loan_request_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "2026-10-01",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_loan_request_v1_expected_receipts",
+        "document_version_id": "dv_doc_loan_request_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "[{'amount': '500000000', 'currency': 'VND', 'expected_date': '2026-11-30', 'contract_ref': 'HĐ01', 'claim_type': 'expected'}]",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_loan_request_v1_requested_amount",
+        "document_version_id": "dv_doc_loan_request_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "300",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_contract_01_v1_contract_no",
+        "document_version_id": "dv_doc_contract_01_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "HĐ01",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_contract_01_v1_signed_date",
+        "document_version_id": "dv_doc_contract_01_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "2026-08-01",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_contract_01_v1_parties",
+        "document_version_id": "dv_doc_contract_01_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "[{'name': 'Công ty TNHH Sao Mai Demo', 'tax_id': '0000000001', 'role': 'seller'}, {'name': 'Công ty CP Khách Hàng Demo', 'tax_id': '0000000002', 'role': 'buyer'}]",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_contract_01_v1_total_amount",
+        "document_version_id": "dv_doc_contract_01_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "500000000",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_contract_01_v1_vat_basis",
+        "document_version_id": "dv_doc_contract_01_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "inclusive",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_contract_01_v1_currency",
+        "document_version_id": "dv_doc_contract_01_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "VND",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_contract_01_v1_amendments",
+        "document_version_id": "dv_doc_contract_01_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "[]",
+        "precision": "region"
+      },
+      {
+        "id": "ev_dv_doc_contract_01_v1_payment_terms",
+        "document_version_id": "dv_doc_contract_01_v1",
+        "page": 1,
+        "bbox": [
+          0.1,
+          0.1,
+          0.9,
+          0.2
+        ],
+        "quote": "[{'event_type': 'acceptance', 'event_ref': 'HĐ01', 'offset_days': 30, 'calendar_basis': 'calendar_days', 'percentage': '100'}]",
+        "precision": "region"
+      }
+    ],
+    "links": [],
+    "request_items": []
+  },
+  "facts": [
+    {
+      "id": "fact_dv_doc_registration_v1_borrower_name",
+      "document_version_id": "dv_doc_registration_v1",
+      "field": "registration.borrower_name",
+      "raw_value": null,
+      "value": "Công ty TNHH Sao Mai Demo",
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_registration_v1_borrower_name"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_registration_v1_tax_id",
+      "document_version_id": "dv_doc_registration_v1",
+      "field": "registration.tax_id",
+      "raw_value": null,
+      "value": "0000000001",
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_registration_v1_tax_id"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_registration_v1_registered_address",
+      "document_version_id": "dv_doc_registration_v1",
+      "field": "registration.registered_address",
+      "raw_value": null,
+      "value": "Số 1 Đường Demo",
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_registration_v1_registered_address"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_financials_v1_entity_name",
+      "document_version_id": "dv_doc_financials_v1",
+      "field": "financial_statement.entity_name",
+      "raw_value": null,
+      "value": "Công ty TNHH Sao Mai Demo",
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_financials_v1_entity_name"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_financials_v1_tax_id",
+      "document_version_id": "dv_doc_financials_v1",
+      "field": "financial_statement.tax_id",
+      "raw_value": null,
+      "value": "0000000001",
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_financials_v1_tax_id"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_financials_v1_period_start",
+      "document_version_id": "dv_doc_financials_v1",
+      "field": "financial_statement.period_start",
+      "raw_value": null,
+      "value": "2025-01-01",
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_financials_v1_period_start"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_financials_v1_period_end",
+      "document_version_id": "dv_doc_financials_v1",
+      "field": "financial_statement.period_end",
+      "raw_value": null,
+      "value": "2025-12-31",
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_financials_v1_period_end"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_financials_v1_statement_scope",
+      "document_version_id": "dv_doc_financials_v1",
+      "field": "financial_statement.statement_scope",
+      "raw_value": null,
+      "value": "standalone",
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_financials_v1_statement_scope"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_financials_v1_currency",
+      "document_version_id": "dv_doc_financials_v1",
+      "field": "financial_statement.currency",
+      "raw_value": null,
+      "value": "VND",
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_financials_v1_currency"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_financials_v1_unit_multiplier",
+      "document_version_id": "dv_doc_financials_v1",
+      "field": "financial_statement.unit_multiplier",
+      "raw_value": null,
+      "value": "1000000",
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_financials_v1_unit_multiplier"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_financials_v1_total_assets",
+      "document_version_id": "dv_doc_financials_v1",
+      "field": "financial_statement.total_assets",
+      "raw_value": "1.000",
+      "value": "1000",
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_financials_v1_total_assets"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_financials_v1_total_liabilities",
+      "document_version_id": "dv_doc_financials_v1",
+      "field": "financial_statement.total_liabilities",
+      "raw_value": "600",
+      "value": "600",
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_financials_v1_total_liabilities"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_financials_v1_equity",
+      "document_version_id": "dv_doc_financials_v1",
+      "field": "financial_statement.equity",
+      "raw_value": "400",
+      "value": "400",
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_financials_v1_equity"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_loan_request_v1_borrower_name",
+      "document_version_id": "dv_doc_loan_request_v1",
+      "field": "loan_request.borrower_name",
+      "raw_value": null,
+      "value": "Công ty TNHH Sao Mai Demo",
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_loan_request_v1_borrower_name"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_loan_request_v1_tax_id",
+      "document_version_id": "dv_doc_loan_request_v1",
+      "field": "loan_request.tax_id",
+      "raw_value": null,
+      "value": "0000000001",
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_loan_request_v1_tax_id"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_loan_request_v1_currency",
+      "document_version_id": "dv_doc_loan_request_v1",
+      "field": "loan_request.currency",
+      "raw_value": null,
+      "value": "VND",
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_loan_request_v1_currency"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_loan_request_v1_purpose",
+      "document_version_id": "dv_doc_loan_request_v1",
+      "field": "loan_request.purpose",
+      "raw_value": null,
+      "value": "Bổ sung vốn lưu động",
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_loan_request_v1_purpose"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_loan_request_v1_request_date",
+      "document_version_id": "dv_doc_loan_request_v1",
+      "field": "loan_request.request_date",
+      "raw_value": null,
+      "value": "2026-10-01",
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_loan_request_v1_request_date"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_loan_request_v1_expected_receipts",
+      "document_version_id": "dv_doc_loan_request_v1",
+      "field": "loan_request.expected_receipts",
+      "raw_value": null,
+      "value": [
+        {
+          "amount": "500000000",
+          "currency": "VND",
+          "expected_date": "2026-11-30",
+          "contract_ref": "HĐ01",
+          "claim_type": "expected"
+        }
+      ],
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_loan_request_v1_expected_receipts"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_loan_request_v1_requested_amount",
+      "document_version_id": "dv_doc_loan_request_v1",
+      "field": "loan_request.requested_amount",
+      "raw_value": null,
+      "value": "300",
+      "currency": "VND",
+      "multiplier": "1000000",
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_loan_request_v1_requested_amount"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_contract_01_v1_contract_no",
+      "document_version_id": "dv_doc_contract_01_v1",
+      "field": "contract.contract_no",
+      "raw_value": null,
+      "value": "HĐ01",
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_contract_01_v1_contract_no"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_contract_01_v1_signed_date",
+      "document_version_id": "dv_doc_contract_01_v1",
+      "field": "contract.signed_date",
+      "raw_value": null,
+      "value": "2026-08-01",
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_contract_01_v1_signed_date"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_contract_01_v1_parties",
+      "document_version_id": "dv_doc_contract_01_v1",
+      "field": "contract.parties",
+      "raw_value": null,
+      "value": [
+        {
+          "name": "Công ty TNHH Sao Mai Demo",
+          "tax_id": "0000000001",
+          "role": "seller"
+        },
+        {
+          "name": "Công ty CP Khách Hàng Demo",
+          "tax_id": "0000000002",
+          "role": "buyer"
+        }
+      ],
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_contract_01_v1_parties"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_contract_01_v1_total_amount",
+      "document_version_id": "dv_doc_contract_01_v1",
+      "field": "contract.total_amount",
+      "raw_value": null,
+      "value": "500000000",
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_contract_01_v1_total_amount"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_contract_01_v1_vat_basis",
+      "document_version_id": "dv_doc_contract_01_v1",
+      "field": "contract.vat_basis",
+      "raw_value": null,
+      "value": "inclusive",
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_contract_01_v1_vat_basis"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_contract_01_v1_currency",
+      "document_version_id": "dv_doc_contract_01_v1",
+      "field": "contract.currency",
+      "raw_value": null,
+      "value": "VND",
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_contract_01_v1_currency"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_contract_01_v1_amendments",
+      "document_version_id": "dv_doc_contract_01_v1",
+      "field": "contract.amendments",
+      "raw_value": null,
+      "value": [],
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_contract_01_v1_amendments"
+      ],
+      "operand_fact_ids": []
+    },
+    {
+      "id": "fact_dv_doc_contract_01_v1_payment_terms",
+      "document_version_id": "dv_doc_contract_01_v1",
+      "field": "contract.payment_terms",
+      "raw_value": null,
+      "value": [
+        {
+          "event_type": "acceptance",
+          "event_ref": "HĐ01",
+          "offset_days": 30,
+          "calendar_basis": "calendar_days",
+          "percentage": "100"
+        }
+      ],
+      "currency": null,
+      "multiplier": null,
+      "period": null,
+      "quality": "readable",
+      "source_type": "document",
+      "evidence_ids": [
+        "ev_dv_doc_contract_01_v1_payment_terms"
+      ],
+      "operand_fact_ids": []
+    }
+  ]
+}

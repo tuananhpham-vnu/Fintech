@@ -1,0 +1,126 @@
+{
+  "$defs": {
+    "Quality": {
+      "enum": [
+        "readable",
+        "review_required",
+        "unreadable"
+      ],
+      "title": "Quality",
+      "type": "string"
+    },
+    "SourceType": {
+      "enum": [
+        "document",
+        "user_entry",
+        "derived"
+      ],
+      "title": "SourceType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Một thông tin đọc từ nguồn. `field` có dạng `<doc_type>.<name>`.",
+  "properties": {
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "document_version_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Document Version Id"
+    },
+    "field": {
+      "title": "Field",
+      "type": "string"
+    },
+    "raw_value": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Raw Value"
+    },
+    "value": {
+      "default": null,
+      "title": "Value"
+    },
+    "currency": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Currency"
+    },
+    "multiplier": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Multiplier"
+    },
+    "period": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Period"
+    },
+    "quality": {
+      "$ref": "#/$defs/Quality",
+      "default": "readable"
+    },
+    "source_type": {
+      "$ref": "#/$defs/SourceType",
+      "default": "document"
+    },
+    "evidence_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Evidence Ids",
+      "type": "array"
+    },
+    "operand_fact_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Operand Fact Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "field"
+  ],
+  "title": "Fact",
+  "type": "object"
+}
