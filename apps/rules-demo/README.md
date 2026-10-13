@@ -4,7 +4,7 @@ Demo tính năng đối chiếu và kiểm chứng (P3). Có hai chế độ:
 
 | Trang | Dành cho | Nội dung |
 |---|---|---|
-| `/` **Đơn giản** | Người xem demo, chuyên viên, ban giám khảo | Bấm ví dụ hoặc điền form (tick giấy tờ, điền số triệu đồng) → kết quả bằng lời thường: số vấn đề, việc nên làm, căn cứ |
+| `/` **Đơn giản** | Người xem demo, chuyên viên, ban giám khảo | Lần đầu vào có hướng dẫn tương tác 1 phút (`/?tour=1` để luôn mở). Bấm ví dụ hoặc điền form (tick giấy tờ, điền số triệu đồng) → kết quả bằng lời thường: số vấn đề, việc nên làm, căn cứ |
 | `/advanced` **Chuyên sâu** | Nhóm phát triển | Ô R01–R10, bảng kết quả rule, số hạng tính, nguồn có vùng bbox, JSON, nhập JSON tùy chỉnh |
 
 Có 12 ví dụ: câu chuyện 3 bước Sao Mai và 9 ví dụ nhanh (hồ sơ sạch, thiếu BCTC, BCTC sai năm, BCTC không cân, MST sai, khai đã thu, thu một phần, hóa đơn trùng, hóa đơn vượt hợp đồng).

@@ -33,6 +33,8 @@ Các phần nói chuyện với nhau qua contract trong [packages/schemas](packa
 
 Mở link demo (ví dụ `https://sme-review-rules-demo.onrender.com`), không cần cài đặt hay đăng nhập.
 
+**Lần đầu mở trang, một hướng dẫn 1 phút tự hiện ra**, đi qua từng phần bằng hồ sơ mẫu Công ty Sao Mai. Muốn xem lại thì bấm **▶ Hướng dẫn** ở góc trên. Khi gửi link cho người khác, có thể dùng `…/?tour=1` để luôn mở hướng dẫn.
+
 1. **Chọn một ví dụ**: bấm vào một thẻ, kết quả hiện ngay.
 2. **Hoặc tự sửa hồ sơ** trong form (bỏ tick giấy tờ, đổi số liệu) rồi bấm **Kiểm tra hồ sơ**.
 3. **Đọc kết quả**: hệ thống ghi rõ có bao nhiêu vấn đề, **việc nên làm**, và **Xem căn cứ** (trích dẫn từ tài liệu nào, trang nào).

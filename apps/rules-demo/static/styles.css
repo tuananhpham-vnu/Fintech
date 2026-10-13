@@ -325,3 +325,30 @@ details summary { cursor: pointer; color: var(--accent); font-weight: 600; font-
   .steps, .story { grid-template-columns: minmax(0, 1fr); }
   .row2, .row3 { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* ---------- Hướng dẫn tương tác ---------- */
+.btn-tour { padding: 6px 12px; font-weight: 600; color: var(--accent); border-color: var(--accent); }
+.tour[hidden] { display: none; }
+.tour-blocker { position: fixed; inset: 0; z-index: 1000; }
+.tour-spot {
+  position: fixed; z-index: 1001; pointer-events: none; border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgba(10, 14, 20, 0.62); outline: 3px solid var(--accent);
+  transition: top .25s ease, left .25s ease, width .25s ease, height .25s ease;
+}
+.tour-spot.full { width: 0; height: 0; top: 50%; left: 50%; outline: none; }
+.tour-card {
+  position: fixed; z-index: 1002; width: min(380px, calc(100vw - 24px));
+  background: var(--surface); color: var(--text); border-radius: 14px; padding: 16px 18px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35); display: grid; gap: 8px;
+}
+.tour-card.intro { width: min(460px, calc(100vw - 24px)); padding: 22px 24px; }
+.tour-card h2 { font-size: 17px; }
+.tour-card.intro h2 { font-size: 21px; }
+.tour-text { margin: 0; white-space: pre-line; font-size: 14px; }
+.tour-top { display: flex; justify-content: space-between; align-items: center; }
+.tour-progress { font-size: 12px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: .05em; }
+.tour-skip { background: none; border: none; color: var(--muted); cursor: pointer; font: inherit; font-size: 13px; padding: 4px; }
+.tour-skip:hover { color: var(--text); text-decoration: underline; }
+.tour-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+.tour-actions .btn[hidden] { display: none; }
+@media (prefers-reduced-motion: reduce) { .tour-spot { transition: none; } }

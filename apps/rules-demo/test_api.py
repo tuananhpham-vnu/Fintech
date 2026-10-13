@@ -20,7 +20,7 @@ def test_pages_and_health():
     assert client.get("/healthz").json() == {"status": "ok"}
     assert "Kiểm tra hồ sơ" in client.get("/").text
     assert "Bàn rà soát" in client.get("/advanced").text
-    for asset in ("common.js", "simple.js", "advanced.js", "styles.css"):
+    for asset in ("common.js", "simple.js", "tour.js", "advanced.js", "styles.css"):
         assert client.get(f"/static/{asset}").status_code == 200, asset
 
 

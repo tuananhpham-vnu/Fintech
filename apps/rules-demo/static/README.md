@@ -6,6 +6,7 @@ Giao diện demo, viết bằng HTML/CSS/JS thuần, không cần bước build.
 |---|---|---|
 | `index.html` + `simple.js` | `/` Đơn giản | 3 bước hướng dẫn, thẻ ví dụ, form hồ sơ, kết quả bằng lời thường |
 | `advanced.html` + `advanced.js` | `/advanced` Chuyên sâu | Bố cục **UI03 Bàn rà soát**: phát hiện bên trái, chi tiết và nguồn bên phải; tab kết quả rule, đầu vào, JSON |
+| `tour.js` | `/` Đơn giản | Hướng dẫn tương tác 10 bước: tự mở ở lần đầu (hoặc `/?tour=1`), làm sáng từng vùng, tự chạy câu chuyện Sao Mai. Sửa nội dung ở mảng `TOUR_STEPS` |
 | `common.js` | Cả hai | Nhãn tiếng Việt, hàm `h()` tạo DOM, `api()`, định dạng tiền |
 | `styles.css` | Cả hai | Biến màu trên `:root`, chế độ tối, giao diện điện thoại |
 

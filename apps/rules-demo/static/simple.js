@@ -11,7 +11,7 @@ const FIELD_LABELS = {
 const OPTIONAL_FIELDS = new Set(["payment_amount", "invoice_amount", "invoice_seller_tax_id"]);
 const DEFAULT_EXAMPLE = "sao-mai-1";
 
-const page = { examples: [], rules: [], activeId: null };
+const page = { examples: [], rules: [], activeId: null, ready: null };
 
 function exampleById(id) {
   return page.examples.find((e) => e.id === id);
@@ -215,4 +215,4 @@ async function init() {
   }
 }
 
-init();
+page.ready = init();
