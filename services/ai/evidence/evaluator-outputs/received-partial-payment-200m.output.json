@@ -1,0 +1,221 @@
+{
+  "schema_version": "1.0.2",
+  "run_id": "8019adc9-03ed-5452-8f16-0cfea88b710f",
+  "case_id": "a06adf0c-7110-51f6-86ad-4b4b903c3e9e",
+  "case_revision": 15,
+  "snapshot_hash": "b1e3752821928ddc889dd99f63f44548f3dd0683a63f2b9cdaab73bcf797ab3d",
+  "status": "completed",
+  "rule_results": [
+    {
+      "rule_id": "R01",
+      "status": "pass",
+      "reason_codes": [],
+      "evidence_ids": [],
+      "issue_keys": []
+    },
+    {
+      "rule_id": "R02",
+      "status": "pass",
+      "reason_codes": [],
+      "evidence_ids": [
+        "4c562b4e-78dc-58cb-8720-daa431789d82",
+        "9c0d75a2-d1c3-5321-8c3f-c1370c969a0e",
+        "0910e943-3e0a-5cbb-a025-9f4fb6b3c849",
+        "e94b9251-8217-554c-a6a1-156922ab4e69",
+        "03e136ed-5f91-5ae6-97b0-65cf3e5615f1",
+        "86ef489f-6a7d-5dbf-b2b3-c44d8ff1bafc",
+        "d037a051-eae2-5fe4-9ac0-0e048968f644"
+      ],
+      "issue_keys": []
+    },
+    {
+      "rule_id": "R08",
+      "status": "pass",
+      "reason_codes": [],
+      "evidence_ids": [
+        "4bed77bf-17b0-5d7c-8e1e-a58dc449222f",
+        "e94b9251-8217-554c-a6a1-156922ab4e69",
+        "2bfb11eb-f545-5ea6-891d-e22a74377f43",
+        "725b750a-2e82-5831-9e0d-72a93cf234ee",
+        "b206450b-c362-581c-aa4a-c19e9555178d",
+        "ad0f1298-7316-56f7-aa46-dd97cf3b339d",
+        "baf7cee0-9120-540d-9175-d96a499e7780",
+        "63511c24-23b6-53f6-b66b-c9d387b24406",
+        "22a9b263-2886-5583-ac46-ce359994a6ef",
+        "41c6425d-de23-509c-b143-81c1754de920",
+        "eaba83f6-0f72-55d3-9c7a-2af83bac5bb2",
+        "03e136ed-5f91-5ae6-97b0-65cf3e5615f1",
+        "6c7fc414-3e56-5e7f-b52c-6b554c0c6868",
+        "86bdb172-f8d0-5cda-b80f-b890f7223109",
+        "d27bd03f-bb4b-5908-aace-f6194debb9df",
+        "e6208932-0477-53a4-a377-abdb92939f85",
+        "86ef489f-6a7d-5dbf-b2b3-c44d8ff1bafc",
+        "6146c47e-f128-51f1-a783-b65ec5ddb433",
+        "626b853e-9638-5916-a600-b3acbda14b97",
+        "1398a28f-7ba8-5b58-b2a8-0ced5e2f3416"
+      ],
+      "issue_keys": [
+        "R08:0000000001:HĐ01:S1:acceptance"
+      ]
+    },
+    {
+      "rule_id": "R09",
+      "status": "issue",
+      "reason_codes": [],
+      "evidence_ids": [
+        "4bed77bf-17b0-5d7c-8e1e-a58dc449222f",
+        "e94b9251-8217-554c-a6a1-156922ab4e69",
+        "2bfb11eb-f545-5ea6-891d-e22a74377f43",
+        "725b750a-2e82-5831-9e0d-72a93cf234ee",
+        "b206450b-c362-581c-aa4a-c19e9555178d",
+        "ad0f1298-7316-56f7-aa46-dd97cf3b339d",
+        "baf7cee0-9120-540d-9175-d96a499e7780",
+        "63511c24-23b6-53f6-b66b-c9d387b24406",
+        "22a9b263-2886-5583-ac46-ce359994a6ef",
+        "41c6425d-de23-509c-b143-81c1754de920",
+        "d037a051-eae2-5fe4-9ac0-0e048968f644"
+      ],
+      "issue_keys": [
+        "R09:0000000001:HĐ01:S1:received"
+      ]
+    },
+    {
+      "rule_id": "R10",
+      "status": "pass",
+      "reason_codes": [],
+      "evidence_ids": [
+        "4bed77bf-17b0-5d7c-8e1e-a58dc449222f",
+        "e94b9251-8217-554c-a6a1-156922ab4e69",
+        "2bfb11eb-f545-5ea6-891d-e22a74377f43",
+        "725b750a-2e82-5831-9e0d-72a93cf234ee",
+        "b206450b-c362-581c-aa4a-c19e9555178d",
+        "ad0f1298-7316-56f7-aa46-dd97cf3b339d",
+        "baf7cee0-9120-540d-9175-d96a499e7780",
+        "63511c24-23b6-53f6-b66b-c9d387b24406",
+        "22a9b263-2886-5583-ac46-ce359994a6ef",
+        "41c6425d-de23-509c-b143-81c1754de920",
+        "eaba83f6-0f72-55d3-9c7a-2af83bac5bb2",
+        "03e136ed-5f91-5ae6-97b0-65cf3e5615f1",
+        "6c7fc414-3e56-5e7f-b52c-6b554c0c6868",
+        "86bdb172-f8d0-5cda-b80f-b890f7223109",
+        "d27bd03f-bb4b-5908-aace-f6194debb9df",
+        "e6208932-0477-53a4-a377-abdb92939f85",
+        "86ef489f-6a7d-5dbf-b2b3-c44d8ff1bafc",
+        "6146c47e-f128-51f1-a783-b65ec5ddb433",
+        "626b853e-9638-5916-a600-b3acbda14b97",
+        "1398a28f-7ba8-5b58-b2a8-0ced5e2f3416"
+      ],
+      "issue_keys": [
+        "R08:0000000001:HĐ01:S1:acceptance"
+      ]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "18672793-3df4-5a41-ad20-15f3853e16eb",
+      "issue_id": "9133f63e-fcde-59aa-ac49-9dc37a1a2e63",
+      "issue_key": "R08:0000000001:HĐ01:S1:acceptance",
+      "run_id": "8019adc9-03ed-5452-8f16-0cfea88b710f",
+      "rule_ids": [
+        "R08",
+        "R10"
+      ],
+      "category": "supported",
+      "severity": "high",
+      "proposal": "candidate_resolved",
+      "summary": "NT01 hỗ trợ nghiệm thu HĐ01/S1. Chờ reviewer xác nhận.",
+      "reason_codes": [
+        "ACCEPTANCE_SUPPORTED"
+      ],
+      "evidence_ids": [
+        "4bed77bf-17b0-5d7c-8e1e-a58dc449222f",
+        "e94b9251-8217-554c-a6a1-156922ab4e69",
+        "2bfb11eb-f545-5ea6-891d-e22a74377f43",
+        "725b750a-2e82-5831-9e0d-72a93cf234ee",
+        "b206450b-c362-581c-aa4a-c19e9555178d",
+        "ad0f1298-7316-56f7-aa46-dd97cf3b339d",
+        "baf7cee0-9120-540d-9175-d96a499e7780",
+        "63511c24-23b6-53f6-b66b-c9d387b24406",
+        "22a9b263-2886-5583-ac46-ce359994a6ef",
+        "41c6425d-de23-509c-b143-81c1754de920",
+        "eaba83f6-0f72-55d3-9c7a-2af83bac5bb2",
+        "03e136ed-5f91-5ae6-97b0-65cf3e5615f1",
+        "6c7fc414-3e56-5e7f-b52c-6b554c0c6868",
+        "86bdb172-f8d0-5cda-b80f-b890f7223109",
+        "d27bd03f-bb4b-5908-aace-f6194debb9df",
+        "e6208932-0477-53a4-a377-abdb92939f85",
+        "86ef489f-6a7d-5dbf-b2b3-c44d8ff1bafc",
+        "6146c47e-f128-51f1-a783-b65ec5ddb433",
+        "626b853e-9638-5916-a600-b3acbda14b97",
+        "1398a28f-7ba8-5b58-b2a8-0ced5e2f3416"
+      ],
+      "absence_basis": null,
+      "supported_amount": "500000000",
+      "unsupported_amount": "0",
+      "computed_date": "2026-11-14"
+    },
+    {
+      "id": "d6edddd0-1fb0-59b3-a586-aa8432eca704",
+      "issue_id": "eb4bc0d2-4953-5929-acbc-7e945b3e29e5",
+      "issue_key": "R09:0000000001:HĐ01:S1:received",
+      "run_id": "8019adc9-03ed-5452-8f16-0cfea88b710f",
+      "rule_ids": [
+        "R09"
+      ],
+      "category": "insufficient_evidence",
+      "severity": "high",
+      "proposal": "still_open",
+      "summary": "Chứng từ chỉ hỗ trợ 200000000 trên 500000000 VND khai đã thu HĐ01/S1.",
+      "reason_codes": [
+        "PARTIAL_PAYMENT"
+      ],
+      "evidence_ids": [
+        "4bed77bf-17b0-5d7c-8e1e-a58dc449222f",
+        "e94b9251-8217-554c-a6a1-156922ab4e69",
+        "2bfb11eb-f545-5ea6-891d-e22a74377f43",
+        "725b750a-2e82-5831-9e0d-72a93cf234ee",
+        "b206450b-c362-581c-aa4a-c19e9555178d",
+        "ad0f1298-7316-56f7-aa46-dd97cf3b339d",
+        "baf7cee0-9120-540d-9175-d96a499e7780",
+        "63511c24-23b6-53f6-b66b-c9d387b24406",
+        "22a9b263-2886-5583-ac46-ce359994a6ef",
+        "41c6425d-de23-509c-b143-81c1754de920",
+        "d037a051-eae2-5fe4-9ac0-0e048968f644"
+      ],
+      "absence_basis": null,
+      "supported_amount": "200000000",
+      "unsupported_amount": "300000000",
+      "computed_date": null
+    }
+  ],
+  "request_suggestions": [
+    {
+      "issue_id": "eb4bc0d2-4953-5929-acbc-7e945b3e29e5",
+      "required_type": "payment_record",
+      "contract_ref": "HĐ01",
+      "required_scope": "S1",
+      "purpose": "Xác minh khoản khai đã thu",
+      "content": "Vui lòng bổ sung chứng từ thanh toán đã hoàn tất cho khoản 500000000 VND thuộc HĐ01/S1.",
+      "evidence_ids": [
+        "4bed77bf-17b0-5d7c-8e1e-a58dc449222f",
+        "e94b9251-8217-554c-a6a1-156922ab4e69",
+        "2bfb11eb-f545-5ea6-891d-e22a74377f43",
+        "725b750a-2e82-5831-9e0d-72a93cf234ee",
+        "b206450b-c362-581c-aa4a-c19e9555178d",
+        "ad0f1298-7316-56f7-aa46-dd97cf3b339d",
+        "baf7cee0-9120-540d-9175-d96a499e7780",
+        "63511c24-23b6-53f6-b66b-c9d387b24406",
+        "22a9b263-2886-5583-ac46-ce359994a6ef",
+        "41c6425d-de23-509c-b143-81c1754de920",
+        "d037a051-eae2-5fe4-9ac0-0e048968f644"
+      ]
+    }
+  ],
+  "diagnostics": [],
+  "provenance": {
+    "model_id": "deterministic-rules",
+    "prompt_version": "rules-P0-1.0.2",
+    "ocr_version": "none",
+    "schema_version": "1.0.2"
+  }
+}

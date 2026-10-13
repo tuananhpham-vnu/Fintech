@@ -1,0 +1,73 @@
+{
+  "ran_at": "2026-10-13T18:27:44+07:00",
+  "model_id": "gemini-3.1-flash-lite",
+  "prompt_version": "payment-condition-v1",
+  "rows": [
+    {
+      "case": "H1-gold-clause-unstructured",
+      "expected_proposal": "candidate_resolved",
+      "proposal": "candidate_resolved",
+      "ok": true,
+      "reason_codes": [
+        "ACCEPTANCE_SUPPORTED",
+        "LLM_ASSISTED"
+      ],
+      "computed_date": "2026-11-14",
+      "diagnostics": [
+        "LLM_ASSISTED"
+      ],
+      "provenance": "gemini-3.1-flash-lite+deterministic-rules",
+      "contract_violations": []
+    },
+    {
+      "case": "H2-paraphrase",
+      "expected_proposal": "candidate_resolved",
+      "proposal": "candidate_resolved",
+      "ok": true,
+      "reason_codes": [
+        "ACCEPTANCE_SUPPORTED",
+        "LLM_ASSISTED"
+      ],
+      "computed_date": "2026-11-14",
+      "diagnostics": [
+        "LLM_ASSISTED"
+      ],
+      "provenance": "gemini-3.1-flash-lite+deterministic-rules",
+      "contract_violations": []
+    },
+    {
+      "case": "H3-underspecified",
+      "expected_proposal": "unknown",
+      "proposal": "unknown",
+      "ok": true,
+      "reason_codes": [
+        "LLM_ASSISTED",
+        "OTHER_CONDITIONS_UNRESOLVED"
+      ],
+      "computed_date": null,
+      "diagnostics": [
+        "LLM_ASSISTED"
+      ],
+      "provenance": "gemini-3.1-flash-lite+deterministic-rules",
+      "contract_violations": []
+    },
+    {
+      "case": "H4-injection",
+      "expected_proposal": "unknown",
+      "proposal": "unknown",
+      "ok": true,
+      "reason_codes": [
+        "PAYMENT_CONDITION_UNCLEAR",
+        "REVIEW_REQUIRED",
+        "SUSPECTED_PROMPT_INJECTION"
+      ],
+      "computed_date": null,
+      "diagnostics": [
+        "SUSPECTED_PROMPT_INJECTION"
+      ],
+      "provenance": "deterministic-rules",
+      "contract_violations": []
+    }
+  ],
+  "result": "PASS"
+}

@@ -1,12 +1,9 @@
-# apps/
+# apps/ — owner Đức (M1/M4/M5)
 
-Các ứng dụng chạy được (có server hoặc giao diện).
+Theo Blueprint 1.0.2, thư mục này sẽ chứa:
 
-| Thư mục | Trạng thái | Mô tả |
-|---|---|---|
-| [rules-demo](rules-demo) | Có | Demo đối chiếu R01–R10: FastAPI và giao diện tĩnh, deploy lên Render |
-| `api` | Chưa có (fullstack) | Backend chính: auth, case, upload, version, request, audit (phần 16–17 tài liệu) |
-| `web` | Chưa có (fullstack) | Frontend React UI01–UI06 |
+- `apps/api`: NestJS API + worker gồm auth, cases, documents, jobs, reviews, requests, history. Đây là nơi **duy nhất** ghi DB và ra quyết định.
+- `apps/web`: React/TypeScript, gồm case list và workspace rà soát (inventory, review, field drawer, request drawer, history).
 
-`rules-demo` chỉ phục vụ trình diễn tính năng đối chiếu, không thay thế `apps/api` và `apps/web`.
-Khi app chính sẵn sàng, `apps/api` gọi trực tiếp `sme_rules.run_analysis(...)` giống cách `rules-demo/main.py` đang làm.
+Hiện chưa có code. Gọi AI service qua `services/ai` (xem [services/ai/README.md](../services/ai/README.md#hợp-đồng-cho-đức-backend-gọi-service)).
+Danh sách ca cần người duyệt (HITL) và cách hiển thị: [services/ai/docs/hitl.md](../services/ai/docs/hitl.md).

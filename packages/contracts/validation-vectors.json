@@ -1,0 +1,214 @@
+[
+  {
+    "id": "S01",
+    "schema": "ReviewDecision",
+    "value": {
+      "id": "8d3d0d79-ec5f-5d4b-80a7-1433ed255743",
+      "case_id": "a06adf0c-7110-51f6-86ad-4b4b903c3e9e",
+      "actor_id": "44b41402-0591-5173-b104-3785dbe256d6",
+      "action": "approve_request",
+      "target_id": "2dbc60a1-71c9-5ba7-be78-d855646f497f",
+      "run_id": "fa402f70-1ccb-5589-80e7-17c6bd102415",
+      "case_revision": 10,
+      "reason": "Đã kiểm nguồn",
+      "payload": {
+        "source_case_revision": 9,
+        "correction": {
+          "field_id": "6e32d820-1eab-5d38-8212-a447c1522361",
+          "old_value": "1",
+          "new_value": "2",
+          "evidence_ids": [],
+          "source_case_revision": 9
+        },
+        "classification": null,
+        "request_revision": 2,
+        "approved_hash": "33d1f87db4c576f5fe2aff4d9e843766a90c748e089f3e9446cd29ae6f8383a5"
+      },
+      "created_at": "2026-10-13T06:00:00Z"
+    },
+    "expected": "REJECT",
+    "reason": "approve_request must not carry correction payload"
+  },
+  {
+    "id": "S02",
+    "schema": "ReviewRun",
+    "value": {
+      "id": "fa402f70-1ccb-5589-80e7-17c6bd102415",
+      "case_id": "a06adf0c-7110-51f6-86ad-4b4b903c3e9e",
+      "case_revision": 9,
+      "schema_version": "1.0.2",
+      "rule_set_version": "P0-1.0.2",
+      "snapshot_hash": "1fc979d0d8c2efb82286ae7421b2bc72cdcd7dcf037c9335cdd26ee49146ae08",
+      "status": "completed",
+      "is_stale": false,
+      "created_at": "2026-10-13T06:00:00Z",
+      "completed_at": "2026-10-13T06:00:00Z",
+      "result": {
+        "schema_version": "1.0.2",
+        "run_id": "fa402f70-1ccb-5589-80e7-17c6bd102415",
+        "case_id": "a06adf0c-7110-51f6-86ad-4b4b903c3e9e",
+        "case_revision": 9,
+        "snapshot_hash": "1fc979d0d8c2efb82286ae7421b2bc72cdcd7dcf037c9335cdd26ee49146ae08",
+        "status": "completed",
+        "rule_results": [
+          {
+            "rule_id": "R01",
+            "status": "pass",
+            "reason_codes": [],
+            "evidence_ids": [],
+            "issue_keys": []
+          },
+          {
+            "rule_id": "R02",
+            "status": "pass",
+            "reason_codes": [],
+            "evidence_ids": [
+              "4c562b4e-78dc-58cb-8720-daa431789d82",
+              "9c0d75a2-d1c3-5321-8c3f-c1370c969a0e",
+              "0910e943-3e0a-5cbb-a025-9f4fb6b3c849",
+              "e94b9251-8217-554c-a6a1-156922ab4e69"
+            ],
+            "issue_keys": []
+          },
+          {
+            "rule_id": "R08",
+            "status": "issue",
+            "reason_codes": [],
+            "evidence_ids": [
+              "b206450b-c362-581c-aa4a-c19e9555178d",
+              "ad0f1298-7316-56f7-aa46-dd97cf3b339d",
+              "63511c24-23b6-53f6-b66b-c9d387b24406",
+              "baf7cee0-9120-540d-9175-d96a499e7780",
+              "22a9b263-2886-5583-ac46-ce359994a6ef",
+              "4bed77bf-17b0-5d7c-8e1e-a58dc449222f",
+              "e94b9251-8217-554c-a6a1-156922ab4e69",
+              "2bfb11eb-f545-5ea6-891d-e22a74377f43",
+              "725b750a-2e82-5831-9e0d-72a93cf234ee",
+              "41c6425d-de23-509c-b143-81c1754de920"
+            ],
+            "issue_keys": [
+              "R08:0000000001:HĐ01:S1:acceptance"
+            ]
+          },
+          {
+            "rule_id": "R09",
+            "status": "not_applicable",
+            "reason_codes": [],
+            "evidence_ids": [],
+            "issue_keys": []
+          },
+          {
+            "rule_id": "R10",
+            "status": "not_applicable",
+            "reason_codes": [],
+            "evidence_ids": [],
+            "issue_keys": []
+          }
+        ],
+        "assessments": [
+          {
+            "id": "0f57d38d-fec6-5449-a7ef-43f25e5e4ecc",
+            "issue_id": "9133f63e-fcde-59aa-ac49-9dc37a1a2e63",
+            "issue_key": "R08:0000000001:HĐ01:S1:acceptance",
+            "run_id": "fa402f70-1ccb-5589-80e7-17c6bd102415",
+            "rule_ids": [
+              "R08"
+            ],
+            "category": "missing_document",
+            "severity": "medium",
+            "proposal": "still_open",
+            "summary": "Thiếu biên bản nghiệm thu HĐ01/S1.",
+            "reason_codes": [
+              "MISSING_ACCEPTANCE"
+            ],
+            "evidence_ids": [
+              "b206450b-c362-581c-aa4a-c19e9555178d",
+              "ad0f1298-7316-56f7-aa46-dd97cf3b339d",
+              "63511c24-23b6-53f6-b66b-c9d387b24406",
+              "baf7cee0-9120-540d-9175-d96a499e7780",
+              "22a9b263-2886-5583-ac46-ce359994a6ef",
+              "4bed77bf-17b0-5d7c-8e1e-a58dc449222f",
+              "e94b9251-8217-554c-a6a1-156922ab4e69",
+              "2bfb11eb-f545-5ea6-891d-e22a74377f43",
+              "725b750a-2e82-5831-9e0d-72a93cf234ee",
+              "41c6425d-de23-509c-b143-81c1754de920"
+            ],
+            "absence_basis": {
+              "checklist_version": "CL01-P0-v1",
+              "searched_document_ids": [
+                "dfc2fa37-52e9-5177-98c7-60258ab943f9",
+                "dd5fe217-1959-5f4a-aa3f-cead3ca45076",
+                "9f79247e-3b4a-5bb0-880b-720253b8a1be",
+                "bdd9ea62-ce2f-5e12-b0d7-a7320811dea1"
+              ],
+              "required_type": "acceptance_record",
+              "reason": "Không có biên bản nghiệm thu trong snapshot"
+            },
+            "supported_amount": null,
+            "unsupported_amount": null,
+            "computed_date": null
+          }
+        ],
+        "request_suggestions": [
+          {
+            "issue_id": "9133f63e-fcde-59aa-ac49-9dc37a1a2e63",
+            "required_type": "acceptance_record",
+            "contract_ref": "HĐ01",
+            "required_scope": "S1",
+            "purpose": "Xác minh điều kiện nghiệm thu của khoản dự kiến thu",
+            "content": "Vui lòng bổ sung biên bản nghiệm thu toàn bộ S1 thuộc HĐ01, trị giá 500000000 VND.",
+            "evidence_ids": [
+              "b206450b-c362-581c-aa4a-c19e9555178d",
+              "ad0f1298-7316-56f7-aa46-dd97cf3b339d",
+              "63511c24-23b6-53f6-b66b-c9d387b24406",
+              "baf7cee0-9120-540d-9175-d96a499e7780",
+              "22a9b263-2886-5583-ac46-ce359994a6ef",
+              "4bed77bf-17b0-5d7c-8e1e-a58dc449222f",
+              "e94b9251-8217-554c-a6a1-156922ab4e69",
+              "2bfb11eb-f545-5ea6-891d-e22a74377f43",
+              "725b750a-2e82-5831-9e0d-72a93cf234ee",
+              "41c6425d-de23-509c-b143-81c1754de920"
+            ]
+          }
+        ],
+        "diagnostics": [],
+        "provenance": {
+          "model_id": "MOCK-GOLD-NOT-MODEL-OUTPUT",
+          "prompt_version": "gold-1",
+          "ocr_version": "none",
+          "schema_version": "1.0.2"
+        }
+      }
+    },
+    "expected": "REJECT",
+    "reason": "historical snapshot required"
+  },
+  {
+    "id": "S03",
+    "schema": "PaymentCondition",
+    "value": {
+      "event_type": "acceptance",
+      "offset_days": 30,
+      "calendar_basis": "calendar_days",
+      "scope_ref": "S1",
+      "other_conditions": [],
+      "counting_convention": "exclude_event_day"
+    },
+    "expected": "REJECT",
+    "reason": "empty conditions array cannot encode unknown"
+  },
+  {
+    "id": "S04",
+    "schema": "InspectionOutput",
+    "value": {
+      "schema_version": "1.0.2",
+      "sha256": "780feae0ea49ad4781cef9cc33ce01b7de19d337b479450b4e0f9a961666c9a7",
+      "page_count": 11,
+      "byte_size": 25014,
+      "encrypted": false,
+      "has_embedded_files": false
+    },
+    "expected": "ACCEPT",
+    "reason": "inspect must report 11; HTTP upload separately rejects 413"
+  }
+]

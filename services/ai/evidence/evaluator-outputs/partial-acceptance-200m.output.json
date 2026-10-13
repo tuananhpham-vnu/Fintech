@@ -1,0 +1,151 @@
+{
+  "schema_version": "1.0.2",
+  "run_id": "20986829-fb5a-5d6b-b814-17017e490e45",
+  "case_id": "a06adf0c-7110-51f6-86ad-4b4b903c3e9e",
+  "case_revision": 12,
+  "snapshot_hash": "ec5fb9b28ac33ec4fc7d8dd34c42966a3a960cf203d335e4f39b200ef053998a",
+  "status": "completed",
+  "rule_results": [
+    {
+      "rule_id": "R01",
+      "status": "pass",
+      "reason_codes": [],
+      "evidence_ids": [],
+      "issue_keys": []
+    },
+    {
+      "rule_id": "R02",
+      "status": "pass",
+      "reason_codes": [],
+      "evidence_ids": [
+        "4c562b4e-78dc-58cb-8720-daa431789d82",
+        "9c0d75a2-d1c3-5321-8c3f-c1370c969a0e",
+        "0910e943-3e0a-5cbb-a025-9f4fb6b3c849",
+        "e94b9251-8217-554c-a6a1-156922ab4e69",
+        "03e136ed-5f91-5ae6-97b0-65cf3e5615f1",
+        "abb8c15e-5773-5bda-b567-70938806f53d"
+      ],
+      "issue_keys": []
+    },
+    {
+      "rule_id": "R08",
+      "status": "issue",
+      "reason_codes": [],
+      "evidence_ids": [
+        "4bed77bf-17b0-5d7c-8e1e-a58dc449222f",
+        "e94b9251-8217-554c-a6a1-156922ab4e69",
+        "2bfb11eb-f545-5ea6-891d-e22a74377f43",
+        "725b750a-2e82-5831-9e0d-72a93cf234ee",
+        "b206450b-c362-581c-aa4a-c19e9555178d",
+        "ad0f1298-7316-56f7-aa46-dd97cf3b339d",
+        "baf7cee0-9120-540d-9175-d96a499e7780",
+        "63511c24-23b6-53f6-b66b-c9d387b24406",
+        "22a9b263-2886-5583-ac46-ce359994a6ef",
+        "41c6425d-de23-509c-b143-81c1754de920",
+        "eaba83f6-0f72-55d3-9c7a-2af83bac5bb2",
+        "03e136ed-5f91-5ae6-97b0-65cf3e5615f1",
+        "6c7fc414-3e56-5e7f-b52c-6b554c0c6868",
+        "86bdb172-f8d0-5cda-b80f-b890f7223109",
+        "d27bd03f-bb4b-5908-aace-f6194debb9df",
+        "f8b94821-8441-5ccb-9a73-9976e8ed328a",
+        "abb8c15e-5773-5bda-b567-70938806f53d",
+        "096932dc-8b30-5416-98b5-fbecc87a3b65",
+        "4d377319-d2e0-5587-b293-f9f8fea4c9cd",
+        "a93e64c7-1803-5ee6-be8a-8da80f715b8f"
+      ],
+      "issue_keys": [
+        "R08:0000000001:HĐ01:S1:acceptance"
+      ]
+    },
+    {
+      "rule_id": "R09",
+      "status": "not_applicable",
+      "reason_codes": [],
+      "evidence_ids": [],
+      "issue_keys": []
+    },
+    {
+      "rule_id": "R10",
+      "status": "issue",
+      "reason_codes": [],
+      "evidence_ids": [
+        "4bed77bf-17b0-5d7c-8e1e-a58dc449222f",
+        "e94b9251-8217-554c-a6a1-156922ab4e69",
+        "2bfb11eb-f545-5ea6-891d-e22a74377f43",
+        "725b750a-2e82-5831-9e0d-72a93cf234ee",
+        "b206450b-c362-581c-aa4a-c19e9555178d",
+        "ad0f1298-7316-56f7-aa46-dd97cf3b339d",
+        "baf7cee0-9120-540d-9175-d96a499e7780",
+        "63511c24-23b6-53f6-b66b-c9d387b24406",
+        "22a9b263-2886-5583-ac46-ce359994a6ef",
+        "41c6425d-de23-509c-b143-81c1754de920",
+        "eaba83f6-0f72-55d3-9c7a-2af83bac5bb2",
+        "03e136ed-5f91-5ae6-97b0-65cf3e5615f1",
+        "6c7fc414-3e56-5e7f-b52c-6b554c0c6868",
+        "86bdb172-f8d0-5cda-b80f-b890f7223109",
+        "d27bd03f-bb4b-5908-aace-f6194debb9df",
+        "f8b94821-8441-5ccb-9a73-9976e8ed328a",
+        "abb8c15e-5773-5bda-b567-70938806f53d",
+        "096932dc-8b30-5416-98b5-fbecc87a3b65",
+        "4d377319-d2e0-5587-b293-f9f8fea4c9cd",
+        "a93e64c7-1803-5ee6-be8a-8da80f715b8f"
+      ],
+      "issue_keys": [
+        "R08:0000000001:HĐ01:S1:acceptance"
+      ]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "97140820-c6c0-5130-8266-b097434e57bb",
+      "issue_id": "9133f63e-fcde-59aa-ac49-9dc37a1a2e63",
+      "issue_key": "R08:0000000001:HĐ01:S1:acceptance",
+      "run_id": "20986829-fb5a-5d6b-b814-17017e490e45",
+      "rule_ids": [
+        "R08",
+        "R10"
+      ],
+      "category": "insufficient_evidence",
+      "severity": "medium",
+      "proposal": "still_open",
+      "summary": "NT04 chỉ nghiệm thu 200000000 trên 500000000 VND của HĐ01/S1; phần còn lại chưa có căn cứ.",
+      "reason_codes": [
+        "PARTIAL_ACCEPTANCE"
+      ],
+      "evidence_ids": [
+        "4bed77bf-17b0-5d7c-8e1e-a58dc449222f",
+        "e94b9251-8217-554c-a6a1-156922ab4e69",
+        "2bfb11eb-f545-5ea6-891d-e22a74377f43",
+        "725b750a-2e82-5831-9e0d-72a93cf234ee",
+        "b206450b-c362-581c-aa4a-c19e9555178d",
+        "ad0f1298-7316-56f7-aa46-dd97cf3b339d",
+        "baf7cee0-9120-540d-9175-d96a499e7780",
+        "63511c24-23b6-53f6-b66b-c9d387b24406",
+        "22a9b263-2886-5583-ac46-ce359994a6ef",
+        "41c6425d-de23-509c-b143-81c1754de920",
+        "eaba83f6-0f72-55d3-9c7a-2af83bac5bb2",
+        "03e136ed-5f91-5ae6-97b0-65cf3e5615f1",
+        "6c7fc414-3e56-5e7f-b52c-6b554c0c6868",
+        "86bdb172-f8d0-5cda-b80f-b890f7223109",
+        "d27bd03f-bb4b-5908-aace-f6194debb9df",
+        "f8b94821-8441-5ccb-9a73-9976e8ed328a",
+        "abb8c15e-5773-5bda-b567-70938806f53d",
+        "096932dc-8b30-5416-98b5-fbecc87a3b65",
+        "4d377319-d2e0-5587-b293-f9f8fea4c9cd",
+        "a93e64c7-1803-5ee6-be8a-8da80f715b8f"
+      ],
+      "absence_basis": null,
+      "supported_amount": "200000000",
+      "unsupported_amount": "300000000",
+      "computed_date": null
+    }
+  ],
+  "request_suggestions": [],
+  "diagnostics": [],
+  "provenance": {
+    "model_id": "deterministic-rules",
+    "prompt_version": "rules-P0-1.0.2",
+    "ocr_version": "none",
+    "schema_version": "1.0.2"
+  }
+}

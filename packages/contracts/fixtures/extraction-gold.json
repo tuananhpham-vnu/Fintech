@@ -1,0 +1,943 @@
+[
+  {
+    "schema_version": "1.0.2",
+    "document_id": "dfc2fa37-52e9-5177-98c7-60258ab943f9",
+    "case_id": "a06adf0c-7110-51f6-86ad-4b4b903c3e9e",
+    "sha256": "22ff9c92526dc77b5df291764f73e34c86949113707f69aad0eb02d8e1e8126c",
+    "detected_type": "registration",
+    "classification_confident": true,
+    "pages": [
+      {
+        "page": 1,
+        "text": "HỒ SƠ PHÁP LÝ MÔ PHỎNG\nSYNTHETIC | FinTechathon 2026 | Dữ liệu kiểm thử, không có giá trị giao dịch\nTên doanh nghiệp: Sao Mai Demo\nMã số thuế: 0000000001\nNgành nghề: Cung cấp thiết bị và dịch vụ kỹ thuật.\nĐịa chỉ giả lập: Hà Nội, Việt Nam.\nMọi tên, MST, số tiền và ngày tháng đều thuộc tình huống giả lập.\nTrang 1 / 1 | Không xác thực chữ ký, con dấu hoặc tiền thực nhận.\n",
+        "method": "text",
+        "width": 595,
+        "height": 842
+      }
+    ],
+    "fields": [
+      {
+        "id": "63ed4b56-77d8-5099-acd0-02d933dc85ad",
+        "document_id": "dfc2fa37-52e9-5177-98c7-60258ab943f9",
+        "field_key": "borrower.name",
+        "raw_value": "Tên doanh nghiệp: Sao Mai Demo",
+        "value": "Sao Mai Demo",
+        "quality": "readable",
+        "evidence_ids": [
+          "e19a986b-42fd-5180-80a6-e624ff09e929"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "e50b91c6-2445-5792-a022-db32f188a90f",
+        "document_id": "dfc2fa37-52e9-5177-98c7-60258ab943f9",
+        "field_key": "borrower.tax_id",
+        "raw_value": "Mã số thuế: 0000000001",
+        "value": "0000000001",
+        "quality": "readable",
+        "evidence_ids": [
+          "4c562b4e-78dc-58cb-8720-daa431789d82"
+        ],
+        "missing_reason": null
+      }
+    ],
+    "evidence": [
+      {
+        "id": "e19a986b-42fd-5180-80a6-e624ff09e929",
+        "document_id": "dfc2fa37-52e9-5177-98c7-60258ab943f9",
+        "page": 1,
+        "quote": "Tên doanh nghiệp: Sao Mai Demo",
+        "bbox": null,
+        "precision": "page"
+      },
+      {
+        "id": "4c562b4e-78dc-58cb-8720-daa431789d82",
+        "document_id": "dfc2fa37-52e9-5177-98c7-60258ab943f9",
+        "page": 1,
+        "quote": "Mã số thuế: 0000000001",
+        "bbox": null,
+        "precision": "page"
+      },
+      {
+        "id": "2ae9eddc-d02c-571a-8c5c-d3d74e16d4d4",
+        "document_id": "dfc2fa37-52e9-5177-98c7-60258ab943f9",
+        "page": 1,
+        "quote": "Ngành nghề: Cung cấp thiết bị và dịch vụ kỹ thuật.",
+        "bbox": null,
+        "precision": "page"
+      },
+      {
+        "id": "effc032c-57ed-588a-aab2-0fb567ec2e3a",
+        "document_id": "dfc2fa37-52e9-5177-98c7-60258ab943f9",
+        "page": 1,
+        "quote": "Địa chỉ giả lập: Hà Nội, Việt Nam.",
+        "bbox": null,
+        "precision": "page"
+      }
+    ],
+    "diagnostics": [],
+    "provenance": {
+      "model_id": "MOCK-GOLD-NOT-MODEL-OUTPUT",
+      "prompt_version": "gold-1",
+      "ocr_version": "none",
+      "schema_version": "1.0.2"
+    }
+  },
+  {
+    "schema_version": "1.0.2",
+    "document_id": "dd5fe217-1959-5f4a-aa3f-cead3ca45076",
+    "case_id": "a06adf0c-7110-51f6-86ad-4b4b903c3e9e",
+    "sha256": "e3db190d1d018392f4f2f973f2a9a5b433a1bf6e029692c1aa1e2a15fa9b0b15",
+    "detected_type": "financial_statement",
+    "classification_confident": true,
+    "pages": [
+      {
+        "page": 1,
+        "text": "BÁO CÁO TÀI CHÍNH MÔ PHỎNG\nSYNTHETIC | FinTechathon 2026 | Dữ liệu kiểm thử, không có giá trị giao dịch\nDoanh nghiệp: Sao Mai Demo. Mã số thuế: 0000000001\nKỳ kết thúc: 31/12/2025. Báo cáo riêng lẻ.\nĐơn vị: triệu VND.\nTổng tài sản: 1000. Nợ phải trả: 600. Vốn chủ sở hữu: 400.\nMọi tên, MST, số tiền và ngày tháng đều thuộc tình huống giả lập.\nTrang 1 / 1 | Không xác thực chữ ký, con dấu hoặc tiền thực nhận.\n",
+        "method": "text",
+        "width": 595,
+        "height": 842
+      }
+    ],
+    "fields": [
+      {
+        "id": "a6ecf235-85b4-50fa-8195-c527246df8de",
+        "document_id": "dd5fe217-1959-5f4a-aa3f-cead3ca45076",
+        "field_key": "borrower.name",
+        "raw_value": "Doanh nghiệp: Sao Mai Demo. Mã số thuế: 0000000001",
+        "value": "Sao Mai Demo",
+        "quality": "readable",
+        "evidence_ids": [
+          "9c0d75a2-d1c3-5321-8c3f-c1370c969a0e"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "6334cee6-10ce-5750-9399-3c4615eb645b",
+        "document_id": "dd5fe217-1959-5f4a-aa3f-cead3ca45076",
+        "field_key": "borrower.tax_id",
+        "raw_value": "Doanh nghiệp: Sao Mai Demo. Mã số thuế: 0000000001",
+        "value": "0000000001",
+        "quality": "readable",
+        "evidence_ids": [
+          "9c0d75a2-d1c3-5321-8c3f-c1370c969a0e"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "60d59e85-5ab9-5f97-90e3-94302ed4f485",
+        "document_id": "dd5fe217-1959-5f4a-aa3f-cead3ca45076",
+        "field_key": "financial.period_end",
+        "raw_value": "Kỳ kết thúc: 31/12/2025. Báo cáo riêng lẻ.",
+        "value": "2025-12-31",
+        "quality": "readable",
+        "evidence_ids": [
+          "20120025-4ea8-5873-9120-729789d9f33f"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "ffbb035f-63b6-52f8-9131-37943acbb284",
+        "document_id": "dd5fe217-1959-5f4a-aa3f-cead3ca45076",
+        "field_key": "financial.scope",
+        "raw_value": "Kỳ kết thúc: 31/12/2025. Báo cáo riêng lẻ.",
+        "value": "standalone",
+        "quality": "readable",
+        "evidence_ids": [
+          "20120025-4ea8-5873-9120-729789d9f33f"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "94c81308-8730-53e7-be69-02eb37654f44",
+        "document_id": "dd5fe217-1959-5f4a-aa3f-cead3ca45076",
+        "field_key": "financial.unit_multiplier",
+        "raw_value": "Đơn vị: triệu VND.",
+        "value": "1000000",
+        "quality": "readable",
+        "evidence_ids": [
+          "41c6425d-de23-509c-b143-81c1754de920"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "7ba3ca9f-c912-53ff-ace3-1dacb6153b5f",
+        "document_id": "dd5fe217-1959-5f4a-aa3f-cead3ca45076",
+        "field_key": "financial.total_assets",
+        "raw_value": "Tổng tài sản: 1000. Nợ phải trả: 600. Vốn chủ sở hữu: 400.",
+        "value": "1000",
+        "quality": "readable",
+        "evidence_ids": [
+          "eeee6114-0091-5072-8033-d4eab1dc41c7"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "c3cdcd40-146a-5960-9ecf-d196fd7eea7c",
+        "document_id": "dd5fe217-1959-5f4a-aa3f-cead3ca45076",
+        "field_key": "financial.liabilities",
+        "raw_value": "Tổng tài sản: 1000. Nợ phải trả: 600. Vốn chủ sở hữu: 400.",
+        "value": "600",
+        "quality": "readable",
+        "evidence_ids": [
+          "eeee6114-0091-5072-8033-d4eab1dc41c7"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "5e456af9-6d29-5e61-9414-45e7571b0404",
+        "document_id": "dd5fe217-1959-5f4a-aa3f-cead3ca45076",
+        "field_key": "financial.equity",
+        "raw_value": "Tổng tài sản: 1000. Nợ phải trả: 600. Vốn chủ sở hữu: 400.",
+        "value": "400",
+        "quality": "readable",
+        "evidence_ids": [
+          "eeee6114-0091-5072-8033-d4eab1dc41c7"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "b219eed3-f828-536d-8e62-9f207216b48a",
+        "document_id": "dd5fe217-1959-5f4a-aa3f-cead3ca45076",
+        "field_key": "money.currency",
+        "raw_value": "Đơn vị: triệu VND.",
+        "value": "VND",
+        "quality": "readable",
+        "evidence_ids": [
+          "41c6425d-de23-509c-b143-81c1754de920"
+        ],
+        "missing_reason": null
+      }
+    ],
+    "evidence": [
+      {
+        "id": "9c0d75a2-d1c3-5321-8c3f-c1370c969a0e",
+        "document_id": "dd5fe217-1959-5f4a-aa3f-cead3ca45076",
+        "page": 1,
+        "quote": "Doanh nghiệp: Sao Mai Demo. Mã số thuế: 0000000001",
+        "bbox": null,
+        "precision": "page"
+      },
+      {
+        "id": "20120025-4ea8-5873-9120-729789d9f33f",
+        "document_id": "dd5fe217-1959-5f4a-aa3f-cead3ca45076",
+        "page": 1,
+        "quote": "Kỳ kết thúc: 31/12/2025. Báo cáo riêng lẻ.",
+        "bbox": null,
+        "precision": "page"
+      },
+      {
+        "id": "41c6425d-de23-509c-b143-81c1754de920",
+        "document_id": "dd5fe217-1959-5f4a-aa3f-cead3ca45076",
+        "page": 1,
+        "quote": "Đơn vị: triệu VND.",
+        "bbox": null,
+        "precision": "page"
+      },
+      {
+        "id": "eeee6114-0091-5072-8033-d4eab1dc41c7",
+        "document_id": "dd5fe217-1959-5f4a-aa3f-cead3ca45076",
+        "page": 1,
+        "quote": "Tổng tài sản: 1000. Nợ phải trả: 600. Vốn chủ sở hữu: 400.",
+        "bbox": null,
+        "precision": "page"
+      }
+    ],
+    "diagnostics": [],
+    "provenance": {
+      "model_id": "MOCK-GOLD-NOT-MODEL-OUTPUT",
+      "prompt_version": "gold-1",
+      "ocr_version": "none",
+      "schema_version": "1.0.2"
+    }
+  },
+  {
+    "schema_version": "1.0.2",
+    "document_id": "9f79247e-3b4a-5bb0-880b-720253b8a1be",
+    "case_id": "a06adf0c-7110-51f6-86ad-4b4b903c3e9e",
+    "sha256": "780feae0ea49ad4781cef9cc33ce01b7de19d337b479450b4e0f9a961666c9a7",
+    "detected_type": "loan_request",
+    "classification_confident": true,
+    "pages": [
+      {
+        "page": 1,
+        "text": "ĐỀ NGHỊ VAY MÔ PHỎNG\nSYNTHETIC | FinTechathon 2026 | Dữ liệu kiểm thử, không có giá trị giao dịch\nDoanh nghiệp: Sao Mai Demo. Mã số thuế: 0000000001\nĐề nghị vay 300000000 VND.\nDự kiến thu 500000000 VND từ HĐ01 ngày 14/11/2026.\nPhạm vi khoản thu: S1. Đây là dự kiến thu, chưa khai đã nhận tiền.\nMọi tên, MST, số tiền và ngày tháng đều thuộc tình huống giả lập.\nTrang 1 / 1 | Không xác thực chữ ký, con dấu hoặc tiền thực nhận.\n",
+        "method": "text",
+        "width": 595,
+        "height": 842
+      }
+    ],
+    "fields": [
+      {
+        "id": "201fae4a-adc1-539c-bf02-5de5168851dc",
+        "document_id": "9f79247e-3b4a-5bb0-880b-720253b8a1be",
+        "field_key": "borrower.name",
+        "raw_value": "Doanh nghiệp: Sao Mai Demo. Mã số thuế: 0000000001",
+        "value": "Sao Mai Demo",
+        "quality": "readable",
+        "evidence_ids": [
+          "0910e943-3e0a-5cbb-a025-9f4fb6b3c849"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "f39d0db9-5689-5e14-8def-0e09e605a179",
+        "document_id": "9f79247e-3b4a-5bb0-880b-720253b8a1be",
+        "field_key": "borrower.tax_id",
+        "raw_value": "Doanh nghiệp: Sao Mai Demo. Mã số thuế: 0000000001",
+        "value": "0000000001",
+        "quality": "readable",
+        "evidence_ids": [
+          "0910e943-3e0a-5cbb-a025-9f4fb6b3c849"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "49f50392-b92c-523d-ad33-c17cac0871bc",
+        "document_id": "9f79247e-3b4a-5bb0-880b-720253b8a1be",
+        "field_key": "loan.amount",
+        "raw_value": "Đề nghị vay 300000000 VND.",
+        "value": "300000000",
+        "quality": "readable",
+        "evidence_ids": [
+          "baf7cee0-9120-540d-9175-d96a499e7780"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "01251935-a820-562f-80bb-57a1ceb5ef6c",
+        "document_id": "9f79247e-3b4a-5bb0-880b-720253b8a1be",
+        "field_key": "money.currency",
+        "raw_value": "Đề nghị vay 300000000 VND.",
+        "value": "VND",
+        "quality": "readable",
+        "evidence_ids": [
+          "baf7cee0-9120-540d-9175-d96a499e7780"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "ea47bff0-299a-5c54-b1fc-f94eb56841b6",
+        "document_id": "9f79247e-3b4a-5bb0-880b-720253b8a1be",
+        "field_key": "receipt.amount",
+        "raw_value": "Dự kiến thu 500000000 VND từ HĐ01 ngày 14/11/2026.",
+        "value": "500000000",
+        "quality": "readable",
+        "evidence_ids": [
+          "63511c24-23b6-53f6-b66b-c9d387b24406"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "19ceb63f-0554-54e0-8bad-d283bb920c1b",
+        "document_id": "9f79247e-3b4a-5bb0-880b-720253b8a1be",
+        "field_key": "receipt.contract_ref",
+        "raw_value": "Dự kiến thu 500000000 VND từ HĐ01 ngày 14/11/2026.",
+        "value": "HĐ01",
+        "quality": "readable",
+        "evidence_ids": [
+          "63511c24-23b6-53f6-b66b-c9d387b24406"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "a58b5270-d1ba-590d-b76a-a701b82ec6cc",
+        "document_id": "9f79247e-3b4a-5bb0-880b-720253b8a1be",
+        "field_key": "receipt.scope_ref",
+        "raw_value": "Phạm vi khoản thu: S1. Đây là dự kiến thu, chưa khai đã nhận tiền.",
+        "value": "S1",
+        "quality": "readable",
+        "evidence_ids": [
+          "22a9b263-2886-5583-ac46-ce359994a6ef"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "e1e0aa88-d99c-5f3c-bf8d-3f532acbb521",
+        "document_id": "9f79247e-3b4a-5bb0-880b-720253b8a1be",
+        "field_key": "receipt.claim_type",
+        "raw_value": "Phạm vi khoản thu: S1. Đây là dự kiến thu, chưa khai đã nhận tiền.",
+        "value": "expected",
+        "quality": "readable",
+        "evidence_ids": [
+          "22a9b263-2886-5583-ac46-ce359994a6ef"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "9ce4c92e-316e-5321-9202-2882dc9dee0b",
+        "document_id": "9f79247e-3b4a-5bb0-880b-720253b8a1be",
+        "field_key": "receipt.expected_date",
+        "raw_value": "Dự kiến thu 500000000 VND từ HĐ01 ngày 14/11/2026.",
+        "value": "2026-11-14",
+        "quality": "readable",
+        "evidence_ids": [
+          "63511c24-23b6-53f6-b66b-c9d387b24406"
+        ],
+        "missing_reason": null
+      }
+    ],
+    "evidence": [
+      {
+        "id": "0910e943-3e0a-5cbb-a025-9f4fb6b3c849",
+        "document_id": "9f79247e-3b4a-5bb0-880b-720253b8a1be",
+        "page": 1,
+        "quote": "Doanh nghiệp: Sao Mai Demo. Mã số thuế: 0000000001",
+        "bbox": null,
+        "precision": "page"
+      },
+      {
+        "id": "baf7cee0-9120-540d-9175-d96a499e7780",
+        "document_id": "9f79247e-3b4a-5bb0-880b-720253b8a1be",
+        "page": 1,
+        "quote": "Đề nghị vay 300000000 VND.",
+        "bbox": null,
+        "precision": "page"
+      },
+      {
+        "id": "63511c24-23b6-53f6-b66b-c9d387b24406",
+        "document_id": "9f79247e-3b4a-5bb0-880b-720253b8a1be",
+        "page": 1,
+        "quote": "Dự kiến thu 500000000 VND từ HĐ01 ngày 14/11/2026.",
+        "bbox": null,
+        "precision": "page"
+      },
+      {
+        "id": "22a9b263-2886-5583-ac46-ce359994a6ef",
+        "document_id": "9f79247e-3b4a-5bb0-880b-720253b8a1be",
+        "page": 1,
+        "quote": "Phạm vi khoản thu: S1. Đây là dự kiến thu, chưa khai đã nhận tiền.",
+        "bbox": null,
+        "precision": "page"
+      }
+    ],
+    "diagnostics": [],
+    "provenance": {
+      "model_id": "MOCK-GOLD-NOT-MODEL-OUTPUT",
+      "prompt_version": "gold-1",
+      "ocr_version": "none",
+      "schema_version": "1.0.2"
+    }
+  },
+  {
+    "schema_version": "1.0.2",
+    "document_id": "bdd9ea62-ce2f-5e12-b0d7-a7320811dea1",
+    "case_id": "a06adf0c-7110-51f6-86ad-4b4b903c3e9e",
+    "sha256": "33a453e3558ff0e8b5a770b70b38f2fb1bc32a2484cd3e916742ed973d378764",
+    "detected_type": "contract",
+    "classification_confident": true,
+    "pages": [
+      {
+        "page": 1,
+        "text": "HỢP ĐỒNG MÔ PHỎNG HĐ01\nSYNTHETIC | FinTechathon 2026 | Dữ liệu kiểm thử, không có giá trị giao dịch\nHợp đồng số: HĐ01. Phạm vi: S1.\nBên cung cấp: Sao Mai Demo. Mã số thuế: 0000000001\nBên mua: Bình Minh Demo. Mã số thuế: 0000000002\nGiá trị toàn bộ S1: 500000000 VND, đã gồm VAT.\nĐiều 4. Thanh toán toàn bộ trong 30 ngày lịch sau nghiệm thu S1.\nKhông tính ngày nghiệm thu; không có điều kiện thanh toán bổ sung.\nMọi tên, MST, số tiền và ngày tháng đều thuộc tình huống giả lập.\nTrang 1 / 1 | Không xác thực chữ ký, con dấu hoặc tiền thực nhận.\n",
+        "method": "text",
+        "width": 595,
+        "height": 842
+      }
+    ],
+    "fields": [
+      {
+        "id": "adae839c-8f4b-508a-9221-f107fad19a69",
+        "document_id": "bdd9ea62-ce2f-5e12-b0d7-a7320811dea1",
+        "field_key": "contract.ref",
+        "raw_value": "Hợp đồng số: HĐ01. Phạm vi: S1.",
+        "value": "HĐ01",
+        "quality": "readable",
+        "evidence_ids": [
+          "4bed77bf-17b0-5d7c-8e1e-a58dc449222f"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "c6195975-d59c-531d-8cd8-fbe60c6462ef",
+        "document_id": "bdd9ea62-ce2f-5e12-b0d7-a7320811dea1",
+        "field_key": "parties.borrower.tax_id",
+        "raw_value": "Bên cung cấp: Sao Mai Demo. Mã số thuế: 0000000001",
+        "value": "0000000001",
+        "quality": "readable",
+        "evidence_ids": [
+          "e94b9251-8217-554c-a6a1-156922ab4e69"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "cef18d63-70d1-5422-9fab-3ef6795fac58",
+        "document_id": "bdd9ea62-ce2f-5e12-b0d7-a7320811dea1",
+        "field_key": "parties.counterparty.tax_id",
+        "raw_value": "Bên mua: Bình Minh Demo. Mã số thuế: 0000000002",
+        "value": "0000000002",
+        "quality": "readable",
+        "evidence_ids": [
+          "2bfb11eb-f545-5ea6-891d-e22a74377f43"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "5a2596b4-1bdf-5272-9d13-448a1c014f75",
+        "document_id": "bdd9ea62-ce2f-5e12-b0d7-a7320811dea1",
+        "field_key": "contract.amount",
+        "raw_value": "Giá trị toàn bộ S1: 500000000 VND, đã gồm VAT.",
+        "value": "500000000",
+        "quality": "readable",
+        "evidence_ids": [
+          "725b750a-2e82-5831-9e0d-72a93cf234ee"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "bff71886-911b-5ff2-bd35-213d8b1e8a37",
+        "document_id": "bdd9ea62-ce2f-5e12-b0d7-a7320811dea1",
+        "field_key": "contract.scope_ref",
+        "raw_value": "Hợp đồng số: HĐ01. Phạm vi: S1.",
+        "value": "S1",
+        "quality": "readable",
+        "evidence_ids": [
+          "4bed77bf-17b0-5d7c-8e1e-a58dc449222f"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "3c47869e-a247-5f2b-bd67-238ed73a7ecc",
+        "document_id": "bdd9ea62-ce2f-5e12-b0d7-a7320811dea1",
+        "field_key": "money.currency",
+        "raw_value": "Giá trị toàn bộ S1: 500000000 VND, đã gồm VAT.",
+        "value": "VND",
+        "quality": "readable",
+        "evidence_ids": [
+          "725b750a-2e82-5831-9e0d-72a93cf234ee"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "0bd66824-ae22-5f71-996a-adfe05ac02d1",
+        "document_id": "bdd9ea62-ce2f-5e12-b0d7-a7320811dea1",
+        "field_key": "contract.payment_condition",
+        "raw_value": "Điều 4. Thanh toán toàn bộ trong 30 ngày lịch sau nghiệm thu S1. Không tính ngày nghiệm thu; không có điều kiện thanh toán bổ sung.",
+        "value": {
+          "event_type": "acceptance",
+          "offset_days": 30,
+          "calendar_basis": "calendar_days",
+          "scope_ref": "S1",
+          "other_conditions": [],
+          "counting_convention": "exclude_event_day",
+          "other_conditions_state": "none"
+        },
+        "quality": "readable",
+        "evidence_ids": [
+          "b206450b-c362-581c-aa4a-c19e9555178d",
+          "ad0f1298-7316-56f7-aa46-dd97cf3b339d"
+        ],
+        "missing_reason": null
+      }
+    ],
+    "evidence": [
+      {
+        "id": "4bed77bf-17b0-5d7c-8e1e-a58dc449222f",
+        "document_id": "bdd9ea62-ce2f-5e12-b0d7-a7320811dea1",
+        "page": 1,
+        "quote": "Hợp đồng số: HĐ01. Phạm vi: S1.",
+        "bbox": null,
+        "precision": "page"
+      },
+      {
+        "id": "e94b9251-8217-554c-a6a1-156922ab4e69",
+        "document_id": "bdd9ea62-ce2f-5e12-b0d7-a7320811dea1",
+        "page": 1,
+        "quote": "Bên cung cấp: Sao Mai Demo. Mã số thuế: 0000000001",
+        "bbox": null,
+        "precision": "page"
+      },
+      {
+        "id": "2bfb11eb-f545-5ea6-891d-e22a74377f43",
+        "document_id": "bdd9ea62-ce2f-5e12-b0d7-a7320811dea1",
+        "page": 1,
+        "quote": "Bên mua: Bình Minh Demo. Mã số thuế: 0000000002",
+        "bbox": null,
+        "precision": "page"
+      },
+      {
+        "id": "725b750a-2e82-5831-9e0d-72a93cf234ee",
+        "document_id": "bdd9ea62-ce2f-5e12-b0d7-a7320811dea1",
+        "page": 1,
+        "quote": "Giá trị toàn bộ S1: 500000000 VND, đã gồm VAT.",
+        "bbox": null,
+        "precision": "page"
+      },
+      {
+        "id": "b206450b-c362-581c-aa4a-c19e9555178d",
+        "document_id": "bdd9ea62-ce2f-5e12-b0d7-a7320811dea1",
+        "page": 1,
+        "quote": "Điều 4. Thanh toán toàn bộ trong 30 ngày lịch sau nghiệm thu S1.",
+        "bbox": null,
+        "precision": "page"
+      },
+      {
+        "id": "ad0f1298-7316-56f7-aa46-dd97cf3b339d",
+        "document_id": "bdd9ea62-ce2f-5e12-b0d7-a7320811dea1",
+        "page": 1,
+        "quote": "Không tính ngày nghiệm thu; không có điều kiện thanh toán bổ sung.",
+        "bbox": null,
+        "precision": "page"
+      }
+    ],
+    "diagnostics": [],
+    "provenance": {
+      "model_id": "MOCK-GOLD-NOT-MODEL-OUTPUT",
+      "prompt_version": "gold-1",
+      "ocr_version": "none",
+      "schema_version": "1.0.2"
+    }
+  },
+  {
+    "schema_version": "1.0.2",
+    "document_id": "9a2ea7ea-8bed-5dba-bb31-c12fb07db444",
+    "case_id": "a06adf0c-7110-51f6-86ad-4b4b903c3e9e",
+    "sha256": "a7e0ebd1f7a73513d4b37bdea01e1a7bda57bdea7c135a6f62411e4e57a5629f",
+    "detected_type": "acceptance_record",
+    "classification_confident": true,
+    "pages": [
+      {
+        "page": 1,
+        "text": "BIÊN BẢN NGHIỆM THU MÔ PHỎNG\nSYNTHETIC | FinTechathon 2026 | Dữ liệu kiểm thử, không có giá trị giao dịch\nSố biên bản: NT02. Hợp đồng tham chiếu: HĐ02.\nBên cung cấp: Sao Mai Demo. Mã số thuế: 0000000001\nBên mua: Bình Minh Demo. Mã số thuế: 0000000002\nNghiệm thu toàn bộ S1, giá trị 500000000 VND, đã gồm VAT.\nNgày nghiệm thu: 15/10/2026.\nMọi tên, MST, số tiền và ngày tháng đều thuộc tình huống giả lập.\nTrang 1 / 1 | Không xác thực chữ ký, con dấu hoặc tiền thực nhận.\n",
+        "method": "text",
+        "width": 595,
+        "height": 842
+      }
+    ],
+    "fields": [
+      {
+        "id": "6157d57b-6513-55ff-a826-d957c5aee828",
+        "document_id": "9a2ea7ea-8bed-5dba-bb31-c12fb07db444",
+        "field_key": "acceptance.ref",
+        "raw_value": "Số biên bản: NT02. Hợp đồng tham chiếu: HĐ02.",
+        "value": "NT02",
+        "quality": "readable",
+        "evidence_ids": [
+          "eaba83f6-0f72-55d3-9c7a-2af83bac5bb2"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "6b9f8861-5985-5433-8a79-64c59559e8cc",
+        "document_id": "9a2ea7ea-8bed-5dba-bb31-c12fb07db444",
+        "field_key": "acceptance.contract_ref",
+        "raw_value": "Số biên bản: NT02. Hợp đồng tham chiếu: HĐ02.",
+        "value": "HĐ02",
+        "quality": "readable",
+        "evidence_ids": [
+          "eaba83f6-0f72-55d3-9c7a-2af83bac5bb2"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "f57d76c1-bc33-52d9-b35c-31c1c193fe64",
+        "document_id": "9a2ea7ea-8bed-5dba-bb31-c12fb07db444",
+        "field_key": "parties.borrower.tax_id",
+        "raw_value": "Bên cung cấp: Sao Mai Demo. Mã số thuế: 0000000001",
+        "value": "0000000001",
+        "quality": "readable",
+        "evidence_ids": [
+          "03e136ed-5f91-5ae6-97b0-65cf3e5615f1"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "56570c07-6f76-5a20-bb22-d38545bba573",
+        "document_id": "9a2ea7ea-8bed-5dba-bb31-c12fb07db444",
+        "field_key": "parties.counterparty.tax_id",
+        "raw_value": "Bên mua: Bình Minh Demo. Mã số thuế: 0000000002",
+        "value": "0000000002",
+        "quality": "readable",
+        "evidence_ids": [
+          "6c7fc414-3e56-5e7f-b52c-6b554c0c6868"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "0d0c9264-d3cc-5b6f-bfcf-468ebfa334c4",
+        "document_id": "9a2ea7ea-8bed-5dba-bb31-c12fb07db444",
+        "field_key": "acceptance.date",
+        "raw_value": "Ngày nghiệm thu: 15/10/2026.",
+        "value": "2026-10-15",
+        "quality": "readable",
+        "evidence_ids": [
+          "86bdb172-f8d0-5cda-b80f-b890f7223109"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "6f183afb-38f9-5be0-b9dd-d022c6cf3daa",
+        "document_id": "9a2ea7ea-8bed-5dba-bb31-c12fb07db444",
+        "field_key": "acceptance.scope_ref",
+        "raw_value": "Nghiệm thu toàn bộ S1, giá trị 500000000 VND, đã gồm VAT.",
+        "value": "S1",
+        "quality": "readable",
+        "evidence_ids": [
+          "d27bd03f-bb4b-5908-aace-f6194debb9df"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "7024b256-e7a0-5062-9fbc-397eab68d7c5",
+        "document_id": "9a2ea7ea-8bed-5dba-bb31-c12fb07db444",
+        "field_key": "acceptance.scope_text",
+        "raw_value": "Nghiệm thu toàn bộ S1, giá trị 500000000 VND, đã gồm VAT.",
+        "value": "Nghiệm thu toàn bộ S1",
+        "quality": "readable",
+        "evidence_ids": [
+          "d27bd03f-bb4b-5908-aace-f6194debb9df"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "42f62459-10db-50ea-ae2a-d98da82816e5",
+        "document_id": "9a2ea7ea-8bed-5dba-bb31-c12fb07db444",
+        "field_key": "acceptance.amount",
+        "raw_value": "Nghiệm thu toàn bộ S1, giá trị 500000000 VND, đã gồm VAT.",
+        "value": "500000000",
+        "quality": "readable",
+        "evidence_ids": [
+          "d27bd03f-bb4b-5908-aace-f6194debb9df"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "c5339b24-83c8-5dd1-81d9-6acec3862750",
+        "document_id": "9a2ea7ea-8bed-5dba-bb31-c12fb07db444",
+        "field_key": "money.currency",
+        "raw_value": "Nghiệm thu toàn bộ S1, giá trị 500000000 VND, đã gồm VAT.",
+        "value": "VND",
+        "quality": "readable",
+        "evidence_ids": [
+          "d27bd03f-bb4b-5908-aace-f6194debb9df"
+        ],
+        "missing_reason": null
+      }
+    ],
+    "evidence": [
+      {
+        "id": "eaba83f6-0f72-55d3-9c7a-2af83bac5bb2",
+        "document_id": "9a2ea7ea-8bed-5dba-bb31-c12fb07db444",
+        "page": 1,
+        "quote": "Số biên bản: NT02. Hợp đồng tham chiếu: HĐ02.",
+        "bbox": null,
+        "precision": "page"
+      },
+      {
+        "id": "03e136ed-5f91-5ae6-97b0-65cf3e5615f1",
+        "document_id": "9a2ea7ea-8bed-5dba-bb31-c12fb07db444",
+        "page": 1,
+        "quote": "Bên cung cấp: Sao Mai Demo. Mã số thuế: 0000000001",
+        "bbox": null,
+        "precision": "page"
+      },
+      {
+        "id": "6c7fc414-3e56-5e7f-b52c-6b554c0c6868",
+        "document_id": "9a2ea7ea-8bed-5dba-bb31-c12fb07db444",
+        "page": 1,
+        "quote": "Bên mua: Bình Minh Demo. Mã số thuế: 0000000002",
+        "bbox": null,
+        "precision": "page"
+      },
+      {
+        "id": "d27bd03f-bb4b-5908-aace-f6194debb9df",
+        "document_id": "9a2ea7ea-8bed-5dba-bb31-c12fb07db444",
+        "page": 1,
+        "quote": "Nghiệm thu toàn bộ S1, giá trị 500000000 VND, đã gồm VAT.",
+        "bbox": null,
+        "precision": "page"
+      },
+      {
+        "id": "86bdb172-f8d0-5cda-b80f-b890f7223109",
+        "document_id": "9a2ea7ea-8bed-5dba-bb31-c12fb07db444",
+        "page": 1,
+        "quote": "Ngày nghiệm thu: 15/10/2026.",
+        "bbox": null,
+        "precision": "page"
+      }
+    ],
+    "diagnostics": [],
+    "provenance": {
+      "model_id": "MOCK-GOLD-NOT-MODEL-OUTPUT",
+      "prompt_version": "gold-1",
+      "ocr_version": "none",
+      "schema_version": "1.0.2"
+    }
+  },
+  {
+    "schema_version": "1.0.2",
+    "document_id": "0ac0561d-33a2-530f-a5d4-a1701cd51b1c",
+    "case_id": "a06adf0c-7110-51f6-86ad-4b4b903c3e9e",
+    "sha256": "9d4503218251b27270ef1331f6c21a2c1a33a415e3cbbc6d7d246cf43022321b",
+    "detected_type": "acceptance_record",
+    "classification_confident": true,
+    "pages": [
+      {
+        "page": 1,
+        "text": "BIÊN BẢN NGHIỆM THU MÔ PHỎNG\nSYNTHETIC | FinTechathon 2026 | Dữ liệu kiểm thử, không có giá trị giao dịch\nSố biên bản: NT01. Hợp đồng tham chiếu: HĐ01.\nBên cung cấp: Sao Mai Demo. Mã số thuế: 0000000001\nBên mua: Bình Minh Demo. Mã số thuế: 0000000002\nNghiệm thu toàn bộ S1, giá trị 500000000 VND, đã gồm VAT.\nNgày nghiệm thu: 15/10/2026.\nMọi tên, MST, số tiền và ngày tháng đều thuộc tình huống giả lập.\nTrang 1 / 1 | Không xác thực chữ ký, con dấu hoặc tiền thực nhận.\n",
+        "method": "text",
+        "width": 595,
+        "height": 842
+      }
+    ],
+    "fields": [
+      {
+        "id": "e9cc4707-627c-5bc7-a702-b0dd6dc3af53",
+        "document_id": "0ac0561d-33a2-530f-a5d4-a1701cd51b1c",
+        "field_key": "acceptance.ref",
+        "raw_value": "Số biên bản: NT01. Hợp đồng tham chiếu: HĐ01.",
+        "value": "NT01",
+        "quality": "readable",
+        "evidence_ids": [
+          "e6208932-0477-53a4-a377-abdb92939f85"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "ac1a244b-fc93-5630-b062-ca720bb754a5",
+        "document_id": "0ac0561d-33a2-530f-a5d4-a1701cd51b1c",
+        "field_key": "acceptance.contract_ref",
+        "raw_value": "Số biên bản: NT01. Hợp đồng tham chiếu: HĐ01.",
+        "value": "HĐ01",
+        "quality": "readable",
+        "evidence_ids": [
+          "e6208932-0477-53a4-a377-abdb92939f85"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "0c56670b-0e41-5e5c-b328-d7d25e7075ec",
+        "document_id": "0ac0561d-33a2-530f-a5d4-a1701cd51b1c",
+        "field_key": "parties.borrower.tax_id",
+        "raw_value": "Bên cung cấp: Sao Mai Demo. Mã số thuế: 0000000001",
+        "value": "0000000001",
+        "quality": "readable",
+        "evidence_ids": [
+          "86ef489f-6a7d-5dbf-b2b3-c44d8ff1bafc"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "5f13b249-245b-5bec-8815-75f87171a5c9",
+        "document_id": "0ac0561d-33a2-530f-a5d4-a1701cd51b1c",
+        "field_key": "parties.counterparty.tax_id",
+        "raw_value": "Bên mua: Bình Minh Demo. Mã số thuế: 0000000002",
+        "value": "0000000002",
+        "quality": "readable",
+        "evidence_ids": [
+          "6146c47e-f128-51f1-a783-b65ec5ddb433"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "54091bc5-d1e3-57fb-80ed-2adc2d323d41",
+        "document_id": "0ac0561d-33a2-530f-a5d4-a1701cd51b1c",
+        "field_key": "acceptance.date",
+        "raw_value": "Ngày nghiệm thu: 15/10/2026.",
+        "value": "2026-10-15",
+        "quality": "readable",
+        "evidence_ids": [
+          "626b853e-9638-5916-a600-b3acbda14b97"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "c91c544e-8ff5-507b-95eb-e3d85b82bc16",
+        "document_id": "0ac0561d-33a2-530f-a5d4-a1701cd51b1c",
+        "field_key": "acceptance.scope_ref",
+        "raw_value": "Nghiệm thu toàn bộ S1, giá trị 500000000 VND, đã gồm VAT.",
+        "value": "S1",
+        "quality": "readable",
+        "evidence_ids": [
+          "1398a28f-7ba8-5b58-b2a8-0ced5e2f3416"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "aa368e14-aaa4-528c-96e2-28a471c385a4",
+        "document_id": "0ac0561d-33a2-530f-a5d4-a1701cd51b1c",
+        "field_key": "acceptance.scope_text",
+        "raw_value": "Nghiệm thu toàn bộ S1, giá trị 500000000 VND, đã gồm VAT.",
+        "value": "Nghiệm thu toàn bộ S1",
+        "quality": "readable",
+        "evidence_ids": [
+          "1398a28f-7ba8-5b58-b2a8-0ced5e2f3416"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "9e50bbe5-a643-5419-8507-72af0e713f8e",
+        "document_id": "0ac0561d-33a2-530f-a5d4-a1701cd51b1c",
+        "field_key": "acceptance.amount",
+        "raw_value": "Nghiệm thu toàn bộ S1, giá trị 500000000 VND, đã gồm VAT.",
+        "value": "500000000",
+        "quality": "readable",
+        "evidence_ids": [
+          "1398a28f-7ba8-5b58-b2a8-0ced5e2f3416"
+        ],
+        "missing_reason": null
+      },
+      {
+        "id": "5be000d6-a0c6-5b1d-bfe8-418bf5b2143c",
+        "document_id": "0ac0561d-33a2-530f-a5d4-a1701cd51b1c",
+        "field_key": "money.currency",
+        "raw_value": "Nghiệm thu toàn bộ S1, giá trị 500000000 VND, đã gồm VAT.",
+        "value": "VND",
+        "quality": "readable",
+        "evidence_ids": [
+          "1398a28f-7ba8-5b58-b2a8-0ced5e2f3416"
+        ],
+        "missing_reason": null
+      }
+    ],
+    "evidence": [
+      {
+        "id": "e6208932-0477-53a4-a377-abdb92939f85",
+        "document_id": "0ac0561d-33a2-530f-a5d4-a1701cd51b1c",
+        "page": 1,
+        "quote": "Số biên bản: NT01. Hợp đồng tham chiếu: HĐ01.",
+        "bbox": null,
+        "precision": "page"
+      },
+      {
+        "id": "86ef489f-6a7d-5dbf-b2b3-c44d8ff1bafc",
+        "document_id": "0ac0561d-33a2-530f-a5d4-a1701cd51b1c",
+        "page": 1,
+        "quote": "Bên cung cấp: Sao Mai Demo. Mã số thuế: 0000000001",
+        "bbox": null,
+        "precision": "page"
+      },
+      {
+        "id": "6146c47e-f128-51f1-a783-b65ec5ddb433",
+        "document_id": "0ac0561d-33a2-530f-a5d4-a1701cd51b1c",
+        "page": 1,
+        "quote": "Bên mua: Bình Minh Demo. Mã số thuế: 0000000002",
+        "bbox": null,
+        "precision": "page"
+      },
+      {
+        "id": "1398a28f-7ba8-5b58-b2a8-0ced5e2f3416",
+        "document_id": "0ac0561d-33a2-530f-a5d4-a1701cd51b1c",
+        "page": 1,
+        "quote": "Nghiệm thu toàn bộ S1, giá trị 500000000 VND, đã gồm VAT.",
+        "bbox": null,
+        "precision": "page"
+      },
+      {
+        "id": "626b853e-9638-5916-a600-b3acbda14b97",
+        "document_id": "0ac0561d-33a2-530f-a5d4-a1701cd51b1c",
+        "page": 1,
+        "quote": "Ngày nghiệm thu: 15/10/2026.",
+        "bbox": null,
+        "precision": "page"
+      }
+    ],
+    "diagnostics": [],
+    "provenance": {
+      "model_id": "MOCK-GOLD-NOT-MODEL-OUTPUT",
+      "prompt_version": "gold-1",
+      "ocr_version": "none",
+      "schema_version": "1.0.2"
+    }
+  }
+]

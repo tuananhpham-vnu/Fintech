@@ -1,0 +1,276 @@
+{
+  "schema_version": "1.0.2",
+  "document_types": {
+    "registration": [
+      {
+        "field_key": "borrower.name",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "borrower.tax_id",
+        "value_type": "string",
+        "nullable": true
+      }
+    ],
+    "financial_statement": [
+      {
+        "field_key": "borrower.name",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "borrower.tax_id",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "financial.period_end",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "financial.scope",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "financial.unit_multiplier",
+        "value_type": "decimal",
+        "nullable": true
+      },
+      {
+        "field_key": "financial.total_assets",
+        "value_type": "decimal",
+        "nullable": true
+      },
+      {
+        "field_key": "financial.liabilities",
+        "value_type": "decimal",
+        "nullable": true
+      },
+      {
+        "field_key": "financial.equity",
+        "value_type": "decimal",
+        "nullable": true
+      },
+      {
+        "field_key": "money.currency",
+        "value_type": "string",
+        "nullable": true
+      }
+    ],
+    "loan_request": [
+      {
+        "field_key": "borrower.name",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "borrower.tax_id",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "loan.amount",
+        "value_type": "decimal",
+        "nullable": true
+      },
+      {
+        "field_key": "money.currency",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "receipt.amount",
+        "value_type": "decimal",
+        "nullable": true
+      },
+      {
+        "field_key": "receipt.contract_ref",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "receipt.scope_ref",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "receipt.claim_type",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "receipt.expected_date",
+        "value_type": "string",
+        "nullable": true
+      }
+    ],
+    "contract": [
+      {
+        "field_key": "contract.ref",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "parties.borrower.tax_id",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "parties.counterparty.tax_id",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "contract.amount",
+        "value_type": "decimal",
+        "nullable": true
+      },
+      {
+        "field_key": "contract.scope_ref",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "money.currency",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "contract.payment_condition",
+        "value_type": "PaymentCondition",
+        "nullable": true
+      }
+    ],
+    "acceptance_record": [
+      {
+        "field_key": "acceptance.ref",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "acceptance.contract_ref",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "parties.borrower.tax_id",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "parties.counterparty.tax_id",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "acceptance.date",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "acceptance.scope_ref",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "acceptance.scope_text",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "acceptance.amount",
+        "value_type": "decimal",
+        "nullable": true
+      },
+      {
+        "field_key": "money.currency",
+        "value_type": "string",
+        "nullable": true
+      }
+    ],
+    "payment_record": [
+      {
+        "field_key": "payment.ref",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "payment.contract_ref",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "parties.payee.tax_id",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "parties.payer.tax_id",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "payment.date",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "payment.amount",
+        "value_type": "decimal",
+        "nullable": true
+      },
+      {
+        "field_key": "money.currency",
+        "value_type": "string",
+        "nullable": true
+      },
+      {
+        "field_key": "payment.status",
+        "value_type": "string",
+        "nullable": true
+      }
+    ],
+    "invoice": [
+      {
+        "field_key": "document.summary",
+        "value_type": "string",
+        "nullable": true
+      }
+    ],
+    "other": [
+      {
+        "field_key": "document.summary",
+        "value_type": "string",
+        "nullable": true
+      }
+    ]
+  },
+  "enum_values": {
+    "receipt.claim_type": [
+      "expected",
+      "due",
+      "received",
+      "unknown"
+    ],
+    "financial.scope": [
+      "standalone",
+      "consolidated",
+      "unknown"
+    ],
+    "payment.status": [
+      "completed",
+      "pending",
+      "unknown"
+    ]
+  },
+  "date_fields": [
+    "financial.period_end",
+    "receipt.expected_date",
+    "acceptance.date",
+    "payment.date"
+  ],
+  "currency_policy": "Keep raw non-VND code as string, evaluator returns unknown UNSUPPORTED_CURRENCY; do not relabel as VND."
+}

@@ -1,0 +1,514 @@
+{
+  "task": "T13b",
+  "ran_at": "2026-10-13T18:29:02+07:00",
+  "command": "cd services/ai && python scripts/task_evidence.py T13b",
+  "commit_sha": "b29023a4bc327e6eb972540de48df83cf75384e0",
+  "working_tree_dirty": true,
+  "contract_version": "1.0.2",
+  "fixture_hashes": {
+    "extraction-gold.json": "3df70ac3138ae1e25c525d3ce7db236ee8483a9e1bb9a9fb05ef70a4f77a1e1f",
+    "golden-cases.json": "acc9621ad2d82c1f7566c7365b0bcbd39e4e3b947458fb298f0637a7a71d0007",
+    "manifest.json": "cca26a302502bdec8d1d1484e86fa2150459d5bb474715fcc203e7425000b0a9"
+  },
+  "totals": {
+    "passed": 87,
+    "failed": 0,
+    "skipped": 0
+  },
+  "result": "PASS",
+  "covered_spec_ids": [
+    "A01",
+    "A04",
+    "A05",
+    "G03",
+    "T04",
+    "T06",
+    "T08",
+    "T09",
+    "T21",
+    "T22",
+    "T24"
+  ],
+  "cases": [
+    {
+      "test": "tests.test_app::test_health_endpoint",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_app::test_internal_key_required[headers0]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_app::test_internal_key_required[headers1]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_app::test_key_not_configured_fails_closed",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_app::test_inspect_mock_roundtrip",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_app::test_extract_mock_roundtrip",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_app::test_evaluate_mock_roundtrip_golden[0]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_app::test_evaluate_mock_roundtrip_golden[1]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_app::test_evaluate_mock_roundtrip_golden[2]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_app::test_invalid_input_rejected_with_paths",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_app::test_non_json_body_rejected",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_app::test_mock_does_not_invent_answers",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_app::test_live_mode_never_falls_back_to_mock",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_app::test_live_evaluate_runs_deterministic_rules[0]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_app::test_live_evaluate_runs_deterministic_rules[1]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_app::test_live_evaluate_runs_deterministic_rules[2]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_app::test_semantic_guards_block_bad_model_output[wrong echo]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_app::test_semantic_guards_block_bad_model_output[foreign evidence (cross-case)]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_app::test_semantic_guards_block_bad_model_output[wrong issue uuid]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_app::test_semantic_guards_block_bad_model_output[assessment for other run]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_app::test_semantic_guards_block_bad_model_output[existing issue not assessed]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_app::test_semantic_guards_block_bad_model_output[duplicate rule]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_app::test_semantic_guards_block_bad_model_output[human_status leaked]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_app::test_service_has_no_database_or_callback_client",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_contracts::test_canonical_schema_is_2020_12_and_has_52_named_schemas",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_contracts::test_internal_openapi_components_equal_canonical_schema",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_contracts::test_all_26_examples_valid",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_contracts::test_unknown_field_rejected_for_every_example",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_contracts::test_required_nullable_field_must_be_present",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_contracts::test_validation_vectors[S01]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_contracts::test_validation_vectors[S02]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_contracts::test_validation_vectors[S03]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_contracts::test_validation_vectors[S04]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_contracts::test_examples_parse_into_typed_dtos",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_contracts::test_contract_drift_is_detected",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_hybrid_hitl::test_rule_handled_cases_never_call_llm[0]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_hybrid_hitl::test_rule_handled_cases_never_call_llm[1]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_hybrid_hitl::test_rule_handled_cases_never_call_llm[2]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_hybrid_hitl::test_hard_case_uses_llm_once_through_guard",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_hybrid_hitl::test_blocked_hard_case_goes_to_human_review[None-SEMANTIC_PROVIDER_UNAVAILABLE]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_hybrid_hitl::test_blocked_hard_case_goes_to_human_review[resolver1-PROVIDER_UNAVAILABLE]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_hybrid_hitl::test_blocked_hard_case_goes_to_human_review[resolver2-LLM_OUTPUT_REJECTED]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_hybrid_hitl::test_suspected_injection_is_not_sent_to_llm",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_hybrid_hitl::test_llm_contradicting_extracted_values_needs_human",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_hybrid_hitl::test_human_correction_closes_the_loop_without_llm",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_hybrid_hitl::test_instruction_like_text_anywhere_is_flagged_but_does_not_change_rules",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_providers::test_missing_key_is_unavailable_not_mock",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_providers::test_retries_transient_then_succeeds",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_providers::test_gives_up_after_budget_and_does_not_retry_4xx",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_providers::test_unparseable_output_is_error",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_providers::test_lexical_guard_accepts_both_word_orders[\\u0110i\\u1ec1u 4. Thanh to\\xe1n to\\xe0n b\\u1ed9 trong 30 ng\\xe0y l\\u1ecbch sau nghi\\u1ec7m thu S1.\\nKh\\xf4ng t\\xednh ng\\xe0y nghi\\u1ec7m thu; kh\\xf4ng c\\xf3 \\u0111i\\u1ec1u ki\\u1ec7n thanh to\\xe1n b\\u1ed5 sung.]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_providers::test_lexical_guard_accepts_both_word_orders[B\\xean mua thanh to\\xe1n 100% gi\\xe1 tr\\u1ecb ph\\u1ea1m vi S1 trong v\\xf2ng 30 ng\\xe0y l\\u1ecbch k\\u1ec3 t\\u1eeb ng\\xe0y ho\\xe0n t\\u1ea5t nghi\\u1ec7m thu, ng\\xe0y nghi\\u1ec7m thu kh\\xf4ng \\u0111\\u01b0\\u1ee3c t\\xednh. Kh\\xf4ng \\xe1p d\\u1ee5ng \\u0111i\\u1ec1u ki\\u1ec7n thanh to\\xe1n n\\xe0o kh\\xe1c.]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_providers::test_semantic_guard_accepts_grounded_answer",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_providers::test_semantic_guard_rejects_ungrounded_answers[output0-/quote]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_providers::test_semantic_guard_rejects_ungrounded_answers[output1-/condition/other_conditions_state]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_providers::test_semantic_guard_rejects_ungrounded_answers[output2-/condition/other_conditions]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_providers::test_semantic_guard_rejects_ungrounded_answers[output3-/condition/scope_ref]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_providers::test_semantic_guard_rejects_ungrounded_answers[output4-/condition/calendar_basis]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_providers::test_semantic_guard_rejects_ungrounded_answers[output5-/condition/offset_days]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_rules::test_gold_cases_match_expected[G01]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_rules::test_gold_cases_match_expected[G02]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_rules::test_gold_cases_match_expected[G03]",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_rules::test_t06_wrong_contract_keeps_one_issue_open_without_duplicate_request",
+      "outcome": "passed",
+      "spec_ids": [
+        "T06"
+      ]
+    },
+    {
+      "test": "tests.test_rules::test_g03_wrong_old_file_does_not_negate_correct_new_file",
+      "outcome": "passed",
+      "spec_ids": [
+        "G03"
+      ]
+    },
+    {
+      "test": "tests.test_rules::test_t04_missing_registration_is_issue_with_absence_basis",
+      "outcome": "passed",
+      "spec_ids": [
+        "T04"
+      ]
+    },
+    {
+      "test": "tests.test_rules::test_t04_failed_file_is_unknown_not_missing",
+      "outcome": "passed",
+      "spec_ids": [
+        "T04"
+      ]
+    },
+    {
+      "test": "tests.test_rules::test_t04_borrower_tax_mismatch_is_flagged_counterparty_is_not",
+      "outcome": "passed",
+      "spec_ids": [
+        "T04"
+      ]
+    },
+    {
+      "test": "tests.test_rules::test_t08_received_with_only_acceptance_is_insufficient",
+      "outcome": "passed",
+      "spec_ids": [
+        "T08"
+      ]
+    },
+    {
+      "test": "tests.test_rules::test_t08_partial_payment_quantified_not_resolved",
+      "outcome": "passed",
+      "spec_ids": [
+        "T08"
+      ]
+    },
+    {
+      "test": "tests.test_rules::test_t08_pending_or_multiple_payments_are_unknown",
+      "outcome": "passed",
+      "spec_ids": [
+        "T08"
+      ]
+    },
+    {
+      "test": "tests.test_rules::test_expected_claim_never_becomes_received",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_rules::test_t09_wrong_scope_response_stays_open",
+      "outcome": "passed",
+      "spec_ids": [
+        "T09"
+      ]
+    },
+    {
+      "test": "tests.test_rules::test_t09_a05_partial_acceptance_is_quantified_and_beats_wrong_file",
+      "outcome": "passed",
+      "spec_ids": [
+        "A05",
+        "T09"
+      ]
+    },
+    {
+      "test": "tests.test_rules::test_t09_a01_unresolved_other_conditions_block_candidate",
+      "outcome": "passed",
+      "spec_ids": [
+        "A01",
+        "T09"
+      ]
+    },
+    {
+      "test": "tests.test_rules::test_a04_filename_does_not_decide_match",
+      "outcome": "passed",
+      "spec_ids": [
+        "A04"
+      ]
+    },
+    {
+      "test": "tests.test_rules::test_t21_due_date_only_for_specified_calendar_days[changes0-2026-11-14]",
+      "outcome": "passed",
+      "spec_ids": [
+        "T21"
+      ]
+    },
+    {
+      "test": "tests.test_rules::test_t21_due_date_only_for_specified_calendar_days[changes1-2026-11-13]",
+      "outcome": "passed",
+      "spec_ids": [
+        "T21"
+      ]
+    },
+    {
+      "test": "tests.test_rules::test_t21_due_date_only_for_specified_calendar_days[changes2-None]",
+      "outcome": "passed",
+      "spec_ids": [
+        "T21"
+      ]
+    },
+    {
+      "test": "tests.test_rules::test_t21_due_date_only_for_specified_calendar_days[changes3-None]",
+      "outcome": "passed",
+      "spec_ids": [
+        "T21"
+      ]
+    },
+    {
+      "test": "tests.test_rules::test_t21_foreign_currency_and_unreadable_date_are_unknown",
+      "outcome": "passed",
+      "spec_ids": [
+        "T21"
+      ]
+    },
+    {
+      "test": "tests.test_rules::test_definite_mismatch_outranks_ambiguous",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_rules::test_t22_clean_first_run_creates_no_issue",
+      "outcome": "passed",
+      "spec_ids": [
+        "T22"
+      ]
+    },
+    {
+      "test": "tests.test_rules::test_t24_condition_not_acceptance_is_not_applicable",
+      "outcome": "passed",
+      "spec_ids": [
+        "T24"
+      ]
+    },
+    {
+      "test": "tests.test_rules::test_t24_other_request_type_is_not_r10",
+      "outcome": "passed",
+      "spec_ids": [
+        "T24"
+      ]
+    },
+    {
+      "test": "tests.test_rules::test_rule_crash_gives_partial_and_never_candidate",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_rules::test_existing_issue_whose_subject_disappeared_is_unknown",
+      "outcome": "passed",
+      "spec_ids": []
+    },
+    {
+      "test": "tests.test_rules::test_adversarial_expected_references_existing_tests",
+      "outcome": "passed",
+      "spec_ids": []
+    }
+  ],
+  "pytest_tail": [
+    "87 passed, 1 warning in 0.34s"
+  ]
+}

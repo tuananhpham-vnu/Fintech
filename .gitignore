@@ -32,6 +32,7 @@ evaluation/gold*.jsonl
 evaluation/holdout/
 fixtures/holdout/
 fixtures/real/
+docs/
 
 # --- Log có thể chứa dữ liệu (SEC06) ---
 *.log

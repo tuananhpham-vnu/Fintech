@@ -1,13 +1,11 @@
 # services/
 
-Module nghiệp vụ dạng thư viện Python, được backend hoặc worker import. Thư mục này không chứa server.
-
-| Thư mục | Chủ sở hữu | Trạng thái | Interface |
-|---|---|---|---|
-| [rules](rules) | Tuấn Anh | Có | `run_analysis(snapshot, facts, config) → RunOutput` |
-| `extraction` | Nguyên | Chưa có | `extract(document_version) → facts + evidence + diagnostics` (phần 22) |
+| Thư mục | Owner | Nội dung |
+|---|---|---|
+| [ai](ai) | Tuấn Anh: runner, normalize, linking, rules, providers, evaluation · Nguyên: `extraction` | FastAPI nội bộ `/internal/v1/{inspect,extract,evaluate}` theo Contracts 1.0.2 |
 
 Ranh giới trách nhiệm:
 
-- `extraction` sở hữu **nguồn**: đọc, phân loại và trích dẫn. Module này không tính tiền.
-- `rules` sở hữu **số chuẩn hóa và phép tính**. Không nhận liên kết do LLM đề xuất làm sự thật khi còn mơ hồ.
+- `extraction` (Nguyên) sở hữu **nguồn**: PDF/OCR, field, evidence.
+- `rules` (Tuấn Anh) sở hữu **chuẩn hóa, phép tính và đề xuất**.
+- Không module nào trong `services/` ghi DB hay quyết định thay người duyệt.

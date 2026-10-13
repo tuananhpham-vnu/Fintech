@@ -1,0 +1,147 @@
+{
+  "gate": "G0-T",
+  "contract_version": "1.0.2",
+  "ran_at": "2026-10-13T21:13:10+07:00",
+  "command": "cd services/ai && python scripts/g0_consumer_check.py",
+  "commit_sha": "b29023a4bc327e6eb972540de48df83cf75384e0",
+  "working_tree_dirty": true,
+  "bundle": {
+    "expected_zip_sha256": "11d7ae1fd2c30ee3287653859f122393fe22a4ce2538b8d3c76ffde6681217e3",
+    "zip_sha256": null,
+    "zip_note": "ZIP not in repo; extracted folder verified file-by-file via artifact-sha256.json",
+    "artifact_manifest_sha256": "2ff26821230054c875857a2dd9982bf810cb1f3487332e0e1c691db1cd633784",
+    "contracts_sha256": {
+      "examples.json": "ee8a7cb94e862b1a2bf4539f0c8f4e49b9adbd3afb1fb7aff96fa34612ce3b06",
+      "field-registry.json": "5d8720bd825c8a0189d8e13c12c49ecf0756671b3929e49a63da2709ba68a181",
+      "internal-openapi.json": "c21d161147ef536c7bcfd4ed8728b1280e0e108b23104d0f8a2c0c6cb693d3dc",
+      "openapi.json": "62de0bdb3fce46074233de0e353d867fdbf35b38a8efd5d86a3a44f0737595b4",
+      "schemas.json": "01489a7f64f904fed66fce67b5cdfa55a9a3647989b6f0072a7c0d94e4fe4d49",
+      "validation-vectors.json": "2b6a377e0382e30c5f9d0338c5549b6a0d023cb4ecda2d3dc5db02fd8c55bb0e"
+    }
+  },
+  "fixture_hashes": {
+    "golden-cases.json": "acc9621ad2d82c1f7566c7365b0bcbd39e4e3b947458fb298f0637a7a71d0007",
+    "extraction-gold.json": "3df70ac3138ae1e25c525d3ce7db236ee8483a9e1bb9a9fb05ef70a4f77a1e1f",
+    "manifest.json": "cca26a302502bdec8d1d1484e86fa2150459d5bb474715fcc203e7425000b0a9"
+  },
+  "environment": {
+    "python": "3.11.17",
+    "fastapi": "0.115.6",
+    "pydantic": "2.14.1",
+    "jsonschema": "4.26.0",
+    "openapi-spec-validator": "0.9.0",
+    "uvicorn": "0.32.1"
+  },
+  "checks": [
+    {
+      "check": "packages/contracts == bundle 1.0.2",
+      "result": "PASS",
+      "count": 6,
+      "detail": "byte-identical to bundle artifact-sha256.json"
+    },
+    {
+      "check": "packages/contracts/fixtures (gold + 6 text PDFs) == bundle 1.0.2",
+      "result": "PASS",
+      "count": 9,
+      "detail": "byte-identical to bundle artifact-sha256.json"
+    },
+    {
+      "check": "JSON Schema 2020-12 metaschema; named schemas",
+      "result": "PASS",
+      "count": 52,
+      "detail": "Draft202012Validator.check_schema OK"
+    },
+    {
+      "check": "internal-openapi 3.1 valid; components == canonical; 3 operations",
+      "result": "PASS",
+      "count": 3,
+      "detail": [
+        "POST /evaluate",
+        "POST /extract",
+        "POST /inspect"
+      ]
+    },
+    {
+      "check": "26 named examples valid (strict, format checks on)",
+      "result": "PASS",
+      "count": 26,
+      "detail": "0 violations"
+    },
+    {
+      "check": "unknown-field rejection on every example root",
+      "result": "PASS",
+      "count": 26,
+      "detail": "26/26 rejected"
+    },
+    {
+      "check": "validation vectors S01–S04 match expected",
+      "result": "PASS",
+      "count": 4,
+      "detail": {
+        "S01": "REJECT",
+        "S02": "REJECT",
+        "S03": "REJECT",
+        "S04": "ACCEPT"
+      }
+    },
+    {
+      "check": "26 examples parse into generated Pydantic DTOs; unknown field rejected",
+      "result": "PASS",
+      "count": 26,
+      "detail": "runner/dto.py generated from schemas.json"
+    },
+    {
+      "check": "internal mock roundtrip POST /internal/v1/inspect",
+      "result": "PASS",
+      "count": 1,
+      "detail": {
+        "status": 200,
+        "X-AI-Mode": "mock"
+      }
+    },
+    {
+      "check": "internal mock roundtrip POST /internal/v1/extract",
+      "result": "PASS",
+      "count": 1,
+      "detail": {
+        "status": 200,
+        "provenance.model_id": "MOCK-GOLD-NOT-MODEL-OUTPUT"
+      }
+    },
+    {
+      "check": "internal mock roundtrip POST /internal/v1/evaluate G01–G03 == gold expected",
+      "result": "PASS",
+      "count": 3,
+      "detail": {
+        "G01": [
+          "still_open"
+        ],
+        "G02": [
+          "still_open"
+        ],
+        "G03": [
+          "candidate_resolved"
+        ]
+      }
+    },
+    {
+      "check": "error envelope + auth: missing key 403, invalid body 422, both schema-valid Error",
+      "result": "PASS",
+      "count": 2,
+      "detail": [
+        "FORBIDDEN",
+        "INVALID_REQUEST"
+      ]
+    }
+  ],
+  "partner_confirmation": {
+    "Nguyên (reviewer; extraction import convention + payload)": "NOT RUN",
+    "Đức (TypeScript import + backend consumer of EvaluationOutput)": "NOT RUN"
+  },
+  "result": "PASS_OWNER_SIDE",
+  "g0_status": "PENDING — needs partner confirmation and a commit SHA on a clean tree",
+  "limitations": [
+    "Mock answers are bundle gold labelled MOCK-GOLD-NOT-MODEL-OUTPUT, not model output.",
+    "No live provider, OCR or rule evaluator exercised (T13b/T14a)."
+  ]
+}

@@ -1,21 +1,36 @@
-# Render Blueprint: một web service chạy demo đối chiếu (API + UI tĩnh).
-# Deploy: Render Dashboard -> New -> Blueprint -> chọn repo này.
+# Render Blueprint — AI service nội bộ (Contracts 1.0.2). Hướng dẫn: services/ai/docs/deploy-render.md
+# Contract yêu cầu service chỉ ở loopback/private network. Gói free không có Private Service nên tạm dùng
+# Web Service + X-Internal-Key bắt buộc (fail-closed, không có trang docs). Khi apps/api cũng lên Render:
+# đổi `type: web` -> `type: pserv` (gói trả phí) để chỉ gọi được trong mạng nội bộ Render.
 services:
   - type: web
-    name: sme-review-rules-demo
+    name: fintech-ai-internal
     runtime: python
     plan: free
     region: singapore
     branch: main
-    buildCommand: pip install -r apps/rules-demo/requirements.txt ./services/rules
-    startCommand: uvicorn main:app --app-dir apps/rules-demo --host 0.0.0.0 --port $PORT
+    rootDir: .
+    buildCommand: pip install -e ./services/ai
+    startCommand: cd services/ai && python -m runner serve --host 0.0.0.0 --port $PORT
     healthCheckPath: /healthz
     autoDeployTrigger: commit
     buildFilter:
       paths:
-        - apps/rules-demo/**
-        - services/rules/**
+        - services/ai/**
+        - packages/contracts/**
         - render.yaml
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.9
+        value: 3.11.11
+      - key: AI_MODE
+        value: live                 # evaluate: rule + Gemini cho ca khó + HITL; inspect/extract: 503 tới khi có extraction
+      - key: MODEL_ID
+        value: gemini-3.1-flash-lite
+      - key: PROMPT_VERSION
+        value: payment-condition-v1
+      - key: CONTRACTS_DIR
+        value: /opt/render/project/src/packages/contracts
+      - key: INTERNAL_API_KEY
+        generateValue: true         # Render tự sinh; Đức copy sang env của apps/api
+      - key: GEMINI_API_KEY
+        sync: false                 # nhập tay trên Dashboard, không commit
