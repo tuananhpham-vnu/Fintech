@@ -14,6 +14,7 @@ dependencies = [
   "jsonschema==4.26.0",
   "rfc3339-validator==0.1.4",   # bắt buộc để FormatChecker kiểm "date-time"; thiếu thì service từ chối chạy
   "httpx==0.28.1",
+  "pymupdf==1.28.2",            # M2 extraction: đọc PDF/render trang scan; wheel Windows + Linux, không cần gói hệ thống
 ]
 
 [project.optional-dependencies]

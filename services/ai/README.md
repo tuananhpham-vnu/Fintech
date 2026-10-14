@@ -20,12 +20,16 @@ export INTERNAL_API_KEY=<lấy qua kênh nhóm, không commit>
 | Biến môi trường | Mặc định | Ý nghĩa |
 |---|---|---|
 | `INTERNAL_API_KEY` | (bắt buộc) | So khớp header `X-Internal-Key`. Không đặt thì mọi route trả 403 (fail closed) |
-| `AI_MODE` | `mock` | `mock`: trả gold có nhãn. `live`: `evaluate` chạy 5 rule deterministic, ca khó mới gọi Gemini qua guard, bị chặn thì chuyển người duyệt ([HITL](docs/hitl.md)); `inspect`/`extract` gọi package của Nguyên. **Không tự chuyển sang mock khi live lỗi** |
+| `AI_MODE` | `mock` | `mock`: trả gold có nhãn. `live`: `evaluate` chạy 5 rule deterministic, ca khó mới gọi Gemini qua guard; kết quả Gemini chỉ là gợi ý (`LLM_SUGGESTION`), luôn chuyển người duyệt xác nhận bằng `correct_field` ([HITL](docs/hitl.md)); `inspect`/`extract` gọi package của Nguyên. **Không tự chuyển sang mock khi live lỗi** |
 | `MODEL_ID`, `PROMPT_VERSION` | `gemini-3.1-flash-lite` (provider) | Model Gemini cho tác vụ ngữ nghĩa và spike; xem [decision log](docs/model-prompt-decision-log.md) |
 | `GEMINI_API_KEY` | rỗng | Đặt trong env của server hoặc `.env` ở gốc repo (gitignored, nạp tự động, không ghi đè env); `health` chỉ báo có/không |
 | `CONTRACTS_DIR` | `packages/contracts` | Bị kiểm `SHA256SUMS` lúc khởi động; sửa tay thì service từ chối chạy |
 | `ENABLE_TEST_CONSOLE` | tắt | `1`: bật trang test thủ công `GET /console` (xem bên dưới). Render đang bật |
 | `AI_FIXTURES_DIR` | `packages/contracts/fixtures` | Gold cho mock: 3 JSON + 6 PDF text từ bundle; 2 scan 6MB chỉ có trong bundle |
+| `AI_STORAGE_DIR` | rỗng | Live `inspect`/`extract`: thư mục gốc chứa file theo `storage_key` (chỉ đọc). Không đặt thì 503 |
+| `OCR_ENGINE` | `gemini` | Trang scan: `gemini` (ảnh trang gửi Gemini), `tesseract` (binary + gói `vie`, local/Docker), `none` (scan -> 503) |
+| `AI_MAX_PDF_BYTES`, `AI_MAX_PAGES`, `AI_EXTRACT_DEADLINE_S` | `25000000`, `10`, `240` | Giới hạn file, số trang cho extract, budget tổng một lần extract (OCR + model + repair) |
+| `AI_MAX_MODEL_CALLS`, `AI_MAX_MODEL_QUEUE` | `4`, `16` | Số lời gọi Gemini/OCR chạy cùng lúc trong process / được chờ; hàng chờ đầy hoặc chờ quá budget -> 503 |
 
 Deploy Render: [`render.yaml`](../../render.yaml) + [runbook](docs/deploy-render.md).
 
@@ -57,6 +61,27 @@ Trang chỉ gồm file tĩnh và dữ liệu giả lập. **Không dán hồ sơ
 
 - **Header `X-AI-Mode: mock|live`** có trên mọi response 200. Ở mock, `provenance.model_id = MOCK-GOLD-NOT-MODEL-OUTPUT`, và UI phải gắn nhãn MOCK.
 - **Mock `evaluate`** chỉ trả lời G01–G03 (khớp `run_id` + `snapshot_hash`), **không bịa** cho input khác (trả 503).
+
+## Extraction (M2, Nguyên)
+
+- `inspect`: PyMuPDF đọc cấu trúc (số trang thật kể cả >10, mã hóa, file đính kèm), kiểm SHA-256 và `storage_key`. Không OCR, không LLM.
+- `extract`: text nhúng theo trang (trang ảnh -> OCR) -> Gemini đề xuất field theo `field-registry.json` -> code kiểm căn cứ:
+  quote phải nguyên văn trên đúng trang, giá trị (MST, tiền, ngày, enum, tiền tệ, mã) phải có trong quote. Không qua
+  thì field `null` + `uncertain`/`ambiguous` + diagnostic; điều khoản thanh toán qua guard của `providers/semantic.py`.
+  Output model sai schema: hỏi lại tối đa 1 lần, vẫn sai -> 422 `INVALID_MODEL_OUTPUT`. Dòng nghi prompt injection bị
+  ẩn khỏi prompt và không được làm evidence (`SUSPECTED_PROMPT_INJECTION`).
+- ID field/evidence: UUIDv5(namespace manifest, `document_id:f:field_key` / `document_id:e:page:start:end`); bbox chỉ có ở trang text.
+- Mã lỗi thêm (*đề xuất, cần Đức xác nhận*): 404 `PDF_NOT_FOUND`, 422 `SHA256_MISMATCH`, 422 `PDF_INVALID`,
+  422 `PDF_ENCRYPTED` (cần mật khẩu), 413 `PDF_TOO_LARGE`, 413 `PDF_TOO_MANY_PAGES`, 422 `PDF_NO_TEXT`, 422 `INVALID_REQUEST` (`storage_key` không an toàn).
+- Giới hạn tài nguyên (`extraction/pdf.py` `Limits`), kiểm trước khi MuPDF cấp phát: số trang trước khi đọc text; content stream
+  FlateDecode giải nén thử có giới hạn (8MB/trang); text 40k ký tự/trang, 150k/tài liệu; pixel ảnh khai báo 40M/trang trước khi
+  render; ảnh OCR tối đa 8M pixel, cạnh 5000px, PNG 10MB, dưới 100dpi thì từ chối. Vượt -> 413 `PDF_TOO_LARGE`/`PDF_TOO_MANY_PAGES`.
+- Thời gian: mỗi lời gọi Gemini nhận phần budget còn lại (timeout HTTP, retry, backoff), `maxOutputTokens` 8192; kết quả về sau
+  hạn bị bỏ (503). Trang có chữ nhúng ở đầu nhưng thân là ảnh scan được OCR cả trang (`PARTIAL_TEXT_LAYER`, field uncertain).
+- **Chưa chặn được trong process** (cần giới hạn ở mức tiến trình/container, vd. memory limit của Render, hoặc worker riêng):
+  thời gian CPU và bộ nhớ bên trong một lệnh MuPDF native (thread Python không hủy được); font/stream nén bằng filter khác
+  Flate; HTTP đang chạy dở chỉ bị bỏ kết quả chứ không bị hủy ngay; httpx timeout tính theo từng pha, không phải tổng.
+- Smoke thật (cần key): `../../.venv/Scripts/python.exe scripts/extraction_smoke.py` -> `evidence/extraction-smoke-*.json`.
 
 ## Quy ước import cho Nguyên (package `extraction`)
 
@@ -97,7 +122,7 @@ extraction.IMPLEMENTED = True               # để `runner health` ở live bá
 | `docs/` | [Decision tables](docs/T13b-decision-tables.md), [protocol](docs/evaluation-protocol.md), [decision log model/prompt](docs/model-prompt-decision-log.md), [error taxonomy](docs/error-taxonomy.md), [HITL](docs/hitl.md) |
 | `runner/guards.py` | Semantic guards |
 | `runner/__main__.py` | `python -m runner health / serve` |
-| `extraction/` | Stub interface; **Nguyên sở hữu** |
+| `extraction/` | M2 (**Nguyên**): `storage` (key/hash), `pdf` (PyMuPDF), `ocr`, `grounding` (kiểm căn cứ), `extractor` |
 | `scripts/g0_consumer_check.py` | Lệnh G0-T, ghi `evidence/g0-t-report.json` |
 | `scripts/task_evidence.py <task>` | Chạy test, ghi `evidence/<task>-report.json` (commit, hash fixture, kết quả từng test, mã T/A) |
 | `scripts/export_evaluator_outputs.py` | Output thật cho gold + biến thể → `evidence/evaluator-outputs/` (mock UI cho Đức) |
