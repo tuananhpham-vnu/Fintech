@@ -7,131 +7,155 @@
 <title>AI Test Console</title>
 <style>
 :root {
-  --bg: #f5f6f8; --panel: #fff; --text: #1b1f24; --muted: #5d6673; --border: #dde1e6; --accent: #2457d6;
-  --accent-text: #fff; --code-bg: #f1f3f6; --ok: #1a7f37; --ok-bg: #e6f4ea; --warn: #8a5d00; --warn-bg: #fff4d6;
-  --bad: #c62828; --bad-bg: #fdecea; --info: #2457d6; --info-bg: #e8eefc; --neutral-bg: #eef0f3;
+  --bg: #f4f5f7; --panel: #fff; --text: #1b1f24; --muted: #5d6673; --border: #dde1e6; --accent: #2457d6;
+  --accent-text: #fff; --soft: #f1f3f6; --ok: #1a7f37; --ok-bg: #e6f4ea; --warn: #8a5d00; --warn-bg: #fff4d6;
+  --bad: #c62828; --bad-bg: #fdecea; --info: #2457d6; --info-bg: #e8eefc; --hl: #fff3b0;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 15px; line-height: 1.5;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0f1216; --panel: #171b21; --text: #e6e9ed; --muted: #9aa4b1; --border: #2a3039; --accent: #6d95ff;
-    --accent-text: #0f1216; --code-bg: #11151a; --ok: #56d364; --ok-bg: #12261a; --warn: #e3b341; --warn-bg: #2b2210;
-    --bad: #ff7b72; --bad-bg: #2d1414; --info: #79a6ff; --info-bg: #142040; --neutral-bg: #222831;
+    --accent-text: #0f1216; --soft: #1d2229; --ok: #56d364; --ok-bg: #12261a; --warn: #e3b341; --warn-bg: #2b2210;
+    --bad: #ff7b72; --bad-bg: #2d1414; --info: #79a6ff; --info-bg: #142040; --hl: #3d3410;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0f1216; --panel: #171b21; --text: #e6e9ed; --muted: #9aa4b1; --border: #2a3039; --accent: #6d95ff;
-  --accent-text: #0f1216; --code-bg: #11151a; --ok: #56d364; --ok-bg: #12261a; --warn: #e3b341; --warn-bg: #2b2210;
-  --bad: #ff7b72; --bad-bg: #2d1414; --info: #79a6ff; --info-bg: #142040; --neutral-bg: #222831;
+  --accent-text: #0f1216; --soft: #1d2229; --ok: #56d364; --ok-bg: #12261a; --warn: #e3b341; --warn-bg: #2b2210;
+  --bad: #ff7b72; --bad-bg: #2d1414; --info: #79a6ff; --info-bg: #142040; --hl: #3d3410;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { margin: 0; background: var(--bg); color: var(--text); }
-header { padding: 14px 16px; background: var(--panel); border-bottom: 1px solid var(--border); }
-header .inner { max-width: 1280px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
-header h1 { font-size: 18px; margin: 0; }
-header p { margin: 0; color: var(--muted); font-size: 13px; flex-basis: 100%; }
-.wrap { max-width: 1280px; margin: 0 auto; padding: 16px; }
-.layout { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 16px; align-items: start; }
-@media (max-width: 880px) { .layout { grid-template-columns: 1fr; } }
-.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
-.stack > * + * { margin-top: 16px; }
-.step { display: flex; gap: 10px; align-items: center; margin: 0 0 12px; font-size: 15px; font-weight: 650; }
-.step .n { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%;
-  background: var(--accent); color: var(--accent-text); font-size: 13px; flex: none; }
-.step .n.done { background: var(--ok); }
-h2 { font-size: 20px; margin: 0 0 6px; }
-h3 { font-size: 15px; margin: 22px 0 10px; }
+button, select, input, textarea { font: inherit; color: var(--text); }
+button { border: 1px solid var(--border); background: var(--panel); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: 650; padding: 10px 20px; }
+button:disabled { opacity: .55; cursor: progress; }
+button.link { border: 0; background: none; color: var(--accent); padding: 0; }
+select, input[type=password], textarea { background: var(--soft); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; }
+textarea { width: 100%; resize: vertical; }
+code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
 .muted { color: var(--muted); }
 .small { font-size: 13px; }
-p { margin: 0 0 8px; }
-input[type=password], textarea {
-  font: inherit; color: var(--text); background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
-input[type=password] { width: 100%; }
-textarea { width: 100%; resize: vertical; }
-textarea.code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
-button { font: inherit; border: 1px solid var(--border); background: var(--panel); color: var(--text);
-  border-radius: 8px; padding: 7px 14px; cursor: pointer; }
-button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: 650;
-  padding: 10px 22px; font-size: 16px; }
-button:disabled { opacity: .55; cursor: progress; }
-button.link { border: 0; background: none; color: var(--accent); padding: 0; font-size: 13px; }
-.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.group { font-size: 12px; color: var(--muted); margin: 16px 0 6px; font-weight: 650; text-transform: uppercase; letter-spacing: .04em; }
-.group:first-of-type { margin-top: 0; }
-.preset { display: block; width: 100%; text-align: left; margin-bottom: 6px; padding: 9px 12px; font-size: 14px; }
-.preset.active { border-color: var(--accent); background: var(--info-bg); font-weight: 600; }
-.badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
-  background: var(--neutral-bg); color: var(--muted); }
-.t-ok { background: var(--ok-bg); color: var(--ok); }
-.t-warn { background: var(--warn-bg); color: var(--warn); }
-.t-bad { background: var(--bad-bg); color: var(--bad); }
-.t-info { background: var(--info-bg); color: var(--info); }
-.box { border-radius: 8px; padding: 10px 14px; margin: 10px 0; }
-.box b.label { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 2px; }
-.docs { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; }
-.docs li { display: flex; gap: 8px; align-items: baseline; font-size: 14px; }
-.docs .fn { color: var(--muted); font-size: 12px; }
-.verdict { display: flex; gap: 14px; align-items: flex-start; border-radius: 10px; padding: 14px 16px; }
-.verdict .icon { font-size: 26px; line-height: 1; font-weight: 700; }
-.verdict b { font-size: 17px; display: block; }
-.finding { border: 1px solid var(--border); border-left-width: 5px; border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; }
-.finding.f-bad { border-left-color: var(--bad); }
-.finding.f-ok { border-left-color: var(--ok); }
-.finding.f-warn { border-left-color: var(--warn); }
-.finding .title { font-weight: 650; font-size: 16px; }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-.money { display: flex; flex-wrap: wrap; gap: 6px 20px; margin-top: 8px; font-size: 14px; }
-.quote { border-left: 3px solid var(--border); padding: 2px 10px; margin: 6px 0; font-size: 13px; }
-.quote .src { color: var(--muted); font-size: 12px; }
-.rules { list-style: none; margin: 0; padding: 0; }
-.rules li { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
-.rules li:last-child { border-bottom: 0; }
-.rules .id { font-family: ui-monospace, monospace; font-size: 12px; color: var(--muted); }
-details > summary { cursor: pointer; color: var(--muted); font-size: 13px; margin: 8px 0; }
-pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; overflow: auto;
-  max-height: 420px; font-size: 12px; margin: 0; }
-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
-.empty { color: var(--muted); padding: 28px 0; text-align: center; }
+p { margin: 0; }
+
+/* thanh trên cùng */
+.topbar { background: var(--panel); border-bottom: 1px solid var(--border); }
+.topbar .in { max-width: 1280px; margin: 0 auto; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.topbar h1 { font-size: 16px; margin: 0; }
+.topbar .grow { flex: 1; }
+.topbar label { font-size: 13px; color: var(--muted); }
+#case-select { min-width: 280px; max-width: 100%; }
+.key { display: flex; gap: 6px; align-items: center; }
+.key input { width: 220px; }
+.key.need input { border-color: var(--bad); }
+
+.wrap { max-width: 1280px; margin: 0 auto; padding: 16px; display: grid; gap: 16px; }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+.panel h2 { font-size: 15px; margin: 0 0 12px; }
+
+/* dải test cho nhóm */
+.test { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; padding: 10px 14px; border-radius: 10px;
+  background: var(--info-bg); color: var(--text); font-size: 14px; }
+.test .tag { font-weight: 700; color: var(--info); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+.test.pass { background: var(--ok-bg); } .test.pass .tag { color: var(--ok); }
+.test.fail { background: var(--bad-bg); } .test.fail .tag { color: var(--bad); }
+.test .verdict { font-weight: 700; margin-left: auto; }
+
+/* đầu hồ sơ */
+.case-head { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; }
+.case-head .who { font-size: 20px; font-weight: 700; }
+.facts { display: flex; flex-wrap: wrap; gap: 4px 28px; }
+.fact span { display: block; font-size: 12px; color: var(--muted); }
+.fact b { font-size: 15px; }
+.case-head .grow { flex: 1; }
+
+.cols { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 900px) { .cols { grid-template-columns: 1fr; } .key input { width: 160px; } }
+
+/* tài liệu */
+.doc { border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; transition: box-shadow .3s; }
+.doc > summary { list-style: none; cursor: pointer; padding: 9px 12px; display: flex; gap: 10px; align-items: center; }
+.doc > summary::-webkit-details-marker { display: none; }
+.doc > summary::after { content: "›"; margin-left: auto; color: var(--muted); transition: transform .15s; }
+.doc[open] > summary::after { transform: rotate(90deg); }
+.doc .ico { width: 28px; height: 28px; border-radius: 6px; background: var(--soft); display: grid; place-items: center; font-size: 14px; flex: none; }
+.doc .name { font-weight: 600; font-size: 14px; }
+.doc .file { font-size: 12px; color: var(--muted); }
+.doc .body { padding: 0 12px 10px; }
+.doc.flash { box-shadow: 0 0 0 3px var(--accent); }
+.doc.missing { border-style: dashed; border-color: var(--bad); }
+.doc.missing .ico { background: var(--bad-bg); color: var(--bad); }
+.fields { width: 100%; border-collapse: collapse; font-size: 13px; }
+.fields td { padding: 4px 0; border-top: 1px solid var(--border); vertical-align: top; }
+.fields td:first-child { color: var(--muted); width: 45%; padding-right: 8px; }
+.fields tr.hl td { background: var(--hl); }
+.pill { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; background: var(--soft); color: var(--muted); white-space: nowrap; }
+.p-ok { background: var(--ok-bg); color: var(--ok); }
+.p-warn { background: var(--warn-bg); color: var(--warn); }
+.p-bad { background: var(--bad-bg); color: var(--bad); }
+.p-info { background: var(--info-bg); color: var(--info); }
+.req { background: var(--soft); border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-top: 8px; }
+
+/* phát hiện của AI */
+.issue { border: 1px solid var(--border); border-left: 5px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 12px; }
+.issue.bad { border-left-color: var(--bad); } .issue.ok { border-left-color: var(--ok); } .issue.warn { border-left-color: var(--warn); }
+.issue .top { display: flex; gap: 10px; align-items: flex-start; }
+.issue .headline { font-size: 16px; font-weight: 650; flex: 1; }
+.issue .sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.amounts { display: flex; gap: 24px; margin-top: 10px; font-size: 14px; }
+.amounts span { color: var(--muted); font-size: 12px; display: block; }
+.why { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.src { margin-top: 10px; font-size: 13px; }
+.src button { font-size: 12px; padding: 2px 8px; margin: 3px 4px 0 0; }
+.ask { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: var(--soft); font-size: 14px; }
+.ask b { display: block; font-size: 12px; color: var(--muted); font-weight: 600; margin-bottom: 2px; }
+.rules { display: flex; flex-wrap: wrap; gap: 8px; }
+.rule { display: flex; gap: 6px; align-items: center; padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; }
+.empty { color: var(--muted); text-align: center; padding: 40px 10px; }
 .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent);
   border-radius: 50%; animation: spin 1s linear infinite; vertical-align: -3px; margin-right: 8px; }
 @keyframes spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } .doc { transition: none; } }
+details.tech > summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+pre { background: var(--soft); border: 1px solid var(--border); border-radius: 8px; padding: 10px; overflow: auto; max-height: 420px; font-size: 12px; margin: 8px 0 0; }
+.error { background: var(--bad-bg); color: var(--text); border-radius: 8px; padding: 12px 14px; }
+.error b { color: var(--bad); display: block; }
 </style>
 </head>
 <body>
-<header>
-  <div class="inner">
-    <h1>Kiểm thử AI rà soát hồ sơ vay SME</h1>
-    <span id="health" class="badge">đang kết nối…</span>
-    <span class="badge t-warn">Chỉ dữ liệu giả lập</span>
-    <p>Chọn một tình huống hồ sơ mẫu, bấm chạy, rồi xem AI kết luận gì và kết luận đó có đúng kỳ vọng không. AI chỉ đề xuất, quyết định cuối cùng luôn thuộc về người duyệt.</p>
+<div class="topbar"><div class="in">
+  <h1>Rà soát hồ sơ vay · AI</h1>
+  <label for="case-select">Hồ sơ mẫu</label>
+  <select id="case-select"></select>
+  <span class="grow"></span>
+  <span id="health" class="pill">đang kết nối…</span>
+  <div class="key" id="key-box">
+    <input id="key" type="password" autocomplete="off" placeholder="Mã truy cập (INTERNAL_API_KEY)" title="Lấy ở Render → fintech-ai-internal → Environment">
+    <button id="key-save">Lưu</button>
   </div>
-</header>
+  <div class="key" id="key-ok" hidden><span class="pill p-ok">Đã nhập mã</span><button class="link small" id="key-change">Đổi</button></div>
+</div></div>
 
-<div class="wrap layout">
-  <aside class="stack">
-    <section class="panel" id="key-panel">
-      <div class="step"><span class="n" id="key-step">1</span>Mã truy cập</div>
-      <div id="key-edit">
-        <input id="key" type="password" autocomplete="off" placeholder="Dán INTERNAL_API_KEY">
-        <p class="muted small" style="margin-top:6px">Lấy ở Render → fintech-ai-internal → Environment. Mã chỉ lưu trong tab này.</p>
-        <button id="key-save">Lưu</button>
-      </div>
-      <div id="key-done" class="row" hidden>
-        <span class="badge t-ok">Đã nhập mã</span><button class="link" id="key-change">Đổi mã</button>
-      </div>
-    </section>
-
+<div class="wrap">
+  <div id="test" class="test"></div>
+  <section class="panel" id="case-head"></section>
+  <div class="cols">
     <section class="panel">
-      <div class="step"><span class="n">2</span>Chọn tình huống</div>
-      <div id="preset-list"><p class="muted small">Đang tải…</p></div>
+      <h2>Tài liệu trong hồ sơ</h2>
+      <div id="docs"></div>
+      <div id="requests"></div>
     </section>
-  </aside>
-
-  <main class="stack">
-    <section class="panel" id="case"><div class="empty">Đang tải tình huống…</div></section>
-    <section class="panel" id="result" hidden></section>
-  </main>
+    <section class="panel">
+      <h2>AI phát hiện</h2>
+      <div id="findings"><div class="empty">Chưa rà soát. Bấm <b>Rà soát bằng AI</b> ở trên.</div></div>
+      <details class="tech" style="margin-top:14px"><summary>Chi tiết kỹ thuật cho dev</summary>
+        <p class="small muted" style="margin-top:8px">JSON gửi tới <code id="endpoint"></code> (sửa được; <code>snapshot_hash</code> được tính lại khi gửi):</p>
+        <textarea id="payload" class="mono" rows="12" spellcheck="false"></textarea>
+        <div id="raw"></div>
+      </details>
+    </section>
+  </div>
 </div>
 
 <script>
@@ -142,134 +166,179 @@ const store = {
   get(k) { try { return sessionStorage.getItem(k) || ""; } catch { return ""; } },
   set(k, v) { try { v ? sessionStorage.setItem(k, v) : sessionStorage.removeItem(k); } catch {} },
 };
-const vnd = (v) => v == null ? "—" : Number(v).toLocaleString("vi-VN") + " ₫";
+const money = (v) => v == null || v === "" ? "—" : Number(v).toLocaleString("vi-VN") + " ₫";
+// "500000000" trong văn bản tự do -> "500.000.000"
+const prettyText = (s) => esc(s).replace(/\b\d{6,}\b/g, (n) => Number(n).toLocaleString("vi-VN"));
 
-// ---- từ điển: mã contract -> tiếng Việt ----
-const DOC_TYPE = {
-  registration: "Giấy đăng ký kinh doanh", financial_statement: "Báo cáo tài chính", loan_request: "Đề nghị vay",
-  contract: "Hợp đồng", acceptance_record: "Biên bản nghiệm thu", payment_record: "Chứng từ thanh toán (ủy nhiệm chi)",
+const DOC = {
+  loan_request: ["Đề nghị vay", "📝"], contract: ["Hợp đồng", "📄"], financial_statement: ["Báo cáo tài chính", "📊"],
+  registration: ["Giấy đăng ký kinh doanh", "🏢"], acceptance_record: ["Biên bản nghiệm thu", "✅"],
+  payment_record: ["Chứng từ thanh toán", "💸"],
 };
+const docName = (t) => DOC[t]?.[0] ?? t;
+const REF_FIELD = { contract: "contract.ref", acceptance_record: "acceptance.ref", payment_record: "payment.ref" };
+const FIELD = {
+  "borrower.name": "Tên doanh nghiệp", "borrower.tax_id": "Mã số thuế", "loan.amount": "Số tiền đề nghị vay",
+  "money.currency": "Đơn vị tiền", "receipt.amount": "Khoản phải thu", "receipt.contract_ref": "Thuộc hợp đồng",
+  "receipt.scope_ref": "Phạm vi", "receipt.claim_type": "Trạng thái khoản thu", "receipt.expected_date": "Ngày dự kiến thu",
+  "contract.ref": "Số hợp đồng", "contract.amount": "Giá trị hợp đồng", "contract.scope_ref": "Phạm vi",
+  "contract.payment_condition": "Điều kiện thanh toán", "parties.borrower.tax_id": "MST bên cung cấp (người vay)",
+  "parties.counterparty.tax_id": "MST bên mua", "parties.payee.tax_id": "MST bên nhận tiền", "parties.payer.tax_id": "MST bên trả tiền",
+  "acceptance.ref": "Số biên bản", "acceptance.contract_ref": "Thuộc hợp đồng", "acceptance.date": "Ngày nghiệm thu",
+  "acceptance.scope_ref": "Phạm vi", "acceptance.scope_text": "Nội dung nghiệm thu", "acceptance.amount": "Giá trị nghiệm thu",
+  "payment.ref": "Số chứng từ", "payment.contract_ref": "Thuộc hợp đồng", "payment.date": "Ngày thanh toán",
+  "payment.amount": "Số tiền", "payment.status": "Trạng thái giao dịch", "financial.period_end": "Kỳ báo cáo",
+  "financial.scope": "Phạm vi báo cáo", "financial.unit_multiplier": "Đơn vị (x)", "financial.total_assets": "Tổng tài sản",
+  "financial.liabilities": "Nợ phải trả", "financial.equity": "Vốn chủ sở hữu",
+};
+const MONEY_FIELDS = new Set(["loan.amount", "receipt.amount", "contract.amount", "acceptance.amount", "payment.amount"]);
+const VALUE = { received: "Đã thu", expected: "Dự kiến thu", completed: "Hoàn tất", standalone: "Riêng lẻ" };
 const RULES = {
-  R01: "Hồ sơ có đủ bộ giấy tờ bắt buộc",
-  R02: "Mã số thuế người vay khớp trên các tài liệu",
-  R08: "Khoản phải thu có biên bản nghiệm thu hợp lệ",
-  R09: "Khoản khai \"đã thu\" có chứng từ thanh toán",
-  R10: "Tài liệu bổ sung đáp ứng đúng yêu cầu",
+  R01: "Đủ bộ giấy tờ", R02: "MST người vay khớp", R08: "Có biên bản nghiệm thu",
+  R09: "Khoản \"đã thu\" có chứng từ", R10: "Tài liệu bổ sung đúng yêu cầu",
 };
-const RULE_STATUS = {
-  pass: ["Đạt", "t-ok"], issue: ["Có vấn đề", "t-bad"], unknown: ["Chưa xác định", "t-warn"], not_applicable: ["Không áp dụng", ""],
-};
+const RULE_STATUS = { pass: ["✓", "p-ok"], issue: ["✗", "p-bad"], unknown: ["?", "p-warn"], not_applicable: ["—", ""] };
 const PROPOSAL = {
-  still_open: ["Còn thiếu sót", "Cần doanh nghiệp bổ sung hoặc giải trình", "bad"],
-  candidate_resolved: ["Có thể đã giải quyết", "AI thấy đủ căn cứ, chờ người duyệt xác nhận", "ok"],
-  unknown: ["Chưa đủ căn cứ để kết luận", "Chuyển cho người duyệt xem nguồn", "warn"],
+  still_open: ["Cần bổ sung", "bad", "p-bad"],
+  candidate_resolved: ["Có thể đóng · chờ người duyệt", "ok", "p-ok"],
+  unknown: ["Cần người duyệt xem", "warn", "p-warn"],
 };
 const CATEGORY = {
   missing_document: "Thiếu tài liệu", mismatched_document: "Tài liệu không khớp", insufficient_evidence: "Chưa đủ căn cứ",
   identity_mismatch: "Sai thông tin định danh", supported: "Có căn cứ",
 };
-const SEVERITY = { high: ["Mức độ cao", "t-bad"], medium: ["Mức độ trung bình", "t-warn"] };
 const REASON = {
-  MISSING_ACCEPTANCE: "Không có biên bản nghiệm thu", MISSING_DOCUMENT: "Thiếu tài liệu bắt buộc",
-  ACCEPTANCE_SUPPORTED: "Biên bản nghiệm thu khớp hợp đồng và số tiền", PARTIAL_ACCEPTANCE: "Chỉ nghiệm thu một phần giá trị",
-  SUPPLEMENT_CONTRACT_MISMATCH: "Tài liệu bổ sung thuộc hợp đồng khác", CONTRACT_MISMATCH: "Sai số hợp đồng",
-  SCOPE_MISMATCH: "Sai phạm vi công việc", PARTY_MISMATCH: "Sai bên ký", PAYEE_MISMATCH: "Sai bên nhận tiền",
-  PAYMENT_SUPPORTED: "Chứng từ thanh toán khớp", PARTIAL_PAYMENT: "Chứng từ chỉ chứng minh một phần số tiền",
+  MISSING_ACCEPTANCE: "Không có biên bản nghiệm thu", ACCEPTANCE_SUPPORTED: "Biên bản khớp hợp đồng và số tiền",
+  PARTIAL_ACCEPTANCE: "Chỉ nghiệm thu một phần", SUPPLEMENT_CONTRACT_MISMATCH: "Tài liệu bổ sung thuộc hợp đồng khác",
+  CONTRACT_MISMATCH: "Sai số hợp đồng", SCOPE_MISMATCH: "Sai phạm vi", PARTY_MISMATCH: "Sai bên ký", PAYEE_MISMATCH: "Sai bên nhận tiền",
+  PAYMENT_SUPPORTED: "Chứng từ khớp", PARTIAL_PAYMENT: "Chứng từ chỉ cho một phần số tiền",
   MISSING_PAYMENT_RECORD: "Thiếu chứng từ thanh toán", RECEIVED_WITHOUT_PAYMENT_RECORD: "Khai đã thu nhưng không có chứng từ",
-  PAYMENT_STATUS_NOT_COMPLETED: "Giao dịch chưa hoàn tất", UNSUPPORTED_CURRENCY: "Đơn vị tiền không phải VND",
-  CURRENCY_UNCLEAR: "Không rõ đơn vị tiền", AMOUNT_UNCLEAR: "Không rõ số tiền", AMOUNT_EXCEEDS_CONTRACT: "Số tiền vượt giá trị hợp đồng",
-  AMOUNT_EXCEEDS_CLAIM: "Số tiền vượt khoản khai", ACCEPTANCE_DATE_UNCLEAR: "Không rõ ngày nghiệm thu",
-  PAYMENT_CONDITION_UNCLEAR: "Điều kiện thanh toán chưa rõ", REVIEW_REQUIRED: "Cần người duyệt xem",
+  PAYMENT_STATUS_NOT_COMPLETED: "Giao dịch chưa hoàn tất", UNSUPPORTED_CURRENCY: "Không phải tiền VND",
+  CURRENCY_UNCLEAR: "Không rõ đơn vị tiền", AMOUNT_UNCLEAR: "Không rõ số tiền", AMOUNT_EXCEEDS_CONTRACT: "Vượt giá trị hợp đồng",
+  AMOUNT_EXCEEDS_CLAIM: "Vượt khoản khai", ACCEPTANCE_DATE_UNCLEAR: "Không rõ ngày nghiệm thu",
+  PAYMENT_CONDITION_UNCLEAR: "Điều kiện thanh toán chưa rõ", REVIEW_REQUIRED: "Cần người duyệt",
   SEMANTIC_PROVIDER_UNAVAILABLE: "Không gọi được Gemini", SUSPECTED_PROMPT_INJECTION: "Nghi có câu lệnh chèn vào AI",
-  LLM_ASSISTED: "Gemini đã hỗ trợ đọc điều khoản", LLM_OUTPUT_REJECTED: "Kết quả của Gemini bị chặn vì không qua kiểm tra",
-  LLM_CONFLICT: "Gemini mâu thuẫn với dữ liệu", BORROWER_TAX_ID_MISMATCH: "Mã số thuế người vay không khớp",
-  TAX_ID_UNREADABLE: "Không đọc được mã số thuế", AWAITING_RESPONSE: "Đang chờ doanh nghiệp bổ sung",
-  DOCUMENT_PROVIDED: "Doanh nghiệp đã nộp tài liệu", CONTRACT_NOT_FOUND: "Không tìm thấy hợp đồng",
-  NOT_ACCEPTANCE_CONDITION: "Điều khoản không yêu cầu nghiệm thu", OTHER_CONDITIONS_UNRESOLVED: "Còn điều kiện khác chưa rõ",
-  UNREADABLE_SOURCE: "Không đọc được tài liệu nguồn", NEEDS_CLASSIFICATION: "Tài liệu chưa được phân loại",
+  LLM_ASSISTED: "Gemini hỗ trợ đọc điều khoản", LLM_OUTPUT_REJECTED: "Kết quả Gemini bị chặn", LLM_CONFLICT: "Gemini mâu thuẫn dữ liệu",
+  BORROWER_TAX_ID_MISMATCH: "MST người vay không khớp", TAX_ID_UNREADABLE: "Không đọc được MST",
+  AWAITING_RESPONSE: "Đang chờ doanh nghiệp bổ sung", DOCUMENT_PROVIDED: "Doanh nghiệp đã nộp tài liệu",
+  CONTRACT_NOT_FOUND: "Không tìm thấy hợp đồng", OTHER_CONDITIONS_UNRESOLVED: "Còn điều kiện khác chưa rõ",
+  UNREADABLE_SOURCE: "Không đọc được tài liệu nguồn",
 };
 const reason = (c) => REASON[c] ?? c;
 
-let presets = [];
-let current = null;
+let presets = [], current = null, lastInput = null;
 
-// ---- kết nối ----
+// ---- kết nối + mã truy cập ----
 fetch("/healthz").then((r) => r.json()).then((h) => {
-  $("health").textContent = h.mode === "live" ? "Service đang chạy · AI thật" : "Service đang chạy · chế độ mock (trả gold)";
-  $("health").className = "badge " + (h.mode === "live" ? "t-ok" : "t-warn");
-}).catch(() => { $("health").textContent = "Không kết nối được service"; $("health").className = "badge t-bad"; });
+  $("health").textContent = h.mode === "live" ? "AI đang chạy" : "Chế độ mock";
+  $("health").className = "pill " + (h.mode === "live" ? "p-ok" : "p-warn");
+}).catch(() => { $("health").textContent = "Mất kết nối"; $("health").className = "pill p-bad"; });
 
-// ---- bước 1: mã truy cập ----
 function showKey(editing) {
   const has = !!store.get("ai-key");
-  $("key-edit").hidden = has && !editing;
-  $("key-done").hidden = !has || editing;
-  $("key-step").textContent = has && !editing ? "✓" : "1";
-  $("key-step").classList.toggle("done", has && !editing);
+  $("key-box").hidden = has && !editing;
+  $("key-ok").hidden = !has || editing;
 }
 $("key").value = store.get("ai-key");
-$("key-save").addEventListener("click", () => { store.set("ai-key", $("key").value.trim()); showKey(false); });
+$("key-save").addEventListener("click", () => { store.set("ai-key", $("key").value.trim()); $("key-box").classList.remove("need"); showKey(false); });
 $("key").addEventListener("keydown", (e) => { if (e.key === "Enter") $("key-save").click(); });
 $("key-change").addEventListener("click", () => { showKey(true); $("key").focus(); });
 showKey(false);
 
-// ---- bước 2: tình huống ----
+// ---- hồ sơ mẫu ----
 fetch("/console/presets.json").then((r) => r.json()).then((list) => {
   presets = list;
   const groups = {};
   list.forEach((p, i) => (groups[p.group] ??= []).push(i));
-  $("preset-list").innerHTML = Object.entries(groups).map(([g, idx]) =>
-    `<div class="group">${esc(g)}</div>` + idx.map((i) => `<button class="preset" data-i="${i}">${esc(list[i].title)}</button>`).join("")
-  ).join("");
-  document.querySelectorAll(".preset").forEach((b) => b.addEventListener("click", () => select(+b.dataset.i)));
+  $("case-select").innerHTML = Object.entries(groups).map(([g, idx]) =>
+    `<optgroup label="${esc(g)}">${idx.map((i) => `<option value="${i}">${esc(list[i].title)}</option>`).join("")}</optgroup>`).join("");
+  $("case-select").addEventListener("change", () => select(+$("case-select").value));
   select(0);
-}).catch(() => { $("case").innerHTML = '<div class="empty">Không tải được danh sách tình huống.</div>'; });
+}).catch(() => { $("case-head").innerHTML = '<div class="empty">Không tải được hồ sơ mẫu.</div>'; });
 
+const fieldsOf = (d) => Object.fromEntries((d.extraction?.fields ?? []).map((f) => [f.field_key, f.value]));
+const docsOf = (input) => input?.snapshot?.documents ?? [];
 function clauseField(input) {
-  const d = input?.snapshot?.documents?.find((x) => x.document.filename === "04_contract.pdf");
+  const d = docsOf(input).find((x) => x.document.type === "contract");
   const f = d?.extraction?.fields?.find((x) => x.field_key === "contract.payment_condition");
   return f && f.value === null ? f : null;
 }
 
 function select(i) {
   current = presets[i];
-  document.querySelectorAll(".preset").forEach((b) => b.classList.toggle("active", +b.dataset.i === i));
-  const input = current.input;
-  const docs = input.snapshot?.documents ?? [];
-  const clause = clauseField(input);
-  $("case").innerHTML = `
-    <h2>${esc(current.title)}</h2>
-    <p>${esc(current.scenario)}</p>
-    ${docs.length ? `<h3>Hồ sơ gồm ${docs.length} tài liệu</h3><ul class="docs">${docs.map((d) => `
-      <li><span>${esc(DOC_TYPE[d.document.type] ?? d.document.type)}</span>
-      <span class="fn">${esc(d.document.filename)}</span>
-      ${d.document.response_request_id ? '<span class="badge t-info">nộp bổ sung</span>' : ""}</li>`).join("")}</ul>` : ""}
-    ${clause ? `<h3>Đoạn điều khoản thanh toán gửi cho Gemini đọc</h3>
-      <textarea id="clause" rows="3">${esc(clause.raw_value)}</textarea>
-      <p class="muted small">Bạn có thể sửa đoạn này để thử câu chữ khác. Mục "kỳ vọng" bên dưới chỉ đúng với đoạn gốc.</p>` : ""}
-    <div class="box t-info"><b class="label">Kỳ vọng</b>${esc(current.expect)}</div>
-    <div class="row" style="margin-top:14px">
-      <button class="primary" id="run">Chạy AI rà soát</button>
-      <span id="run-hint" class="muted small"></span>
-    </div>
-    <details id="advanced"><summary>Nâng cao: xem và sửa JSON gửi đi</summary>
-      <textarea id="payload" class="code" rows="16" spellcheck="false">${esc(JSON.stringify(input, null, 2))}</textarea>
-      <p class="muted small">Gửi tới <code>POST /internal/v1/${esc(current.operation)}</code>. <code>snapshot_hash</code> được tính lại tự động.</p>
-    </details>`;
-  $("clause")?.addEventListener("input", syncClause);
-  $("run").addEventListener("click", run);
-  $("result").hidden = true;
+  $("case-select").value = String(i);
+  $("payload").value = JSON.stringify(current.input, null, 2);
+  $("endpoint").textContent = `POST /internal/v1/${current.operation}`;
+  $("raw").innerHTML = "";
+  renderTest(null);
+  renderCase(current.input);
+  $("findings").innerHTML = current.operation === "evaluate"
+    ? '<div class="empty">Chưa rà soát. Bấm <b>Rà soát bằng AI</b> ở trên.</div>'
+    : '<div class="empty">Đây là ca test route đọc PDF, không có hồ sơ để hiển thị. Bấm <b>Gọi thử</b> ở trên.</div>';
 }
 
-function parsePayload() {
-  try { return JSON.parse($("payload").value); }
-  catch (e) { throw new Error("JSON trong phần Nâng cao bị lỗi cú pháp: " + e.message); }
+function renderTest(result) {
+  const t = $("test");
+  t.className = "test" + (result ? (result.ok ? " pass" : " fail") : "");
+  t.innerHTML = `<span class="tag">Tình huống test</span><span>${esc(current.scenario)}</span>
+    <span><b>Kỳ vọng:</b> ${esc(current.expect)}</span>
+    ${result ? `<span class="verdict">${result.ok ? "✓ Đúng kỳ vọng" : "✗ Khác kỳ vọng"}</span>
+      ${result.note ? `<span style="flex-basis:100%">${result.note}</span>` : ""}` : ""}`;
 }
+
+function renderCase(input) {
+  const docs = docsOf(input);
+  const loan = fieldsOf(docs.find((d) => d.document.type === "loan_request") ?? {});
+  const c = input.snapshot?.case;
+  const isEval = current.operation === "evaluate";
+  $("case-head").innerHTML = `<div class="case-head">
+    <div><div class="muted small">Hồ sơ vay</div><div class="who">${esc(c?.borrower_name ?? current.title)}</div></div>
+    ${c ? `<div class="facts">
+      <div class="fact"><span>Mã số thuế</span><b>${esc(c.borrower_tax_id)}</b></div>
+      <div class="fact"><span>Đề nghị vay</span><b>${money(loan["loan.amount"])}</b></div>
+      <div class="fact"><span>Khoản phải thu dùng làm căn cứ</span><b>${money(loan["receipt.amount"])}</b>
+        <span>${esc(loan["receipt.contract_ref"] ?? "")}/${esc(loan["receipt.scope_ref"] ?? "")} · ${esc(VALUE[loan["receipt.claim_type"]] ?? loan["receipt.claim_type"] ?? "")}</span></div>
+    </div>` : ""}
+    <span class="grow"></span>
+    <button class="primary" id="run">${isEval ? "Rà soát bằng AI" : "Gọi thử"}</button>
+  </div>`;
+  $("run").addEventListener("click", run);
+
+  const clause = clauseField(input);
+  $("docs").innerHTML = docs.map((d) => {
+    const t = d.document.type, f = fieldsOf(d), ref = f[REF_FIELD[t]];
+    const rows = (d.extraction?.fields ?? []).map((x) => {
+      let v = x.value;
+      if (x.field_key === "contract.payment_condition" && v === null) {
+        return `<tr data-field="${esc(x.id)}"><td>${esc(FIELD[x.field_key])}<br><span class="pill p-warn">gửi Gemini đọc</span></td>
+          <td><textarea id="clause" rows="4">${esc(x.raw_value)}</textarea><span class="small muted">Sửa thử câu chữ rồi bấm Rà soát.</span></td></tr>`;
+      }
+      if (v && typeof v === "object") v = x.raw_value ?? JSON.stringify(v);
+      else if (MONEY_FIELDS.has(x.field_key)) v = money(v);
+      else v = VALUE[v] ?? v;
+      return `<tr data-ev="${esc(x.evidence_ids.join(" "))}"><td>${esc(FIELD[x.field_key] ?? x.field_key)}</td><td>${esc(v ?? "— (không đọc được)")}</td></tr>`;
+    }).join("");
+    return `<details class="doc" data-doc="${esc(d.document.id)}" ${clause && t === "contract" ? "open" : ""}>
+      <summary><span class="ico">${DOC[t]?.[1] ?? "📄"}</span>
+        <span><span class="name">${esc(docName(t))}${ref ? " " + esc(ref) : ""}</span>
+          ${d.document.response_request_id ? ' <span class="pill p-info">nộp bổ sung</span>' : ""}<br>
+          <span class="file">${esc(d.document.filename)}</span></span></summary>
+      <div class="body"><table class="fields">${rows}</table></div></details>`;
+  }).join("") || '<p class="muted small">Không có.</p>';
+  $("clause")?.addEventListener("input", syncClause);
+
+  const reqs = input.snapshot?.requests ?? [];
+  $("requests").innerHTML = reqs.length ? `<h2 style="margin-top:16px">Yêu cầu bổ sung đã gửi trước đó</h2>` + reqs.map((r) =>
+    `<div class="req"><span class="pill p-info">${esc(r.status === "approved" ? "Đã gửi" : r.status)}</span>
+      ${esc(docName(r.required_type))} ${esc(r.contract_ref)}/${esc(r.required_scope)}<br>"${prettyText(r.content)}"</div>`).join("") : "";
+}
+
 function syncClause() {
-  let data;
-  try { data = parsePayload(); } catch { return; }
-  const f = clauseField(data);
-  if (f) { f.raw_value = $("clause").value; $("payload").value = JSON.stringify(data, null, 2); }
+  try {
+    const data = JSON.parse($("payload").value);
+    const f = clauseField(data);
+    if (f) { f.raw_value = $("clause").value; $("payload").value = JSON.stringify(data, null, 2); }
+  } catch {}
 }
 
 // Quy ước backend: sha256 của snapshot với sort keys, UTF-8, JSON compact.
@@ -283,161 +352,147 @@ async function sha256(text) {
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-// ---- bước 3: chạy ----
+// ---- chạy ----
 async function run() {
   const key = store.get("ai-key");
-  if (!key) { showKey(true); $("key").focus(); $("run-hint").textContent = "Nhập mã truy cập ở bước 1 trước."; return; }
+  if (!key) { showKey(true); $("key-box").classList.add("need"); $("key").focus(); return; }
   let data;
-  try { data = parsePayload(); } catch (e) { return showResult(`<div class="verdict t-bad"><span class="icon">!</span><div>${esc(e.message)}</div></div>`); }
+  try { data = JSON.parse($("payload").value); }
+  catch (e) { return showError("JSON trong phần kỹ thuật bị lỗi cú pháp", e.message); }
   const op = current.operation;
   if (op === "evaluate" && data.snapshot && crypto.subtle) data.snapshot_hash = await sha256(canonical(data.snapshot));
+  lastInput = data;
   $("run").disabled = true;
-  $("run-hint").textContent = "";
-  showResult('<div class="empty"><span class="spinner"></span>AI đang rà soát… Nếu service vừa "ngủ dậy", lần đầu có thể mất 30–60 giây.</div>');
+  $("findings").innerHTML = '<div class="empty"><span class="spinner"></span>AI đang rà soát… Lần đầu sau khi service ngủ có thể mất 30–60 giây.</div>';
   const t0 = performance.now();
   try {
     const res = await fetch(`/internal/v1/${op}`, {
       method: "POST", headers: { "Content-Type": "application/json", "X-Internal-Key": key }, body: JSON.stringify(data),
     });
     const body = await res.json().catch(() => null);
-    showResult(renderResponse(op, data, res, body, Math.round(performance.now() - t0)));
-    $("result").scrollIntoView({ behavior: "smooth", block: "start" });
+    $("raw").innerHTML = `<p class="small muted" style="margin-top:10px">Response HTTP ${res.status} · ${Math.round(performance.now() - t0)} ms · X-AI-Mode: ${esc(res.headers.get("X-AI-Mode") ?? "—")}</p><pre>${esc(JSON.stringify(body, null, 2))}</pre>`;
+    if (op !== "evaluate") renderPdfRoute(res.status, body);
+    else if (!res.ok || !body) renderHttpError(res.status, body);
+    else renderFindings(body);
   } catch (e) {
-    showResult(`<div class="verdict t-bad"><span class="icon">!</span><div><b>Không gọi được service</b>${esc(e.message)}</div></div>`);
+    showError("Không gọi được service", e.message);
   } finally {
     $("run").disabled = false;
   }
 }
 
-function showResult(html) { $("result").hidden = false; $("result").innerHTML = html; }
-
-function verdictBox(tone, icon, title, text) {
-  return `<div class="verdict t-${tone}"><span class="icon">${icon}</span><div><b>${esc(title)}</b>${text}</div></div>`;
+function showError(title, text) {
+  $("findings").innerHTML = `<div class="error"><b>${esc(title)}</b>${esc(text)}</div>`;
 }
 
-function technical(body, ms, mode, extra = "") {
-  return `<details><summary>Chi tiết kỹ thuật (${ms} ms${mode ? " · X-AI-Mode: " + esc(mode) : ""})</summary>${extra}
-    <pre>${esc(JSON.stringify(body, null, 2))}</pre></details>`;
+function renderPdfRoute(status, body) {
+  const ok = status === 503;
+  renderTest({ ok, note: ok ? "" : `Nhận HTTP ${status}.` });
+  $("findings").innerHTML = ok
+    ? `<div class="empty">Service báo phần đọc PDF chưa sẵn sàng (503), đúng như dự kiến.</div>`
+    : `<div class="empty">Service trả HTTP ${status}. Xem chi tiết kỹ thuật bên dưới.</div>`;
 }
 
-function renderResponse(op, input, res, body, ms) {
-  const mode = res.headers.get("X-AI-Mode");
-  if (!res.ok || !body) return renderErrorBody(op, res.status, body) + technical(body, ms, mode);
-  if (op !== "evaluate") return verdictBox("ok", "✓", "Service trả kết quả hợp lệ", "Output đã qua kiểm tra schema và guard.") + technical(body, ms, mode);
-  return renderEvaluation(input, body, ms, mode);
-}
-
-function renderErrorBody(op, status, body) {
+function renderHttpError(status, body) {
   const err = body?.error;
-  if (status === 503 && op !== "evaluate") {
-    return verdictBox("ok", "✓", "Đúng như dự kiến: phần đọc PDF chưa sẵn sàng", `<p class="small">${esc(err?.message ?? "")}</p>`);
-  }
   const msg = {
-    FORBIDDEN: ["Mã truy cập sai hoặc đã hết hiệu lực", "Kiểm tra lại INTERNAL_API_KEY ở Render → Environment, rồi bấm \"Đổi mã\" ở bước 1."],
-    INVALID_REQUEST: ["Dữ liệu gửi đi không đúng định dạng 1.0.2", "Thường do sửa JSON ở phần Nâng cao. Bấm lại tình huống ở cột trái để khôi phục bản gốc."],
-    INVALID_MODEL_OUTPUT: ["Kết quả của AI bị chặn vì không qua kiểm tra", "Service không trả kết quả sai cho người dùng. Đây có thể là lỗi cần sửa trong rule hoặc guard."],
-    PROVIDER_UNAVAILABLE: ["Service chưa sẵn sàng cho yêu cầu này", ""],
-  }[err?.code] ?? ["Lỗi không mong đợi (HTTP " + status + ")", "Xem log trên Render."];
-  const details = (err?.details ?? []).map((d) => `<li><code>${esc(d.path)}</code>: ${esc(d.message)}</li>`).join("");
-  return verdictBox("bad", "!", msg[0], `<p class="small">${esc(msg[1])}</p>${details ? `<ul class="small">${details}</ul>` : ""}`);
+    FORBIDDEN: ["Mã truy cập sai", "Kiểm tra INTERNAL_API_KEY ở Render → Environment rồi bấm \"Đổi\" ở góc trên."],
+    INVALID_REQUEST: ["Dữ liệu gửi đi sai định dạng", "Có thể do sửa JSON trong phần kỹ thuật. Chọn lại hồ sơ mẫu để khôi phục."],
+    INVALID_MODEL_OUTPUT: ["Kết quả AI bị chặn vì không qua kiểm tra", "Service không trả kết quả sai. Đây là lỗi cần sửa trong rule hoặc guard."],
+  }[err?.code] ?? [`Lỗi HTTP ${status}`, err?.message ?? "Xem log trên Render."];
+  if (err?.code === "FORBIDDEN") { showKey(true); $("key-box").classList.add("need"); }
+  const details = (err?.details ?? []).map((d) => `<li><code>${esc(d.path)}</code> ${esc(d.message)}</li>`).join("");
+  $("findings").innerHTML = `<div class="error"><b>${esc(msg[0])}</b>${esc(msg[1])}${details ? `<ul class="small">${details}</ul>` : ""}</div>`;
 }
 
-function evidenceIndex(input) {
-  const map = {};
-  for (const d of input?.snapshot?.documents ?? []) {
-    for (const e of d.extraction?.evidence ?? []) map[e.id] = { ...e, type: d.document.type, filename: d.document.filename };
+function evidenceDocs(ids) {
+  // gom evidence theo tài liệu, giữ thứ tự xuất hiện
+  const byDoc = new Map();
+  for (const d of docsOf(lastInput)) for (const e of d.extraction?.evidence ?? []) {
+    if (ids.includes(e.id)) {
+      if (!byDoc.has(d.document.id)) byDoc.set(d.document.id, { d, pages: new Set(), ids: [] });
+      byDoc.get(d.document.id).pages.add(e.page);
+      byDoc.get(d.document.id).ids.push(e.id);
+    }
   }
-  return map;
+  // tài liệu bổ sung/biên bản/chứng từ quyết định kết luận hơn hợp đồng hay đề nghị vay: đưa lên trước
+  const rank = { acceptance_record: 0, payment_record: 0, contract: 1, loan_request: 2 };
+  return [...byDoc.values()].sort((a, b) => (rank[a.d.document.type] ?? 3) - (rank[b.d.document.type] ?? 3));
 }
-function renderEvidence(ids, ev, show = 2) {
-  if (!ids?.length) return "";
-  const q = (id) => {
-    const e = ev[id];
-    return e ? `<div class="quote">"${esc(e.quote)}"<div class="src">${esc(DOC_TYPE[e.type] ?? e.type)} · ${esc(e.filename)} · trang ${esc(e.page)}</div></div>` : "";
-  };
-  const head = ids.slice(0, show).map(q).join(""), rest = ids.slice(show);
-  return `<h3 style="margin:12px 0 4px;font-size:13px">Căn cứ trích từ hồ sơ</h3>${head}` +
-    (rest.length ? `<details><summary>Xem thêm ${rest.length} căn cứ</summary>${rest.map(q).join("")}</details>` : "");
+
+function renderFindings(out) {
+  const check = checkExpectations(out);
+  const edited = $("clause") && clauseField(current.input)?.raw_value !== $("clause").value;
+  if (edited) renderTest(null), $("test").insertAdjacentHTML("beforeend", '<span class="verdict">Đã sửa điều khoản: tự đánh giá</span>');
+  else if (check) renderTest(check);
+
+  // tài liệu bắt buộc mà AI xác nhận là không có: thêm ô trống màu đỏ bên trái
+  document.querySelectorAll(".doc.missing").forEach((x) => x.remove());
+  for (const a of out.assessments) if (a.absence_basis) {
+    $("docs").insertAdjacentHTML("beforeend", `<div class="doc missing"><div style="padding:9px 12px;display:flex;gap:10px;align-items:center">
+      <span class="ico">!</span><span><span class="name">${esc(docName(a.absence_basis.required_type))}</span><br>
+      <span class="file">Không có trong hồ sơ · AI đã tìm trong ${a.absence_basis.searched_document_ids.length} tài liệu</span></span></div></div>`);
+  }
+
+  const sugg = Object.fromEntries((out.request_suggestions ?? []).map((s) => [s.issue_id, s]));
+  let html = out.assessments.length ? "" : '<div class="empty">AI không phát hiện vấn đề nào.</div>';
+  for (const a of out.assessments) {
+    const [label, tone, pill] = PROPOSAL[a.proposal] ?? [a.proposal, "", ""];
+    const money2 = a.supported_amount != null || a.unsupported_amount != null;
+    const src = evidenceDocs(a.evidence_ids);
+    const s = sugg[a.issue_id];
+    html += `<div class="issue ${tone}">
+      <div class="top"><div class="headline">${prettyText(a.summary)}</div><span class="pill ${pill}">${esc(label)}</span></div>
+      <div class="sub">${esc(CATEGORY[a.category] ?? a.category)} · mức độ ${a.severity === "high" ? "cao" : "trung bình"} · quy tắc ${esc(a.rule_ids.join(", "))}</div>
+      ${money2 ? `<div class="amounts"><div><span>Có căn cứ</span><b>${money(a.supported_amount)}</b></div>
+        <div><span>Chưa có căn cứ</span><b>${money(a.unsupported_amount)}</b></div></div>` : ""}
+      ${a.computed_date ? `<div class="amounts"><div><span>Hạn thanh toán AI tính được</span><b>${esc(a.computed_date)}</b></div></div>` : ""}
+      <div class="why">${a.reason_codes.map((c) => `<span class="pill" title="${esc(c)}">${esc(reason(c))}</span>`).join("")}</div>
+      ${src.length ? `<div class="src"><span class="muted">Căn cứ (bấm để xem bên trái):</span><br>${src.map((x) => {
+        const f = fieldsOf(x.d), ref = f[REF_FIELD[x.d.document.type]];
+        return `<button data-doc="${esc(x.d.document.id)}" data-ev="${esc(x.ids.join(" "))}">${esc(docName(x.d.document.type))}${ref ? " " + esc(ref) : ""} · tr.${[...x.pages].join(", ")}</button>`;
+      }).join("")}</div>` : ""}
+      ${s ? `<div class="ask"><b>AI đề xuất gửi doanh nghiệp (người duyệt quyết định có gửi không)</b>"${prettyText(s.content)}"</div>` : ""}
+    </div>`;
+  }
+  html += `<h2 style="margin-top:18px">Kiểm tra theo quy tắc</h2><div class="rules">` + out.rule_results.map((r) => {
+    const [sym, pill] = RULE_STATUS[r.status] ?? [r.status, ""];
+    return `<span class="rule" title="${esc(r.reason_codes.map(reason).join(", "))}"><span class="pill ${pill}">${sym}</span>${esc(RULES[r.rule_id] ?? r.rule_id)}</span>`;
+  }).join("") + `</div>`;
+  const notes = (out.diagnostics ?? []).filter((d) => d.code !== "LLM_ASSISTED" || true);
+  if (notes.length) html += `<h2 style="margin-top:18px">Ghi chú hệ thống</h2><ul class="small" style="margin:0;padding-left:18px">` +
+    notes.map((d) => `<li><b>${esc(reason(d.code))}</b>: ${esc(d.message)}</li>`).join("") + `</ul>`;
+  $("findings").innerHTML = html;
+  $("findings").querySelectorAll(".src button").forEach((b) => b.addEventListener("click", () => highlight(b.dataset.doc, b.dataset.ev.split(" "))));
+}
+
+function highlight(docId, evIds) {
+  document.querySelectorAll(".doc.flash").forEach((x) => x.classList.remove("flash"));
+  document.querySelectorAll(".fields tr.hl").forEach((x) => x.classList.remove("hl"));
+  const el = document.querySelector(`.doc[data-doc="${CSS.escape(docId)}"]`);
+  if (!el) return;
+  el.open = true;
+  el.classList.add("flash");
+  el.querySelectorAll("tr[data-ev]").forEach((tr) => { if (tr.dataset.ev.split(" ").some((id) => evIds.includes(id))) tr.classList.add("hl"); });
+  el.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 function checkExpectations(out) {
+  const noGemini = out.diagnostics?.some((d) => d.code === "SEMANTIC_PROVIDER_UNAVAILABLE");
+  const hint = noGemini ? "Service không gọi được Gemini: kiểm tra GEMINI_API_KEY ở Render → Environment." : "";
   if (current.expected && current.input.run_id === out.run_id) {
     const diffs = compare(current.expected, out);
-    return diffs.length
-      ? { ok: false, text: `Có ${diffs.length} điểm khác với đáp án chuẩn (gold).`, diffs }
-      : { ok: true, text: "Khớp hoàn toàn với đáp án chuẩn (gold): từng quy tắc, từng kết luận và từng đề xuất.", diffs };
+    return { ok: !diffs.length, note: diffs.length
+      ? `${diffs.length} điểm khác đáp án chuẩn: <code>${esc(diffs.slice(0, 3).join(" · "))}</code>${diffs.length > 3 ? " …" : ""} ${esc(hint)}` : "" };
   }
   const exp = current.expected_proposals;
   if (!exp) return null;
-  const lines = Object.entries(exp).map(([rule, want]) => {
+  const bad = Object.entries(exp).map(([rule, want]) => {
     const a = out.assessments.find((x) => x.issue_key.startsWith(rule + ":"));
-    return { rule, want, got: a?.proposal, ok: a?.proposal === want };
-  });
-  const bad = lines.filter((l) => !l.ok);
-  return {
-    ok: !bad.length,
-    text: bad.length
-      ? bad.map((l) => `${l.rule}: kỳ vọng "${PROPOSAL[l.want]?.[0] ?? l.want}", AI ra "${PROPOSAL[l.got]?.[0] ?? l.got ?? "không có kết luận"}".`).join(" ")
-      : "Kết luận của AI đúng như kỳ vọng.",
-    diffs: [],
-  };
-}
-
-function renderEvaluation(input, out, ms, mode) {
-  const ev = evidenceIndex(input);
-  const check = checkExpectations(out);
-  const edited = $("clause") && clauseField(current.input)?.raw_value !== $("clause").value;
-  let html = "";
-
-  if (check && !edited) {
-    const noGemini = out.diagnostics?.some((d) => d.code === "SEMANTIC_PROVIDER_UNAVAILABLE");
-    html += verdictBox(check.ok ? "ok" : "bad", check.ok ? "✓" : "✗", check.ok ? "Đúng kỳ vọng" : "Khác kỳ vọng",
-      `<p class="small">${esc(check.text)}</p>` +
-      (noGemini && !check.ok ? `<p class="small"><b>Nguyên nhân có thể:</b> service không gọi được Gemini. Kiểm tra GEMINI_API_KEY ở Render → Environment.</p>` : "") +
-      (check.diffs.length ? `<details><summary>Danh sách điểm khác</summary><ul class="small">${check.diffs.map((d) => `<li><code>${esc(d)}</code></li>`).join("")}</ul></details>` : ""));
-  } else if (edited) {
-    html += verdictBox("info", "i", "Bạn đã sửa điều khoản", `<p class="small">Không so với kỳ vọng. Tự đánh giá kết luận bên dưới.</p>`);
-  }
-
-  html += `<h3>AI kết luận (${out.assessments.length})</h3>`;
-  html += out.assessments.length ? out.assessments.map((a) => {
-    const [label, sub, tone] = PROPOSAL[a.proposal] ?? [a.proposal, "", ""];
-    const sev = SEVERITY[a.severity] ?? [a.severity, ""];
-    const hasMoney = a.supported_amount != null || a.unsupported_amount != null;
-    return `<div class="finding f-${tone}">
-      <div class="row"><span class="title">${esc(label)}</span><span class="badge t-${tone}">${esc(CATEGORY[a.category] ?? a.category)}</span>
-        <span class="badge ${sev[1]}">${esc(sev[0])}</span></div>
-      <div class="muted small">${esc(sub)} · Quy tắc ${esc(a.rule_ids.join(", "))}: ${esc(a.rule_ids.map((r) => RULES[r] ?? r).join("; "))}</div>
-      <p style="margin-top:8px">${esc(a.summary)}</p>
-      ${hasMoney ? `<div class="money"><span>Có căn cứ: <b>${vnd(a.supported_amount)}</b></span><span>Chưa có căn cứ: <b>${vnd(a.unsupported_amount)}</b></span></div>` : ""}
-      ${a.computed_date ? `<div class="money"><span>Ngày đến hạn tính được: <b>${esc(a.computed_date)}</b></span></div>` : ""}
-      ${a.absence_basis ? `<p class="small muted" style="margin-top:6px">Đã tìm trong ${a.absence_basis.searched_document_ids.length} tài liệu mà không thấy ${esc(DOC_TYPE[a.absence_basis.required_type] ?? a.absence_basis.required_type)}.</p>` : ""}
-      <div class="chips">${a.reason_codes.map((c) => `<span class="badge" title="${esc(c)}">${esc(reason(c))}</span>`).join("")}</div>
-      ${renderEvidence(a.evidence_ids, ev)}
-    </div>`;
-  }).join("") : `<p class="muted">AI không phát hiện vấn đề nào.</p>`;
-
-  if (out.request_suggestions?.length) {
-    html += `<h3>AI đề xuất gửi doanh nghiệp</h3>` + out.request_suggestions.map((s) => `
-      <div class="box" style="background:var(--code-bg)"><b class="label muted">${esc(s.purpose)}</b>"${esc(s.content)}"</div>`).join("") +
-      `<p class="muted small">Người duyệt quyết định có gửi yêu cầu này hay không.</p>`;
-  }
-
-  if (out.diagnostics?.length) {
-    html += `<h3>Ghi chú của hệ thống</h3><ul class="small">` +
-      out.diagnostics.map((d) => `<li><b>${esc(reason(d.code))}</b>: ${esc(d.message)}</li>`).join("") + `</ul>`;
-  }
-
-  html += `<h3>Kết quả từng quy tắc</h3><ul class="rules">` + out.rule_results.map((r) => {
-    const [label, tone] = RULE_STATUS[r.status] ?? [r.status, ""];
-    return `<li><span class="id">${esc(r.rule_id)}</span><span>${esc(RULES[r.rule_id] ?? r.rule_id)}
-      ${r.reason_codes.length ? `<span class="muted small"> · ${esc(r.reason_codes.map(reason).join(", "))}</span>` : ""}</span>
-      <span class="badge ${tone}">${esc(label)}</span></li>`;
-  }).join("") + `</ul>`;
-
-  const prov = out.provenance ?? {};
-  const meta = `<p class="small muted">Model: <code>${esc(prov.model_id)}</code> · prompt: <code>${esc(prov.prompt_version)}</code> · trạng thái run: <code>${esc(out.status)}</code></p>`;
-  return html + technical(out, ms, mode, meta);
+    return { rule, want, got: a?.proposal };
+  }).filter((l) => l.got !== l.want);
+  return { ok: !bad.length, note: bad.length ? esc(bad.map((l) =>
+    `${l.rule}: kỳ vọng "${PROPOSAL[l.want]?.[0] ?? l.want}", AI ra "${PROPOSAL[l.got]?.[0] ?? l.got ?? "không có"}".`).join(" ") + " " + hint) : "" };
 }
 
 // Bản JS của evaluation/compare.py: so chặt trường quyết định, evidence so như tập hợp.
