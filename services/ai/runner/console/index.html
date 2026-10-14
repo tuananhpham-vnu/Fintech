@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>AI Test Console</title>
+<style>
+:root {
+  --bg: #f6f7f9; --panel: #fff; --text: #1b1f24; --muted: #5d6673; --border: #dde1e6; --accent: #2457d6;
+  --accent-text: #fff; --code-bg: #f1f3f6; --ok: #1a7f37; --ok-bg: #e6f4ea; --warn: #9a6700; --warn-bg: #fff4d6;
+  --bad: #c62828; --bad-bg: #fdecea; --info: #2457d6; --info-bg: #e8eefc; --neutral-bg: #eef0f3;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1216; --panel: #171b21; --text: #e6e9ed; --muted: #9aa4b1; --border: #2a3039; --accent: #6d95ff;
+    --accent-text: #0f1216; --code-bg: #11151a; --ok: #56d364; --ok-bg: #12261a; --warn: #e3b341; --warn-bg: #2b2210;
+    --bad: #ff7b72; --bad-bg: #2d1414; --info: #79a6ff; --info-bg: #142040; --neutral-bg: #222831;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1216; --panel: #171b21; --text: #e6e9ed; --muted: #9aa4b1; --border: #2a3039; --accent: #6d95ff;
+  --accent-text: #0f1216; --code-bg: #11151a; --ok: #56d364; --ok-bg: #12261a; --warn: #e3b341; --warn-bg: #2b2210;
+  --bad: #ff7b72; --bad-bg: #2d1414; --info: #79a6ff; --info-bg: #142040; --neutral-bg: #222831;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); }
+header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 12px 16px;
+  background: var(--panel); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 2; }
+header h1 { font-size: 16px; margin: 0 8px 0 0; }
+header .spacer { flex: 1; }
+.layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 16px; padding: 16px; max-width: 1500px; margin: 0 auto; }
+@media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+.panel + .panel { margin-top: 16px; }
+h2 { font-size: 14px; margin: 0 0 10px; }
+h3 { font-size: 13px; margin: 16px 0 8px; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+.muted { color: var(--muted); }
+.small { font-size: 12px; }
+input[type=password], input[type=text], select, textarea {
+  font: inherit; color: var(--text); background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; }
+textarea { width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; resize: vertical; }
+button { font: inherit; border: 1px solid var(--border); background: var(--panel); color: var(--text);
+  border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: 600; }
+button:disabled { opacity: .55; cursor: progress; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.presets .group { font-size: 12px; color: var(--muted); margin: 14px 0 6px; font-weight: 600; }
+.presets .group:first-child { margin-top: 0; }
+.preset { display: block; width: 100%; text-align: left; margin-bottom: 6px; padding: 8px 10px; }
+.preset b { display: block; font-size: 13px; }
+.preset span { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+.preset.active { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600;
+  background: var(--neutral-bg); color: var(--muted); white-space: nowrap; }
+.b-ok { background: var(--ok-bg); color: var(--ok); }
+.b-warn { background: var(--warn-bg); color: var(--warn); }
+.b-bad { background: var(--bad-bg); color: var(--bad); }
+.b-info { background: var(--info-bg); color: var(--info); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; font-size: 12px; }
+.table-wrap { overflow-x: auto; }
+code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+.card { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; }
+.card .head { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 6px; }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 2px 12px; font-size: 13px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; overflow-wrap: anywhere; }
+.quote { border-left: 3px solid var(--border); padding: 2px 8px; margin: 4px 0; font-size: 12px; }
+details > summary { cursor: pointer; color: var(--muted); font-size: 12px; margin: 6px 0; }
+pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px; overflow: auto;
+  max-height: 480px; font-size: 12px; margin: 0; }
+.notice { padding: 8px 12px; border-radius: 6px; font-size: 13px; margin-bottom: 10px; }
+.empty { color: var(--muted); padding: 24px 0; text-align: center; }
+label.inline { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Fintech AI · Test console</h1>
+  <span id="health" class="badge">đang kiểm tra…</span>
+  <span class="spacer"></span>
+  <label class="inline small muted" for="key">X-Internal-Key</label>
+  <input id="key" type="password" autocomplete="off" placeholder="dán INTERNAL_API_KEY" size="28">
+  <button id="forget" title="Xoá key khỏi tab này">Quên key</button>
+</header>
+
+<div class="layout">
+  <aside class="panel presets">
+    <h2>Ca mẫu</h2>
+    <div class="notice b-warn small">Toàn bộ là dữ liệu giả lập. Không dán hồ sơ thật: service đang public và ca khó được gửi sang Gemini.</div>
+    <div id="preset-list"></div>
+  </aside>
+
+  <main>
+    <section class="panel">
+      <div class="row" style="justify-content: space-between">
+        <h2 id="req-title" style="margin:0">Request</h2>
+        <div class="row">
+          <select id="operation" aria-label="Operation">
+            <option value="evaluate">POST /internal/v1/evaluate</option>
+            <option value="inspect">POST /internal/v1/inspect</option>
+            <option value="extract">POST /internal/v1/extract</option>
+          </select>
+          <button id="send" class="primary">Gửi</button>
+        </div>
+      </div>
+      <p id="req-desc" class="muted small"></p>
+      <div id="docs" class="chips"></div>
+
+      <div id="clause-box" hidden>
+        <h3>Sửa nhanh: điều khoản thanh toán (04_contract.pdf · contract.payment_condition)</h3>
+        <textarea id="clause" rows="3"></textarea>
+        <p class="muted small">Field này để <code>value=null, quality=uncertain</code>, nên R08 sẽ gửi đoạn văn trên sang Gemini. Không có GEMINI_API_KEY thì ca sẽ được chuyển cho người duyệt.</p>
+      </div>
+
+      <details id="json-details">
+        <summary>JSON request đầy đủ (sửa được)</summary>
+        <textarea id="payload" rows="18" spellcheck="false"></textarea>
+        <div class="row" style="margin-top:6px">
+          <button id="format">Định dạng</button>
+          <button id="reset">Khôi phục ca mẫu</button>
+          <label class="inline"><input id="rehash" type="checkbox" checked> Tự tính lại snapshot_hash khi gửi</label>
+        </div>
+      </details>
+    </section>
+
+    <section class="panel" id="result"><div class="empty">Chọn một ca mẫu ở bên trái rồi bấm <b>Gửi</b>.</div></section>
+  </main>
+</div>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const store = {
+  get(k) { try { return sessionStorage.getItem(k) || ""; } catch { return ""; } },
+  set(k, v) { try { v ? sessionStorage.setItem(k, v) : sessionStorage.removeItem(k); } catch {} },
+};
+
+let presets = [];
+let current = null;
+
+const TONE = {
+  pass: "b-ok", issue: "b-bad", not_applicable: "", unknown: "b-warn", error: "b-bad",
+  still_open: "b-bad", candidate_resolved: "b-ok", partial: "b-warn", review_needed: "b-warn",
+  completed: "b-ok", failed: "b-bad", high: "b-bad", medium: "b-warn", low: "b-info",
+};
+const badge = (text, tone) => `<span class="badge ${tone ?? TONE[text] ?? ""}">${esc(text)}</span>`;
+
+// ---- health ----
+fetch("/healthz").then((r) => r.json()).then((h) => {
+  $("health").textContent = `mode: ${h.mode} · contracts ${h.schema_version}`;
+  $("health").className = "badge " + (h.mode === "live" ? "b-info" : "b-warn");
+}).catch(() => { $("health").textContent = "không gọi được /healthz"; $("health").className = "badge b-bad"; });
+
+// ---- key ----
+$("key").value = store.get("ai-key");
+$("key").addEventListener("input", () => store.set("ai-key", $("key").value.trim()));
+$("forget").addEventListener("click", () => { $("key").value = ""; store.set("ai-key", ""); });
+
+// ---- presets ----
+fetch("/console/presets.json").then((r) => r.json()).then((list) => {
+  presets = list;
+  const groups = {};
+  list.forEach((p, i) => (groups[p.group] ??= []).push(i));
+  $("preset-list").innerHTML = Object.entries(groups).map(([g, idx]) =>
+    `<div class="group">${esc(g)}</div>` + idx.map((i) =>
+      `<button class="preset" data-i="${i}"><b>${esc(list[i].id)}</b><span>${esc(list[i].description)}</span></button>`).join("")
+  ).join("");
+  document.querySelectorAll(".preset").forEach((b) => b.addEventListener("click", () => select(+b.dataset.i)));
+  select(0);
+});
+
+function select(i) {
+  current = presets[i];
+  document.querySelectorAll(".preset").forEach((b) => b.classList.toggle("active", +b.dataset.i === i));
+  $("req-title").textContent = current.id;
+  $("req-desc").textContent = current.description;
+  $("operation").value = current.operation;
+  $("payload").value = JSON.stringify(current.input, null, 2);
+  renderRequestMeta(current.input);
+  $("result").innerHTML = '<div class="empty">Bấm <b>Gửi</b> để chạy ca này.</div>';
+}
+
+function clauseField(input) {
+  const d = input?.snapshot?.documents?.find((x) => x.document.filename === "04_contract.pdf");
+  return d?.extraction?.fields?.find((f) => f.field_key === "contract.payment_condition");
+}
+
+function renderRequestMeta(input) {
+  const docs = input?.snapshot?.documents ?? [];
+  $("docs").innerHTML = docs.length
+    ? docs.map((d) => badge(`${d.document.filename} · ${d.document.type}`, "")).join("")
+    : "";
+  const f = clauseField(input);
+  const editable = f && f.value === null;
+  $("clause-box").hidden = !editable;
+  if (editable) $("clause").value = f.raw_value ?? "";
+}
+
+function parsePayload() {
+  try { return JSON.parse($("payload").value); }
+  catch (e) { throw new Error("JSON request không hợp lệ: " + e.message); }
+}
+
+$("clause").addEventListener("input", () => {
+  let data;
+  try { data = parsePayload(); } catch { return; }
+  const f = clauseField(data);
+  if (!f) return;
+  f.raw_value = $("clause").value;
+  $("payload").value = JSON.stringify(data, null, 2);
+});
+$("format").addEventListener("click", () => {
+  try { const d = parsePayload(); $("payload").value = JSON.stringify(d, null, 2); renderRequestMeta(d); }
+  catch (e) { alert(e.message); }
+});
+$("reset").addEventListener("click", () => { if (current) select(presets.indexOf(current)); });
+
+// Quy ước backend: sha256 của snapshot với sort keys, UTF-8, JSON compact.
+function canonical(v) {
+  if (Array.isArray(v)) return "[" + v.map(canonical).join(",") + "]";
+  if (v && typeof v === "object") return "{" + Object.keys(v).sort().map((k) => JSON.stringify(k) + ":" + canonical(v[k])).join(",") + "}";
+  return JSON.stringify(v);
+}
+async function sha256(text) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// ---- send ----
+$("send").addEventListener("click", send);
+async function send() {
+  let data;
+  try { data = parsePayload(); } catch (e) { return renderError(e.message); }
+  const op = $("operation").value;
+  if (op === "evaluate" && $("rehash").checked && data.snapshot && crypto.subtle) {
+    data.snapshot_hash = await sha256(canonical(data.snapshot));
+  }
+  const key = $("key").value.trim();
+  $("send").disabled = true;
+  $("result").innerHTML = '<div class="empty">Đang gọi service… (gói free có thể mất 30–60 giây nếu service đang ngủ)</div>';
+  const t0 = performance.now();
+  try {
+    const res = await fetch(`/internal/v1/${op}`, {
+      method: "POST", headers: { "Content-Type": "application/json", ...(key ? { "X-Internal-Key": key } : {}) },
+      body: JSON.stringify(data),
+    });
+    const ms = Math.round(performance.now() - t0);
+    const body = await res.json().catch(() => null);
+    renderResponse(op, data, res, body, ms);
+  } catch (e) {
+    renderError("Không gọi được service: " + e.message);
+  } finally {
+    $("send").disabled = false;
+  }
+}
+
+function renderError(msg) {
+  $("result").innerHTML = `<div class="notice b-bad">${esc(msg)}</div>`;
+}
+
+function renderResponse(op, input, res, body, ms) {
+  const mode = res.headers.get("X-AI-Mode");
+  let html = `<div class="row" style="margin-bottom:10px"><h2 style="margin:0">Kết quả</h2>
+    ${badge("HTTP " + res.status, res.ok ? "b-ok" : "b-bad")} ${mode ? badge("X-AI-Mode: " + mode, mode === "live" ? "b-info" : "b-warn") : ""}
+    <span class="muted small">${ms} ms</span></div>`;
+  if (!res.ok || !body) html += renderErrorBody(res.status, body);
+  else if (op === "evaluate") html += renderEvaluation(input, body);
+  else html += `<p class="muted">Output đã qua schema và guard.</p>`;
+  html += `<details><summary>JSON response đầy đủ</summary><pre>${esc(JSON.stringify(body, null, 2))}</pre></details>`;
+  $("result").innerHTML = html;
+}
+
+function renderErrorBody(status, body) {
+  const err = body?.error;
+  if (!err) return `<div class="notice b-bad">Response không phải JSON.</div>`;
+  const hint = {
+    FORBIDDEN: "Chưa nhập hoặc nhập sai X-Internal-Key (lấy trong Render → Environment → INTERNAL_API_KEY).",
+    INVALID_REQUEST: "Body không khớp schema 1.0.2. Xem path trong details.",
+    INVALID_MODEL_OUTPUT: "Output sai schema hoặc bị guard chặn, nên service không trả kết quả.",
+    PROVIDER_UNAVAILABLE: "Backend chưa sẵn sàng: extraction chưa có, hoặc mock không có gold cho input này.",
+  }[err.code] ?? "";
+  const details = (err.details ?? []).map((d) => `<tr><td class="mono">${esc(d.path)}</td><td>${esc(d.message ?? d.reason ?? JSON.stringify(d))}</td></tr>`).join("");
+  return `<div class="notice b-bad"><b>${esc(err.code)}</b>: ${esc(err.message)}${hint ? "<br>" + esc(hint) : ""}</div>
+    ${details ? `<div class="table-wrap"><table><tr><th>path</th><th>chi tiết</th></tr>${details}</table></div>` : ""}
+    <p class="muted small">request_id: <code>${esc(err.request_id)}</code></p>`;
+}
+
+function evidenceIndex(input) {
+  const map = {};
+  for (const d of input?.snapshot?.documents ?? []) {
+    for (const e of d.extraction?.evidence ?? []) map[e.id] = { ...e, filename: d.document.filename };
+  }
+  return map;
+}
+
+function renderEvidence(ids, ev) {
+  if (!ids?.length) return "";
+  const items = ids.map((id) => {
+    const e = ev[id];
+    return e ? `<div class="quote"><span class="muted">${esc(e.filename)} · tr.${esc(e.page)}</span><br>${esc(e.quote)}</div>`
+             : `<div class="quote mono">${esc(id)}</div>`;
+  }).join("");
+  return `<details><summary>${ids.length} evidence</summary>${items}</details>`;
+}
+
+function renderEvaluation(input, out) {
+  const ev = evidenceIndex(input);
+  let html = "";
+
+  if (current?.expected && current.input.run_id === input.run_id) {
+    const diffs = compare(current.expected, out);
+    html += diffs.length
+      ? `<div class="notice b-bad"><b>Lệch gold (${diffs.length})</b><ul>${diffs.map((d) => `<li class="mono">${esc(d)}</li>`).join("")}</ul></div>`
+      : `<div class="notice b-ok"><b>Khớp gold ${esc(current.id.slice(0, 3))}</b>: so chặt rule, assessment và suggestion như evaluation/compare.py.</div>`;
+  }
+  if (current?.expected_r08_proposal) {
+    const a = out.assessments.find((x) => x.issue_key.startsWith("R08:"));
+    const ok = a && a.proposal === current.expected_r08_proposal;
+    html += `<div class="notice ${ok ? "b-ok" : "b-bad"}">R08 proposal: kỳ vọng <b>${esc(current.expected_r08_proposal)}</b>, nhận được <b>${esc(a?.proposal ?? "—")}</b>.
+      ${out.diagnostics?.some((d) => d.code === "SEMANTIC_PROVIDER_UNAVAILABLE") ? "<br>Service không gọi được Gemini (SEMANTIC_PROVIDER_UNAVAILABLE): kiểm tra GEMINI_API_KEY trong Render → Environment." : ""}</div>`;
+  }
+
+  html += `<dl class="kv"><dt>status</dt><dd>${badge(out.status)}</dd>
+    <dt>provenance</dt><dd class="mono">${esc(Object.entries(out.provenance ?? {}).map(([k, v]) => `${k}=${typeof v === "object" ? JSON.stringify(v) : v}`).join(" · "))}</dd></dl>`;
+
+  html += `<h3>Rule results</h3><div class="table-wrap"><table><tr><th>rule</th><th>status</th><th>reason_codes</th><th>issue_keys</th><th>evidence</th></tr>` +
+    out.rule_results.map((r) => `<tr><td><b>${esc(r.rule_id)}</b></td><td>${badge(r.status)}</td>
+      <td class="mono">${esc(r.reason_codes.join(", "))}</td><td class="mono">${esc(r.issue_keys.join(", "))}</td>
+      <td>${renderEvidence(r.evidence_ids, ev)}</td></tr>`).join("") + `</table></div>`;
+
+  html += `<h3>Assessments (${out.assessments.length})</h3>` + (out.assessments.length ? out.assessments.map((a) => `
+    <div class="card"><div class="head">${badge(a.proposal)} ${badge(a.category, "")} ${badge(a.severity)}
+      <span class="mono muted">${esc(a.rule_ids.join(", "))}</span></div>
+      <div>${esc(a.summary)}</div>
+      <dl class="kv" style="margin-top:6px"><dt>issue_key</dt><dd class="mono">${esc(a.issue_key)}</dd>
+        <dt>reason_codes</dt><dd class="mono">${esc(a.reason_codes.join(", ") || "—")}</dd>
+        ${a.supported_amount != null || a.unsupported_amount != null ? `<dt>supported / unsupported</dt><dd class="mono">${esc(a.supported_amount ?? "—")} / ${esc(a.unsupported_amount ?? "—")}</dd>` : ""}
+        ${a.computed_date ? `<dt>computed_date</dt><dd class="mono">${esc(a.computed_date)}</dd>` : ""}
+        ${a.absence_basis ? `<dt>absence_basis</dt><dd>${esc(a.absence_basis.reason)} <span class="muted">(${esc(a.absence_basis.required_type)}, đã tìm ${a.absence_basis.searched_document_ids.length} tài liệu)</span></dd>` : ""}
+      </dl>${renderEvidence(a.evidence_ids, ev)}</div>`).join("") : `<p class="muted">Không có assessment.</p>`);
+
+  if (out.request_suggestions?.length) {
+    html += `<h3>Đề xuất yêu cầu bổ sung (${out.request_suggestions.length})</h3>` + out.request_suggestions.map((s) => `
+      <div class="card"><div class="head">${badge(s.required_type, "b-info")} <span class="mono muted">${esc(s.contract_ref)} · ${esc(s.required_scope)}</span></div>
+      <div><b>${esc(s.purpose)}</b></div><div>${esc(s.content)}</div></div>`).join("");
+  }
+  if (out.diagnostics?.length) {
+    html += `<h3>Diagnostics</h3><div class="table-wrap"><table><tr><th>code</th><th>chi tiết</th></tr>` +
+      out.diagnostics.map((d) => `<tr><td class="mono">${esc(d.code)}</td><td>${esc(d.message ?? JSON.stringify(d))}</td></tr>`).join("") + `</table></div>`;
+  }
+  return html;
+}
+
+// Bản JS của evaluation/compare.py: so chặt trường quyết định, evidence so như tập hợp.
+const RULE_FIELDS = ["status", "reason_codes", "issue_keys"];
+const ASSESSMENT_FIELDS = ["issue_id", "rule_ids", "category", "severity", "proposal", "reason_codes",
+  "supported_amount", "unsupported_amount", "computed_date"];
+const SUGGESTION_FIELDS = ["required_type", "contract_ref", "required_scope"];
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const sameSet = (a, b) => same([...(a ?? [])].sort(), [...(b ?? [])].sort());
+const absence = (b) => b ? [b.checklist_version, b.required_type, [...b.searched_document_ids].sort()] : null;
+
+function compare(expected, actual) {
+  const diffs = [];
+  for (const k of ["run_id", "case_id", "case_revision", "snapshot_hash", "status"]) {
+    if (!same(expected[k], actual[k])) diffs.push(`${k}: expected ${JSON.stringify(expected[k])}, got ${JSON.stringify(actual[k])}`);
+  }
+  const byKey = (list, k) => Object.fromEntries((list ?? []).map((x) => [x[k], x]));
+  const section = (label, exp, act, fields, extra) => {
+    for (const k of [...new Set([...Object.keys(exp), ...Object.keys(act)])].sort()) {
+      const e = exp[k], a = act[k];
+      if (!e || !a) { diffs.push(`${label} ${k}: only in ${e ? "expected" : "actual"}`); continue; }
+      for (const f of fields) if (!same(e[f], a[f])) diffs.push(`${label} ${k}.${f}: expected ${JSON.stringify(e[f])}, got ${JSON.stringify(a[f])}`);
+      if (!sameSet(e.evidence_ids, a.evidence_ids)) diffs.push(`${label} ${k}.evidence_ids: set differs`);
+      extra?.(k, e, a);
+    }
+  };
+  section("rule", byKey(expected.rule_results, "rule_id"), byKey(actual.rule_results, "rule_id"), RULE_FIELDS);
+  section("assessment", byKey(expected.assessments, "issue_key"), byKey(actual.assessments, "issue_key"), ASSESSMENT_FIELDS,
+    (k, e, a) => { if (!same(absence(e.absence_basis), absence(a.absence_basis))) diffs.push(`assessment ${k}.absence_basis differs`); });
+  section("suggestion", byKey(expected.request_suggestions, "issue_id"), byKey(actual.request_suggestions, "issue_id"), SUGGESTION_FIELDS);
+  return diffs;
+}
+</script>
+</body>
+</html>

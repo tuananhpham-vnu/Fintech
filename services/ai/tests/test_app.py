@@ -6,6 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from runner.app import create_app
+from runner.config import MODE_LIVE
 
 from .conftest import HEADERS, TamperingBackend, example, make_settings
 
@@ -123,3 +124,21 @@ def test_semantic_guards_block_bad_model_output(contracts, gold, name):
 def test_service_has_no_database_or_callback_client(client):
     forbidden = {"sqlalchemy", "psycopg", "psycopg2", "asyncpg", "sqlite3", "requests"}
     assert forbidden.isdisjoint(m.split(".")[0] for m in sys.modules if m.startswith(("runner", *forbidden)))
+
+
+def test_console_disabled_by_default(client):
+    assert client.get("/console").status_code == 404
+    assert client.get("/console/presets.json").status_code == 404
+
+
+def test_console_serves_valid_presets_and_keeps_api_closed(contracts):
+    from dataclasses import replace
+    app = create_app(replace(make_settings(MODE_LIVE), test_console=True), contracts=contracts)
+    c = TestClient(app)
+    page = c.get("/console")
+    assert page.status_code == 200 and "text/html" in page.headers["content-type"]
+    assert page.headers["X-Robots-Tag"] == "noindex"
+    presets = c.get("/console/presets.json").json()
+    schemas = {"evaluate": "EvaluationInput", "inspect": "InspectionInput", "extract": "ExtractionInput"}
+    assert presets and all(contracts.violations(schemas[p["operation"]], p["input"]) == [] for p in presets)
+    assert c.post("/internal/v1/evaluate", json=presets[0]["input"]).status_code == 403

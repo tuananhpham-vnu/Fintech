@@ -24,9 +24,22 @@ export INTERNAL_API_KEY=<lấy qua kênh nhóm, không commit>
 | `MODEL_ID`, `PROMPT_VERSION` | `gemini-3.1-flash-lite` (provider) | Model Gemini cho tác vụ ngữ nghĩa và spike; xem [decision log](docs/model-prompt-decision-log.md) |
 | `GEMINI_API_KEY` | rỗng | Đặt trong env của server hoặc `.env` ở gốc repo (gitignored, nạp tự động, không ghi đè env); `health` chỉ báo có/không |
 | `CONTRACTS_DIR` | `packages/contracts` | Bị kiểm `SHA256SUMS` lúc khởi động; sửa tay thì service từ chối chạy |
+| `ENABLE_TEST_CONSOLE` | tắt | `1`: bật trang test thủ công `GET /console` (xem bên dưới). Render đang bật |
 | `AI_FIXTURES_DIR` | `packages/contracts/fixtures` | Gold cho mock: 3 JSON + 6 PDF text từ bundle; 2 scan 6MB chỉ có trong bundle |
 
 Deploy Render: [`render.yaml`](../../render.yaml) + [runbook](docs/deploy-render.md).
+
+## Test console (`/console`)
+
+Trang test thủ công, chỉ có khi `ENABLE_TEST_CONSOLE=1`: `http://127.0.0.1:8100/console` hoặc `https://fintech-ai-internal.onrender.com/console`.
+
+- Dán `INTERNAL_API_KEY` vào ô key. Key chỉ lưu trong sessionStorage của tab; API vẫn fail-closed như cũ.
+- Có 12 ca mẫu giả lập: G01–G03 (so với gold bằng bản JS của `evaluation/compare.py`), các biến thể partial/unknown, H1–H4 cho Gemini/HITL, và example inspect/extract.
+- Sửa được điều khoản thanh toán hoặc toàn bộ JSON; `snapshot_hash` được tính lại khi gửi.
+- Kết quả hiển thị theo rule, assessment, evidence (trích dẫn + trang), đề xuất bổ sung, diagnostics và lỗi kèm `details[].path`.
+- Ca mẫu nằm ở `runner/console/presets.json`, sinh bởi `scripts/build_console_presets.py`. Đổi gold hoặc contract thì chạy lại script này.
+
+Trang chỉ gồm file tĩnh và dữ liệu giả lập. **Không dán hồ sơ thật**: service đang public, và ca khó được gửi sang Gemini.
 
 ## Hợp đồng cho Đức (backend gọi service)
 

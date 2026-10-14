@@ -9,11 +9,12 @@ from __future__ import annotations
 import hmac
 import json
 import logging
+from pathlib import Path
 from typing import Callable
 
 from fastapi import FastAPI, Request
 from fastapi.concurrency import run_in_threadpool
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 from .backends import Backend, GoldFixtures, LiveBackend, MockBackend
 from .config import MODE_MOCK, Settings
@@ -22,6 +23,8 @@ from .errors import FORBIDDEN, INVALID_MODEL_OUTPUT, INVALID_REQUEST, ServiceErr
 from .guards import evaluation_output_violations, extraction_output_violations, inspection_output_violations
 
 logger = logging.getLogger("runner")
+
+CONSOLE_DIR = Path(__file__).resolve().parent / "console"
 
 Guard = Callable[[dict, dict], list[Violation]]
 
@@ -75,7 +78,22 @@ def create_app(settings: Settings | None = None, backend: Backend | None = None,
     for operation, spec in OPERATIONS.items():
         app.add_api_route(f"/internal/v1/{operation}", _make_handler(operation, *spec), methods=["POST"],
                           name=f"post_{operation}")
+    if settings.test_console:
+        _mount_console(app)
     return app
+
+
+def _mount_console(app: FastAPI) -> None:
+    """Trang test thủ công (ENABLE_TEST_CONSOLE=1). Chỉ là file tĩnh + ca mẫu giả lập; API vẫn đòi X-Internal-Key."""
+    headers = {"Cache-Control": "no-store", "X-Robots-Tag": "noindex", "Referrer-Policy": "no-referrer"}
+
+    @app.get("/console", include_in_schema=False)
+    def console() -> FileResponse:
+        return FileResponse(CONSOLE_DIR / "index.html", media_type="text/html", headers=headers)
+
+    @app.get("/console/presets.json", include_in_schema=False)
+    def console_presets() -> FileResponse:
+        return FileResponse(CONSOLE_DIR / "presets.json", media_type="application/json", headers=headers)
 
 
 def _authorize(settings: Settings, provided: str | None) -> None:

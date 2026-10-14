@@ -41,6 +41,7 @@ class Settings:
     contracts_dir: Path
     fixtures_dir: Path
     gemini_key_configured: bool
+    test_console: bool = False
 
     @classmethod
     def from_env(cls, env: dict[str, str] | None = None) -> "Settings":
@@ -58,4 +59,5 @@ class Settings:
             contracts_dir=Path(env.get("CONTRACTS_DIR", DEFAULT_CONTRACTS_DIR)),
             fixtures_dir=Path(env.get("AI_FIXTURES_DIR", DEFAULT_FIXTURES_DIR)),
             gemini_key_configured=bool(env.get("GEMINI_API_KEY")),
+            test_console=env.get("ENABLE_TEST_CONSOLE", "").strip().lower() in ("1", "true", "yes"),
         )

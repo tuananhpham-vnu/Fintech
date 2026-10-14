@@ -30,6 +30,8 @@ services:
         value: payment-condition-v1
       - key: CONTRACTS_DIR
         value: /opt/render/project/src/packages/contracts
+      - key: ENABLE_TEST_CONSOLE
+        value: "1"                  # trang test thủ công /console (file tĩnh); API vẫn đòi X-Internal-Key. Tắt: "0"
       - key: INTERNAL_API_KEY
         generateValue: true         # Render tự sinh; Đức copy sang env của apps/api
       - key: GEMINI_API_KEY
