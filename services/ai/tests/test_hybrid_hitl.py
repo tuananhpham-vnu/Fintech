@@ -69,11 +69,14 @@ def test_rule_handled_cases_never_call_llm(run, index):
 
 
 def test_hard_case_uses_llm_once_through_guard(run):
+    """LLM được hỏi một lần qua guard, nhưng kết quả chỉ là gợi ý: không tự thành candidate_resolved."""
     resolver = FakeResolver()
     out = run(variant(2, unstructured), semantic=resolver)
     a = r08(out)
-    assert (a["proposal"], a["computed_date"]) == ("candidate_resolved", "2026-11-14")
-    assert "LLM_ASSISTED" in a["reason_codes"] and codes(out) == ["LLM_ASSISTED"]
+    assert (a["proposal"], a["computed_date"]) == ("unknown", None)
+    assert {"REVIEW_REQUIRED", "LLM_SUGGESTION_UNVERIFIED", "SOURCE_UNCERTAIN"} <= set(a["reason_codes"])
+    assert codes(out) == ["LLM_SUGGESTION"]
+    assert next(r for r in out["rule_results"] if r["rule_id"] == "R08")["status"] == "unknown"
     assert len(resolver.calls) == 1 and "30 ngày lịch" in resolver.calls[0]    # R08 + R09 dùng chung cache
     assert out["provenance"]["model_id"] == "fake-llm+deterministic-rules"
 

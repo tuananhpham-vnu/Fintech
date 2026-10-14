@@ -50,11 +50,11 @@ DESCRIPTIONS = {
     "H1-gold-clause-unstructured": (
         "Điều khoản thanh toán viết tự do",
         "Không trích xuất được điều kiện thanh toán thành dữ liệu có cấu trúc, chỉ còn đoạn văn gốc của hợp đồng.",
-        "Gemini đọc được điều kiện \"30 ngày sau nghiệm thu\", nên kết quả là có thể đã giải quyết."),
+        "Gemini đọc được điều kiện \"30 ngày sau nghiệm thu\" nhưng chỉ là gợi ý: chưa kết luận, chờ người duyệt xác nhận."),
     "H2-paraphrase": (
         "Điều khoản được diễn đạt khác",
         "Cùng một điều kiện thanh toán nhưng viết bằng câu chữ khác hẳn.",
-        "Gemini vẫn hiểu đúng ý, nên kết quả là có thể đã giải quyết."),
+        "Gemini vẫn hiểu đúng ý nhưng chỉ là gợi ý: chưa kết luận, chờ người duyệt xác nhận."),
     "H3-underspecified": (
         "Điều khoản thiếu thông tin",
         "Điều khoản không nói rõ ngày lịch hay ngày làm việc, cũng không nói có tính ngày nghiệm thu hay không.",

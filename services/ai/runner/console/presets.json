@@ -6730,7 +6730,7 @@
   "operation": "evaluate",
   "title": "Điều khoản thanh toán viết tự do",
   "scenario": "Không trích xuất được điều kiện thanh toán thành dữ liệu có cấu trúc, chỉ còn đoạn văn gốc của hợp đồng.",
-  "expect": "Gemini đọc được điều kiện \"30 ngày sau nghiệm thu\", nên kết quả là có thể đã giải quyết.",
+  "expect": "Gemini đọc được điều kiện \"30 ngày sau nghiệm thu\" nhưng chỉ là gợi ý: chưa kết luận, chờ người duyệt xác nhận.",
   "input": {
    "schema_version": "1.0.2",
    "run_id": "8019adc9-03ed-5452-8f16-0cfea88b710f",
@@ -7872,7 +7872,7 @@
    }
   },
   "expected_proposals": {
-   "R08": "candidate_resolved"
+   "R08": "unknown"
   }
  },
  {
@@ -7881,7 +7881,7 @@
   "operation": "evaluate",
   "title": "Điều khoản được diễn đạt khác",
   "scenario": "Cùng một điều kiện thanh toán nhưng viết bằng câu chữ khác hẳn.",
-  "expect": "Gemini vẫn hiểu đúng ý, nên kết quả là có thể đã giải quyết.",
+  "expect": "Gemini vẫn hiểu đúng ý nhưng chỉ là gợi ý: chưa kết luận, chờ người duyệt xác nhận.",
   "input": {
    "schema_version": "1.0.2",
    "run_id": "8019adc9-03ed-5452-8f16-0cfea88b710f",
@@ -9023,7 +9023,7 @@
    }
   },
   "expected_proposals": {
-   "R08": "candidate_resolved"
+   "R08": "unknown"
   }
  },
  {
