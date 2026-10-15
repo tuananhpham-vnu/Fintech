@@ -1,0 +1,3 @@
+# Contract and fixture checksums require canonical LF bytes on every platform.
+/packages/contracts/** text=auto eol=lf
+/packages/contracts/fixtures/*.pdf -text

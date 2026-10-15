@@ -3,8 +3,9 @@
 Thứ tự ưu tiên cho điều khoản thanh toán của hợp đồng:
   1. Người duyệt đã hiệu chỉnh field (correct_field)  -> dùng giá trị người, KHÔNG gọi LLM (đóng vòng HITL).
   2. Extraction đã cấu trúc đủ (không còn "unknown")    -> dùng luôn, không gọi LLM.
-  3. Còn trống/unknown nhưng có văn bản nguồn            -> LLM đọc ngữ nghĩa, output qua guard; giá trị đã biết
-     mà LLM nói khác -> mâu thuẫn -> HITL.
+  3. Còn trống/unknown nhưng có văn bản nguồn            -> LLM đọc ngữ nghĩa, output qua guard. Kết quả CHỈ là
+     gợi ý (LLM_SUGGESTION + REVIEW_REQUIRED + lý do nguồn chưa xác thực), không bao giờ thành điều kiện đã xác
+     thực: model thứ hai đọc lại cùng văn bản không phải căn cứ độc lập. Giá trị đã biết mà LLM nói khác -> HITL.
   4. Văn bản nghi prompt injection / không có provider / guard từ chối -> giữ giá trị deterministic (thường là
      unknown) + REVIEW_REQUIRED + diagnostic để đưa vào hàng chờ người duyệt.
 AI không bao giờ tự ghi human_status: HITL ở đây là đề xuất "cần người xem", backend/UI xử lý quyết định.
@@ -71,6 +72,18 @@ def source_text(doc: Doc, f: Field) -> str | None:
     return joined or None
 
 
+def source_state(doc: Doc, f: Field) -> str:
+    """Vì sao extraction không xác thực field: nguồn OCR, bị guard M2 từ chối, hay chỉ uncertain."""
+    extraction = doc.extraction or {}
+    pages = {e["page"] for e in extraction.get("evidence", []) if e["id"] in set(f.evidence_ids)}
+    if any(p["method"] == "ocr" for p in extraction.get("pages", []) if p["page"] in pages):
+        return "SOURCE_OCR_UNVERIFIED"
+    if any(d["code"] == "PAYMENT_CONDITION_UNVERIFIED" and d["field_key"] == f.key
+           for d in extraction.get("diagnostics", [])):
+        return "SOURCE_REJECTED_BY_EXTRACTION"
+    return "SOURCE_UNCERTAIN"
+
+
 def needs_semantic(f: Field | None) -> bool:
     if f is None or f.corrected:
         return False
@@ -114,10 +127,17 @@ def resolve_payment_condition(view: SnapshotView, contract: Doc, semantic: Seman
             diagnostic(view, "LLM_CONFLICT", f"LLM mâu thuẫn với giá trị đã trích ({', '.join(sorted(conflicts))}).",
                        contract, key)
             return ConditionResolution(current, [REVIEW_REQUIRED, "LLM_CONFLICT"])
+    # Trust boundary: tới đây extraction KHÔNG xác thực được điều khoản (bị guard M2 từ chối, uncertain hoặc chỉ có
+    # từ OCR). Một model khác đọc lại cùng văn bản không phải căn cứ độc lập: kết quả chỉ là gợi ý cho người duyệt,
+    # giữ giá trị deterministic. Người duyệt chấp nhận bằng correct_field (vòng HITL ở mục 1).
     view.llm_used = True
-    diagnostic(view, "LLM_ASSISTED", f"Điều khoản thanh toán được đọc bởi {result.model_id} qua guard; "
-                                     f"người duyệt xác nhận khi quyết định.", contract, key)
-    return ConditionResolution(proposed, ["LLM_ASSISTED"], llm_used=True)
+    state = source_state(contract, f)
+    summary = ", ".join(f"{k}={proposed.get(k)}" for k in
+                        ("event_type", "offset_days", "calendar_basis", "counting_convention", "other_conditions_state"))
+    diagnostic(view, "LLM_SUGGESTION", f"{result.model_id} đề xuất điều kiện thanh toán qua guard ({summary}); "
+                                       f"nguồn chưa được extraction xác thực ({state}) nên chỉ là gợi ý, người duyệt "
+                                       f"xác nhận bằng correct_field.", contract, key)
+    return ConditionResolution(current, [REVIEW_REQUIRED, "LLM_SUGGESTION_UNVERIFIED", state], llm_used=True)
 
 
 def make_resolver(func: Callable[[str], Any], model_id: str, prompt_version: str) -> SemanticResolver:
