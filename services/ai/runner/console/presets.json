@@ -3267,7 +3267,7 @@
    "run_id": "20986829-fb5a-5d6b-b814-17017e490e45",
    "case_id": "a06adf0c-7110-51f6-86ad-4b4b903c3e9e",
    "case_revision": 12,
-   "snapshot_hash": "ec5fb9b28ac33ec4fc7d8dd34c42966a3a960cf203d335e4f39b200ef053998a",
+   "snapshot_hash": "7fc5b81557c83c032511674338898c0e1d2c43b4d5c4ebfd444d6534f283ed22",
    "snapshot": {
     "schema_version": "1.0.2",
     "case": {
@@ -4194,7 +4194,7 @@
        "pages": [
         {
          "page": 1,
-         "text": "BIÊN BẢN NGHIỆM THU MÔ PHỎNG\nSYNTHETIC | FinTechathon 2026 | Dữ liệu kiểm thử, không có giá trị giao dịch\nSố biên bản: NT01. Hợp đồng tham chiếu: HĐ01.\nBên cung cấp: Sao Mai Demo. Mã số thuế: 0000000001\nBên mua: Bình Minh Demo. Mã số thuế: 0000000002\nNghiệm thu toàn bộ S1, giá trị 500000000 VND, đã gồm VAT.\nNgày nghiệm thu: 15/10/2026.\nMọi tên, MST, số tiền và ngày tháng đều thuộc tình huống giả lập.\nTrang 1 / 1 | Không xác thực chữ ký, con dấu hoặc tiền thực nhận.\n",
+         "text": "BIÊN BẢN NGHIỆM THU MÔ PHỎNG\nSYNTHETIC | FinTechathon 2026 | Dữ liệu kiểm thử, không có giá trị giao dịch\nSố biên bản: NT01. Hợp đồng tham chiếu: HĐ01.\nBên cung cấp: Sao Mai Demo. Mã số thuế: 0000000001\nBên mua: Bình Minh Demo. Mã số thuế: 0000000002\nNghiệm thu toàn bộ S1, giá trị 500000000 VND, đã gồm VAT.\nNgày nghiệm thu: 15/10/2026.\nMọi tên, MST, số tiền và ngày tháng đều thuộc tình huống giả lập.\nTrang 1 / 1 | Không xác thực chữ ký, con dấu hoặc tiền thực nhận.\nSố biên bản: NT04\nSố tiền: 200000000 VND",
          "method": "text",
          "width": 595,
          "height": 842
@@ -4205,11 +4205,11 @@
          "id": "dc6a3b83-547d-5a55-9181-277c793960cc",
          "document_id": "77bfff78-340e-53f1-9194-353a3ce9c81c",
          "field_key": "acceptance.ref",
-         "raw_value": "NT04",
+         "raw_value": "Số biên bản: NT04",
          "value": "NT04",
          "quality": "readable",
          "evidence_ids": [
-          "f8b94821-8441-5ccb-9a73-9976e8ed328a"
+          "b3a8698b-65c7-5e76-ab02-28ae2d0b33a9"
          ],
          "missing_reason": null
         },
@@ -4289,11 +4289,11 @@
          "id": "ba74fac6-7cf0-5fc0-8cb3-208d81d21fa2",
          "document_id": "77bfff78-340e-53f1-9194-353a3ce9c81c",
          "field_key": "acceptance.amount",
-         "raw_value": "200000000",
+         "raw_value": "Số tiền: 200000000 VND",
          "value": "200000000",
          "quality": "readable",
          "evidence_ids": [
-          "a93e64c7-1803-5ee6-be8a-8da80f715b8f"
+          "2bef6b26-1674-580f-824c-d1bbc181d3c3"
          ],
          "missing_reason": null
         },
@@ -4348,6 +4348,22 @@
          "document_id": "77bfff78-340e-53f1-9194-353a3ce9c81c",
          "page": 1,
          "quote": "Ngày nghiệm thu: 15/10/2026.",
+         "bbox": null,
+         "precision": "page"
+        },
+        {
+         "id": "b3a8698b-65c7-5e76-ab02-28ae2d0b33a9",
+         "document_id": "77bfff78-340e-53f1-9194-353a3ce9c81c",
+         "page": 1,
+         "quote": "Số biên bản: NT04",
+         "bbox": null,
+         "precision": "page"
+        },
+        {
+         "id": "2bef6b26-1674-580f-824c-d1bbc181d3c3",
+         "document_id": "77bfff78-340e-53f1-9194-353a3ce9c81c",
+         "page": 1,
+         "quote": "Số tiền: 200000000 VND",
          "bbox": null,
          "precision": "page"
         }
@@ -4427,7 +4443,7 @@
    "run_id": "8019adc9-03ed-5452-8f16-0cfea88b710f",
    "case_id": "a06adf0c-7110-51f6-86ad-4b4b903c3e9e",
    "case_revision": 15,
-   "snapshot_hash": "b1e3752821928ddc889dd99f63f44548f3dd0683a63f2b9cdaab73bcf797ab3d",
+   "snapshot_hash": "cb954d80d2a61a0ab50e6875a96a0e2245f043f902c597affe558b7dda65b1a8",
    "snapshot": {
     "schema_version": "1.0.2",
     "case": {
@@ -4872,7 +4888,7 @@
        "pages": [
         {
          "page": 1,
-         "text": "ĐỀ NGHỊ VAY MÔ PHỎNG\nSYNTHETIC | FinTechathon 2026 | Dữ liệu kiểm thử, không có giá trị giao dịch\nDoanh nghiệp: Sao Mai Demo. Mã số thuế: 0000000001\nĐề nghị vay 300000000 VND.\nDự kiến thu 500000000 VND từ HĐ01 ngày 14/11/2026.\nPhạm vi khoản thu: S1. Đây là dự kiến thu, chưa khai đã nhận tiền.\nMọi tên, MST, số tiền và ngày tháng đều thuộc tình huống giả lập.\nTrang 1 / 1 | Không xác thực chữ ký, con dấu hoặc tiền thực nhận.\n",
+         "text": "ĐỀ NGHỊ VAY MÔ PHỎNG\nSYNTHETIC | FinTechathon 2026 | Dữ liệu kiểm thử, không có giá trị giao dịch\nDoanh nghiệp: Sao Mai Demo. Mã số thuế: 0000000001\nĐề nghị vay 300000000 VND.\nDự kiến thu 500000000 VND từ HĐ01 ngày 14/11/2026.\nPhạm vi khoản thu: S1. Đây là dự kiến thu, chưa khai đã nhận tiền.\nMọi tên, MST, số tiền và ngày tháng đều thuộc tình huống giả lập.\nTrang 1 / 1 | Không xác thực chữ ký, con dấu hoặc tiền thực nhận.\nKhoản thu đã nhận đủ.",
          "method": "text",
          "width": 595,
          "height": 842
@@ -4967,11 +4983,11 @@
          "id": "e1e0aa88-d99c-5f3c-bf8d-3f532acbb521",
          "document_id": "9f79247e-3b4a-5bb0-880b-720253b8a1be",
          "field_key": "receipt.claim_type",
-         "raw_value": "received",
+         "raw_value": "Khoản thu đã nhận đủ.",
          "value": "received",
          "quality": "readable",
          "evidence_ids": [
-          "22a9b263-2886-5583-ac46-ce359994a6ef"
+          "ce3a39b2-8d74-5a8a-b968-da3667eac1b6"
          ],
          "missing_reason": null
         },
@@ -5018,6 +5034,14 @@
          "document_id": "9f79247e-3b4a-5bb0-880b-720253b8a1be",
          "page": 1,
          "quote": "Phạm vi khoản thu: S1. Đây là dự kiến thu, chưa khai đã nhận tiền.",
+         "bbox": null,
+         "precision": "page"
+        },
+        {
+         "id": "ce3a39b2-8d74-5a8a-b968-da3667eac1b6",
+         "document_id": "9f79247e-3b4a-5bb0-880b-720253b8a1be",
+         "page": 1,
+         "quote": "Khoản thu đã nhận đủ.",
          "bbox": null,
          "precision": "page"
         }
@@ -5553,7 +5577,7 @@
        "pages": [
         {
          "page": 1,
-         "text": "BIÊN BẢN NGHIỆM THU MÔ PHỎNG\nSYNTHETIC | FinTechathon 2026 | Dữ liệu kiểm thử, không có giá trị giao dịch\nSố biên bản: NT01. Hợp đồng tham chiếu: HĐ01.\nBên cung cấp: Sao Mai Demo. Mã số thuế: 0000000001\nBên mua: Bình Minh Demo. Mã số thuế: 0000000002\nNghiệm thu toàn bộ S1, giá trị 500000000 VND, đã gồm VAT.\nNgày nghiệm thu: 15/10/2026.\nMọi tên, MST, số tiền và ngày tháng đều thuộc tình huống giả lập.\nTrang 1 / 1 | Không xác thực chữ ký, con dấu hoặc tiền thực nhận.\n",
+         "text": "BIÊN BẢN NGHIỆM THU MÔ PHỎNG\nSYNTHETIC | FinTechathon 2026 | Dữ liệu kiểm thử, không có giá trị giao dịch\nSố biên bản: NT01. Hợp đồng tham chiếu: HĐ01.\nBên cung cấp: Sao Mai Demo. Mã số thuế: 0000000001\nBên mua: Bình Minh Demo. Mã số thuế: 0000000002\nNghiệm thu toàn bộ S1, giá trị 500000000 VND, đã gồm VAT.\nNgày nghiệm thu: 15/10/2026.\nMọi tên, MST, số tiền và ngày tháng đều thuộc tình huống giả lập.\nTrang 1 / 1 | Không xác thực chữ ký, con dấu hoặc tiền thực nhận.\nSố UNC: UNC-UNC.pdf\nHợp đồng số: HĐ01\nBên nhận: Mã số thuế: 0000000001\nBên chuyển: Mã số thuế: 0000000002\nNgày: 20/10/2026\nSố tiền: 200000000 VND\nLoại tiền: VND\nTrạng thái: Thành công",
          "method": "text",
          "width": 595,
          "height": 842
@@ -5564,11 +5588,11 @@
          "id": "30fbb3df-5b8c-58ae-b784-0491e3004e9c",
          "document_id": "8139ddb9-fa84-55d8-931d-884773381759",
          "field_key": "payment.ref",
-         "raw_value": "UNC-UNC.pdf",
+         "raw_value": "Số UNC: UNC-UNC.pdf",
          "value": "UNC-UNC.pdf",
          "quality": "readable",
          "evidence_ids": [
-          "d037a051-eae2-5fe4-9ac0-0e048968f644"
+          "9845cb95-34dd-5b49-823c-2b422dc87328"
          ],
          "missing_reason": null
         },
@@ -5576,11 +5600,11 @@
          "id": "26a73b16-3d9e-5688-bdd7-56c44141413b",
          "document_id": "8139ddb9-fa84-55d8-931d-884773381759",
          "field_key": "payment.contract_ref",
-         "raw_value": "HĐ01",
+         "raw_value": "Hợp đồng số: HĐ01",
          "value": "HĐ01",
          "quality": "readable",
          "evidence_ids": [
-          "d037a051-eae2-5fe4-9ac0-0e048968f644"
+          "24f788a1-0077-5b1f-827c-1637b0ce426a"
          ],
          "missing_reason": null
         },
@@ -5588,11 +5612,11 @@
          "id": "54e8ee0e-2d4a-50ea-93f8-5808cbb092a8",
          "document_id": "8139ddb9-fa84-55d8-931d-884773381759",
          "field_key": "parties.payee.tax_id",
-         "raw_value": "0000000001",
+         "raw_value": "Bên nhận: Mã số thuế: 0000000001",
          "value": "0000000001",
          "quality": "readable",
          "evidence_ids": [
-          "d037a051-eae2-5fe4-9ac0-0e048968f644"
+          "e657414c-05f5-53ab-a1c8-e4ba434d9162"
          ],
          "missing_reason": null
         },
@@ -5600,11 +5624,11 @@
          "id": "bdcfc3a0-c370-5635-ab3b-a4be5e9180ca",
          "document_id": "8139ddb9-fa84-55d8-931d-884773381759",
          "field_key": "parties.payer.tax_id",
-         "raw_value": "0000000002",
+         "raw_value": "Bên chuyển: Mã số thuế: 0000000002",
          "value": "0000000002",
          "quality": "readable",
          "evidence_ids": [
-          "d037a051-eae2-5fe4-9ac0-0e048968f644"
+          "268ff410-f9ba-53e8-a6cc-6264b582b5e2"
          ],
          "missing_reason": null
         },
@@ -5612,11 +5636,11 @@
          "id": "cd54af89-00a9-5271-9117-eab11971e4cd",
          "document_id": "8139ddb9-fa84-55d8-931d-884773381759",
          "field_key": "payment.date",
-         "raw_value": "2026-10-20",
+         "raw_value": "Ngày: 20/10/2026",
          "value": "2026-10-20",
          "quality": "readable",
          "evidence_ids": [
-          "d037a051-eae2-5fe4-9ac0-0e048968f644"
+          "40d27c8a-864d-5149-b3d0-7f3012d4797b"
          ],
          "missing_reason": null
         },
@@ -5624,11 +5648,11 @@
          "id": "aca5b58f-d8e7-5234-83f9-460ef084254e",
          "document_id": "8139ddb9-fa84-55d8-931d-884773381759",
          "field_key": "payment.amount",
-         "raw_value": "200000000",
+         "raw_value": "Số tiền: 200000000 VND",
          "value": "200000000",
          "quality": "readable",
          "evidence_ids": [
-          "d037a051-eae2-5fe4-9ac0-0e048968f644"
+          "77652e96-a3b3-59be-9ebc-71677de3f8e0"
          ],
          "missing_reason": null
         },
@@ -5636,11 +5660,11 @@
          "id": "3331bdd1-c1e0-5646-a7de-0faa37d3b5b6",
          "document_id": "8139ddb9-fa84-55d8-931d-884773381759",
          "field_key": "money.currency",
-         "raw_value": "VND",
+         "raw_value": "Loại tiền: VND",
          "value": "VND",
          "quality": "readable",
          "evidence_ids": [
-          "d037a051-eae2-5fe4-9ac0-0e048968f644"
+          "80f655b5-e9d9-572b-bcae-f327a8767881"
          ],
          "missing_reason": null
         },
@@ -5648,11 +5672,11 @@
          "id": "c1adf2bb-086c-55a0-a0d7-e08864989936",
          "document_id": "8139ddb9-fa84-55d8-931d-884773381759",
          "field_key": "payment.status",
-         "raw_value": "completed",
+         "raw_value": "Trạng thái: Thành công",
          "value": "completed",
          "quality": "readable",
          "evidence_ids": [
-          "d037a051-eae2-5fe4-9ac0-0e048968f644"
+          "9cbe1898-0f41-50e8-aa02-7dd5ccafcd37"
          ],
          "missing_reason": null
         }
@@ -5695,6 +5719,70 @@
          "document_id": "8139ddb9-fa84-55d8-931d-884773381759",
          "page": 1,
          "quote": "Ngày nghiệm thu: 15/10/2026.",
+         "bbox": null,
+         "precision": "page"
+        },
+        {
+         "id": "9845cb95-34dd-5b49-823c-2b422dc87328",
+         "document_id": "8139ddb9-fa84-55d8-931d-884773381759",
+         "page": 1,
+         "quote": "Số UNC: UNC-UNC.pdf",
+         "bbox": null,
+         "precision": "page"
+        },
+        {
+         "id": "24f788a1-0077-5b1f-827c-1637b0ce426a",
+         "document_id": "8139ddb9-fa84-55d8-931d-884773381759",
+         "page": 1,
+         "quote": "Hợp đồng số: HĐ01",
+         "bbox": null,
+         "precision": "page"
+        },
+        {
+         "id": "e657414c-05f5-53ab-a1c8-e4ba434d9162",
+         "document_id": "8139ddb9-fa84-55d8-931d-884773381759",
+         "page": 1,
+         "quote": "Bên nhận: Mã số thuế: 0000000001",
+         "bbox": null,
+         "precision": "page"
+        },
+        {
+         "id": "268ff410-f9ba-53e8-a6cc-6264b582b5e2",
+         "document_id": "8139ddb9-fa84-55d8-931d-884773381759",
+         "page": 1,
+         "quote": "Bên chuyển: Mã số thuế: 0000000002",
+         "bbox": null,
+         "precision": "page"
+        },
+        {
+         "id": "40d27c8a-864d-5149-b3d0-7f3012d4797b",
+         "document_id": "8139ddb9-fa84-55d8-931d-884773381759",
+         "page": 1,
+         "quote": "Ngày: 20/10/2026",
+         "bbox": null,
+         "precision": "page"
+        },
+        {
+         "id": "77652e96-a3b3-59be-9ebc-71677de3f8e0",
+         "document_id": "8139ddb9-fa84-55d8-931d-884773381759",
+         "page": 1,
+         "quote": "Số tiền: 200000000 VND",
+         "bbox": null,
+         "precision": "page"
+        },
+        {
+         "id": "80f655b5-e9d9-572b-bcae-f327a8767881",
+         "document_id": "8139ddb9-fa84-55d8-931d-884773381759",
+         "page": 1,
+         "quote": "Loại tiền: VND",
+         "bbox": null,
+         "precision": "page"
+        },
+        {
+         "id": "9cbe1898-0f41-50e8-aa02-7dd5ccafcd37",
+         "document_id": "8139ddb9-fa84-55d8-931d-884773381759",
+         "page": 1,
+         "quote": "Trạng thái: Thành công",
          "bbox": null,
          "precision": "page"
         }
@@ -5775,7 +5863,7 @@
    "run_id": "8019adc9-03ed-5452-8f16-0cfea88b710f",
    "case_id": "a06adf0c-7110-51f6-86ad-4b4b903c3e9e",
    "case_revision": 15,
-   "snapshot_hash": "06216e1b238b8a916dbd69c14b4086b9b06de374f39b72ad15664b0d57c69518",
+   "snapshot_hash": "64a5c2e3b5ab7ae0228d6509edb35d894a8673dff2c276b5cd1e40a041325402",
    "snapshot": {
     "schema_version": "1.0.2",
     "case": {
@@ -5822,7 +5910,7 @@
        "pages": [
         {
          "page": 1,
-         "text": "BIÊN BẢN NGHIỆM THU MÔ PHỎNG\nSYNTHETIC | FinTechathon 2026 | Dữ liệu kiểm thử, không có giá trị giao dịch\nSố biên bản: NT01. Hợp đồng tham chiếu: HĐ01.\nBên cung cấp: Sao Mai Demo. Mã số thuế: 0000000001\nBên mua: Bình Minh Demo. Mã số thuế: 0000000002\nNghiệm thu toàn bộ S1, giá trị 500000000 VND, đã gồm VAT.\nNgày nghiệm thu: 15/10/2026.\nMọi tên, MST, số tiền và ngày tháng đều thuộc tình huống giả lập.\nTrang 1 / 1 | Không xác thực chữ ký, con dấu hoặc tiền thực nhận.\n",
+         "text": "BIÊN BẢN NGHIỆM THU MÔ PHỎNG\nSYNTHETIC | FinTechathon 2026 | Dữ liệu kiểm thử, không có giá trị giao dịch\nSố biên bản: NT01. Hợp đồng tham chiếu: HĐ01.\nBên cung cấp: Sao Mai Demo. Mã số thuế: 0000000001\nBên mua: Bình Minh Demo. Mã số thuế: 0000000002\nNghiệm thu toàn bộ S1, giá trị 500000000 VND, đã gồm VAT.\nNgày nghiệm thu: 15/10/2026.\nMọi tên, MST, số tiền và ngày tháng đều thuộc tình huống giả lập.\nTrang 1 / 1 | Không xác thực chữ ký, con dấu hoặc tiền thực nhận.\nLoại tiền: USD",
          "method": "text",
          "width": 595,
          "height": 842
@@ -5929,11 +6017,11 @@
          "id": "5be000d6-a0c6-5b1d-bfe8-418bf5b2143c",
          "document_id": "0ac0561d-33a2-530f-a5d4-a1701cd51b1c",
          "field_key": "money.currency",
-         "raw_value": "USD",
+         "raw_value": "Loại tiền: USD",
          "value": "USD",
          "quality": "readable",
          "evidence_ids": [
-          "1398a28f-7ba8-5b58-b2a8-0ced5e2f3416"
+          "6ffc4f6f-4340-51d2-801a-8edc7536cc3a"
          ],
          "missing_reason": null
         }
@@ -5976,6 +6064,14 @@
          "document_id": "0ac0561d-33a2-530f-a5d4-a1701cd51b1c",
          "page": 1,
          "quote": "Ngày nghiệm thu: 15/10/2026.",
+         "bbox": null,
+         "precision": "page"
+        },
+        {
+         "id": "6ffc4f6f-4340-51d2-801a-8edc7536cc3a",
+         "document_id": "0ac0561d-33a2-530f-a5d4-a1701cd51b1c",
+         "page": 1,
+         "quote": "Loại tiền: USD",
          "bbox": null,
          "precision": "page"
         }
