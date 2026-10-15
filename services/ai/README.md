@@ -24,6 +24,7 @@ export INTERNAL_API_KEY=<lấy qua kênh nhóm, không commit>
 | `MODEL_ID`, `PROMPT_VERSION` | `gemini-3.1-flash-lite` (provider) | Model Gemini cho tác vụ ngữ nghĩa và spike; xem [decision log](docs/model-prompt-decision-log.md) |
 | `GEMINI_API_KEY` | rỗng | Đặt trong env của server hoặc `.env` ở gốc repo (gitignored, nạp tự động, không ghi đè env); `health` chỉ báo có/không |
 | `CONTRACTS_DIR` | `packages/contracts` | Bị kiểm `SHA256SUMS` lúc khởi động; sửa tay thì service từ chối chạy |
+| `AI_MAX_REQUEST_BYTES` | `10000000` | Body lớn hơn bị từ chối 413 `PAYLOAD_TOO_LARGE` trước khi parse (đọc theo stream, không tin Content-Length) |
 | `ENABLE_TEST_CONSOLE` | tắt | `1`: bật trang test thủ công `GET /console` (xem bên dưới). Render đang bật |
 | `AI_FIXTURES_DIR` | `packages/contracts/fixtures` | Gold cho mock: 3 JSON + 6 PDF text từ bundle; 2 scan 6MB chỉ có trong bundle |
 | `AI_STORAGE_DIR` | rỗng | Live `inspect`/`extract`: thư mục gốc chứa file theo `storage_key` (chỉ đọc). Không đặt thì 503 |
@@ -95,6 +96,19 @@ extraction.IMPLEMENTED = True               # để `runner health` ở live bá
 - Runner **import** package, không copy code. Thay toàn bộ [extraction/__init__.py](extraction/__init__.py), giữ nguyên tên hai hàm.
 - Input đã được runner validate. Output sẽ đi qua schema và guard: echo `document_id`/`case_id`/`sha256`, page liên tục 1..N, evidence đúng tài liệu và đúng trang, field chỉ tham chiếu evidence của chính tài liệu.
 - Lỗi nghiệp vụ: `raise runner.errors.ServiceError(422, "PDF_ENCRYPTED", "...")`. Chưa làm xong thì cứ để `NotImplementedError`, runner sẽ trả 503.
+
+## Kiểm toàn vẹn input `evaluate` (`runner/input_guards.py`)
+
+Chạy sau JSON Schema, trước rule. Vi phạm -> 422 `INVALID_REQUEST` kèm `details[].path`; rule không chạy trên snapshot không nhất quán (contracts §147, T18):
+
+- snapshot/document/extraction/request/issue/correction cùng `case_id`; `snapshot.case.revision` = `case_revision`;
+- extraction đúng tài liệu (`document_id`, `sha256` của file); ID tài liệu/field/evidence không trùng;
+- evidence thuộc đúng tài liệu, trang tồn tại, quote nguyên văn trên trang; field chỉ dẫn evidence của chính tài liệu;
+- field `readable` có giá trị nằm trong quote của nó (cùng bộ so khớp `extraction/grounding.py`);
+- tài liệu bổ sung chỉ trả lời request có trong snapshot; correction trỏ field có trong snapshot;
+- tài liệu có `detected_type` khác `type` không bao giờ làm căn cứ (`linking`), kể cả khi đã confirm.
+
+Không tính lại `snapshot_hash`/`extraction_hash` (backend là bên duy nhất tạo hash, contracts §316).
 
 ## Guards (`runner/guards.py`) chạy sau khi output đã đúng schema
 
