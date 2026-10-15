@@ -48,9 +48,12 @@ class Doc:
 
     @property
     def usable(self) -> bool:
-        """Đã đọc xong, đã xác nhận loại, có extraction schema-valid."""
+        """Đã đọc xong, đã xác nhận loại, có extraction schema-valid và extraction cùng loại với tài liệu.
+
+        Loại lệch (vd. hợp đồng tải nhầm vào ô biên bản) không bao giờ làm căn cứ, kể cả khi backend lỡ confirm.
+        """
         return (self.document["processing_status"] == READY and self.document["classification_confirmed"]
-                and self.extraction is not None)
+                and self.extraction is not None and self.extraction.get("detected_type") == self.document["type"])
 
     def get(self, key: str) -> Field | None:
         return self.fields.get(key)

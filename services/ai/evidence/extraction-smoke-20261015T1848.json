@@ -1,0 +1,232 @@
+{
+  "generated_at": "2026-10-15T18:48:31+07:00",
+  "rows": [
+    {
+      "file": "01_registration.pdf",
+      "ok": true,
+      "latency_ms": 4435,
+      "fields_expected": 2,
+      "fields_matched": 2,
+      "mismatched": {},
+      "methods": [
+        "text"
+      ],
+      "diagnostics": [],
+      "provenance": {
+        "model_id": "gemini-3.1-flash-lite",
+        "prompt_version": "extraction-v2",
+        "ocr_version": "none",
+        "schema_version": "1.0.2"
+      },
+      "contract_violations": []
+    },
+    {
+      "file": "02_financials.pdf",
+      "ok": true,
+      "latency_ms": 2625,
+      "fields_expected": 9,
+      "fields_matched": 9,
+      "mismatched": {},
+      "methods": [
+        "text"
+      ],
+      "diagnostics": [],
+      "provenance": {
+        "model_id": "gemini-3.1-flash-lite",
+        "prompt_version": "extraction-v2",
+        "ocr_version": "none",
+        "schema_version": "1.0.2"
+      },
+      "contract_violations": []
+    },
+    {
+      "file": "03_loan_request.pdf",
+      "ok": true,
+      "latency_ms": 7370,
+      "fields_expected": 9,
+      "fields_matched": 9,
+      "mismatched": {},
+      "methods": [
+        "text"
+      ],
+      "diagnostics": [],
+      "provenance": {
+        "model_id": "gemini-3.1-flash-lite",
+        "prompt_version": "extraction-v2",
+        "ocr_version": "none",
+        "schema_version": "1.0.2"
+      },
+      "contract_violations": []
+    },
+    {
+      "file": "04_contract.pdf",
+      "ok": true,
+      "latency_ms": 2973,
+      "fields_expected": 7,
+      "fields_matched": 7,
+      "mismatched": {},
+      "methods": [
+        "text"
+      ],
+      "diagnostics": [],
+      "provenance": {
+        "model_id": "gemini-3.1-flash-lite",
+        "prompt_version": "extraction-v2",
+        "ocr_version": "none",
+        "schema_version": "1.0.2"
+      },
+      "contract_violations": []
+    },
+    {
+      "file": "05_wrong_record.pdf",
+      "ok": true,
+      "latency_ms": 2509,
+      "fields_expected": 9,
+      "fields_matched": 9,
+      "mismatched": {},
+      "methods": [
+        "text"
+      ],
+      "diagnostics": [],
+      "provenance": {
+        "model_id": "gemini-3.1-flash-lite",
+        "prompt_version": "extraction-v2",
+        "ocr_version": "none",
+        "schema_version": "1.0.2"
+      },
+      "contract_violations": []
+    },
+    {
+      "file": "06_correct_record.pdf",
+      "ok": true,
+      "latency_ms": 2814,
+      "fields_expected": 9,
+      "fields_matched": 9,
+      "mismatched": {},
+      "methods": [
+        "text"
+      ],
+      "diagnostics": [],
+      "provenance": {
+        "model_id": "gemini-3.1-flash-lite",
+        "prompt_version": "extraction-v2",
+        "ocr_version": "none",
+        "schema_version": "1.0.2"
+      },
+      "contract_violations": []
+    },
+    {
+      "file": "07_contract_scan.pdf",
+      "ok": true,
+      "latency_ms": 5008,
+      "fields_expected": 7,
+      "fields_matched": 7,
+      "mismatched": {},
+      "methods": [
+        "ocr"
+      ],
+      "diagnostics": [
+        [
+          "OCR_USED",
+          null
+        ],
+        [
+          "OCR_UNVERIFIED",
+          "contract.ref"
+        ],
+        [
+          "OCR_UNVERIFIED",
+          "parties.borrower.tax_id"
+        ],
+        [
+          "OCR_UNVERIFIED",
+          "parties.counterparty.tax_id"
+        ],
+        [
+          "OCR_UNVERIFIED",
+          "contract.amount"
+        ],
+        [
+          "OCR_UNVERIFIED",
+          "contract.scope_ref"
+        ],
+        [
+          "OCR_UNVERIFIED",
+          "money.currency"
+        ],
+        [
+          "OCR_UNVERIFIED",
+          "contract.payment_condition"
+        ]
+      ],
+      "provenance": {
+        "model_id": "gemini-3.1-flash-lite",
+        "prompt_version": "extraction-v2",
+        "ocr_version": "gemini-ocr-v1:gemini-3.1-flash-lite",
+        "schema_version": "1.0.2"
+      },
+      "contract_violations": []
+    },
+    {
+      "file": "08_correct_record_scan.pdf",
+      "ok": true,
+      "latency_ms": 4958,
+      "fields_expected": 9,
+      "fields_matched": 9,
+      "mismatched": {},
+      "methods": [
+        "ocr"
+      ],
+      "diagnostics": [
+        [
+          "OCR_USED",
+          null
+        ],
+        [
+          "OCR_UNVERIFIED",
+          "acceptance.ref"
+        ],
+        [
+          "OCR_UNVERIFIED",
+          "acceptance.contract_ref"
+        ],
+        [
+          "OCR_UNVERIFIED",
+          "parties.borrower.tax_id"
+        ],
+        [
+          "OCR_UNVERIFIED",
+          "parties.counterparty.tax_id"
+        ],
+        [
+          "OCR_UNVERIFIED",
+          "acceptance.date"
+        ],
+        [
+          "OCR_UNVERIFIED",
+          "acceptance.scope_ref"
+        ],
+        [
+          "OCR_UNVERIFIED",
+          "acceptance.scope_text"
+        ],
+        [
+          "OCR_UNVERIFIED",
+          "acceptance.amount"
+        ],
+        [
+          "OCR_UNVERIFIED",
+          "money.currency"
+        ]
+      ],
+      "provenance": {
+        "model_id": "gemini-3.1-flash-lite",
+        "prompt_version": "extraction-v2",
+        "ocr_version": "gemini-ocr-v1:gemini-3.1-flash-lite",
+        "schema_version": "1.0.2"
+      },
+      "contract_violations": []
+    }
+  ],
+  "note": "Dev synthetic fixtures; gold used only to score live output after the fact."
+}

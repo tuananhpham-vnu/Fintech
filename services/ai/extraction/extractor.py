@@ -20,7 +20,7 @@ from providers import semantic
 from runner.contracts import SCHEMA_VERSION, Contracts, Violation
 from runner.errors import INVALID_MODEL_OUTPUT, PROVIDER_UNAVAILABLE, ServiceError
 
-from . import conditions, grounding, pdf
+from . import conditions, doctype, grounding, pdf
 from .grounding import Registry, Span
 from .llm import Deadline, MalformedOutput, call_json
 from .ocr import OcrEngine
@@ -28,7 +28,7 @@ from .storage import StoredFile
 
 logger = logging.getLogger("extraction")
 
-PROMPT_VERSION = "extraction-v1"
+PROMPT_VERSION = "extraction-v2"
 ID_NAMESPACE = uuid.UUID("254068b3-5226-4c48-86c1-42c8c85cd381")   # manifest namespace_uuid
 PAYMENT_KEY = "contract.payment_condition"
 DOC_TYPES = ["registration", "loan_request", "financial_statement", "contract", "acceptance_record",
@@ -50,7 +50,10 @@ Với MỖI field_key được liệt kê, trả đúng một mục trong "field
 Không suy đoán, không tự tính toán, không dùng kiến thức ngoài tài liệu. Không chắc thì không dùng "found".
 
 Định dạng value (luôn là chuỗi):
-- Mã số thuế: chữ số như tài liệu, dạng 10 số hoặc 10 số-3 số.
+- Mã số thuế: chữ số như tài liệu, dạng 10 số hoặc 10 số-3 số. Chọn MST theo nhãn bên đứng ngay trước nó, không đảo vai:
+  borrower / parties.borrower = doanh nghiệp đề nghị vay; trong hợp đồng, biên bản là BÊN CUNG CẤP / bên bán / nhà thầu
+  (bên được nhận tiền). parties.counterparty = BÊN MUA / bên đặt hàng / chủ đầu tư (bên trả tiền).
+  parties.payee = bên nhận tiền, parties.payer = bên chuyển tiền trên chứng từ thanh toán.
 - Số tiền: chỉ chữ số, dấu "." cho phần thập phân, không phân cách nghìn. Tài liệu Việt Nam dùng "." phân cách nghìn.
   financial.total_assets, financial.liabilities, financial.equity: giữ ĐÚNG con số in trên báo cáo, KHÔNG nhân đơn vị.
   financial.unit_multiplier: hệ số đơn vị của báo cáo (đồng=1, nghìn=1000, triệu=1000000, tỷ=1000000000).
@@ -65,7 +68,9 @@ Không suy đoán, không tự tính toán, không dùng kiến thức ngoài t�
   counting_convention chỉ "exclude_event_day"/"include_event_day" khi tài liệu nói rõ có tính ngày sự kiện hay không;
   other_conditions_state "none" CHỈ khi tài liệu khẳng định không có điều kiện khác, có điều kiện khác thì "present" và
   liệt kê vào other_conditions, không khẳng định gì thì "unknown". Field khác để payment_condition null.
-detected_type: loại tài liệu theo nội dung; classification_confident true chỉ khi chắc chắn."""
+detected_type: loại tài liệu theo TIÊU ĐỀ và NỘI DUNG, độc lập với loại khai báo. Loại khai báo có thể sai vì người
+dùng tải nhầm file (vd. tải hợp đồng vào ô biên bản nghiệm thu): khi đó detected_type là loại thật, không phải loại khai
+báo. Không phải hồ sơ vay (ảnh, thực đơn, thư từ...) thì "other". classification_confident true chỉ khi chắc chắn."""
 
 
 @dataclass
@@ -217,11 +222,13 @@ class Extractor:
         for spec in self.registry.fields(doc_type):
             self._field(build, spec, by_key[spec["field_key"]])
 
-        detected, confident = data["detected_type"], bool(data["classification_confident"])
-        if detected != doc_type:
-            confident = False
-            build.diagnostic("CLASSIFICATION_MISMATCH",
-                             f"Nội dung giống loại {detected}, khác loại khai báo {doc_type}; field trích theo {doc_type}.")
+        # Model bị loại khai báo dẫn dắt, nên loại tài liệu được kiểm thêm bằng tiêu đề (doctype.py).
+        decision = doctype.decide(doc_type, data["detected_type"], bool(data["classification_confident"]), pages[0].text)
+        detected, confident = decision.detected_type, decision.confident
+        if decision.code:
+            build.diagnostic(decision.code, decision.message)
+        if not decision.keep_fields:
+            build.withhold_values()
 
         build.attach_bboxes(stored.data)
         return {
@@ -338,6 +345,12 @@ class _Builder:
             "evidence_ids": [self._evidence_id(s) for s in spans],
             "missing_reason": missing_reason,
         })
+
+    def withhold_values(self) -> None:
+        """Tài liệu sai loại: không trả giá trị nào (giữ trích dẫn để người duyệt xem vì sao)."""
+        for f in self.fields:
+            if f["value"] is not None or f["quality"] == "readable":
+                f.update(value=None, quality="uncertain", missing_reason="ambiguous")
 
     def attach_bboxes(self, data: bytes) -> None:
         """bbox chỉ cho trang text (vị trí lấy từ PDF thật). Trang OCR giữ bbox null, precision page."""
