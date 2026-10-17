@@ -15,6 +15,10 @@ Blueprint: [`render.yaml`](../../../render.yaml) ở gốc repo, gồm một ser
    curl -X POST https://<service>.onrender.com/internal/v1/evaluate \
         -H "Content-Type: application/json" -H "X-Internal-Key: <INTERNAL_API_KEY>" \
         --data @packages/contracts/fixtures/<một EvaluationInput>.json
+   # Trợ lý hồ sơ (cùng key, dữ liệu tổng hợp): trả 200 + citations; thiếu GEMINI_API_KEY ở live -> 503
+   curl -X POST https://<service>.onrender.com/internal/v1/chat \
+        -H "Content-Type: application/json" -H "X-Internal-Key: <INTERNAL_API_KEY>" \
+        --data '{"schema_version":"aic-chat-0.1","case_id":"a06adf0c-7110-51f6-86ad-4b4b903c3e9e","question":"Tóm tắt","history":[],"documents":[],"findings":[]}'
    ```
 
 ## Cấu hình

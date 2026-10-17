@@ -18,6 +18,8 @@ const routes: [string, RegExp][] = [
   ['GET', new RegExp(`^dossier-archives/${id}$`)],
   ['GET', new RegExp(`^dossier-members/${id}/(source|extraction-summary)$`)],
   ['GET|POST', new RegExp(`^cases/${id}/financial-sets$`)],
+  ['POST', new RegExp(`^cases/${id}/assistant/messages$`)],
+  ['GET', new RegExp(`^cases/${id}/assistant/search$`)],
   ['PATCH', new RegExp(`^financial-sets/${id}$`)],
   ['POST', new RegExp(`^financial-sets/${id}/verification$`)],
   ['GET', new RegExp(`^documents/${id}/(source|extraction|extraction-summary)$`)],

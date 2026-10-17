@@ -229,6 +229,7 @@ export const messages = {
   information: ['Non-financial information', 'Thông tin phi tài chính', '非财务信息'],
   assessment: ['Risk assessment', 'Đánh giá rủi ro', '风险评估'],
   history: ['Requests & history', 'Yêu cầu & lịch sử', '请求与历史'],
+  assistant: ['Assistant', 'Trợ lý', '助手'],
   back: ['Back to transactions', 'Về danh sách giao dịch', '返回交易列表'],
   revision: ['Revision', 'Lần cập nhật', '修订版本'],
   policy: ['Policy', 'Chính sách', '政策'],

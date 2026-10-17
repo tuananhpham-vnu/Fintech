@@ -18,7 +18,15 @@ const demoBundle = JSON.parse(fs.readFileSync(
 const dossierBundle = JSON.parse(fs.readFileSync(
   path.resolve(__dirname, '../../../../packages/contracts/aic-dossier/schemas.json'), 'utf8',
 ))
-const definitions = { ...bundle.definitions, ...demoBundle.definitions, ...dossierBundle.definitions }
+const chatBundle = JSON.parse(fs.readFileSync(
+  path.resolve(__dirname, '../../../../packages/contracts/aic-chat/schemas.json'), 'utf8',
+))
+const definitions = {
+  ...bundle.definitions,
+  ...demoBundle.definitions,
+  ...dossierBundle.definitions,
+  ...chatBundle.definitions,
+}
 const ajv = new Ajv({ strict: false, allErrors: true, coerceTypes: false, removeAdditional: false })
 addFormats(ajv)
 const validators = new Map<string, ReturnType<Ajv['compile']>>()
@@ -108,7 +116,9 @@ export class FoundationOutputInterceptor implements NestInterceptor {
                           respond: 'StaffResponse',
                           verify: 'ResponseVerificationOutput',
                         }[handler] ?? null)
-                      : null
+                      : name === 'AssistantController'
+                        ? ({ ask: 'AssistantAnswer', search: 'AssistantSearchResult' }[handler] ?? null)
+                        : null
     return next
       .handle()
       .pipe(map((value) => (schema ? validateContract(schema, value, true) : value)))
