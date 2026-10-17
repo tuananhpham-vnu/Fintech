@@ -22,6 +22,7 @@ from .contracts import SCHEMA_VERSION, Contracts, Violation
 from .errors import (FORBIDDEN, INVALID_MODEL_OUTPUT, INVALID_REQUEST, PAYLOAD_TOO_LARGE, ServiceError, error_body,
                      error_response)
 from .guards import evaluation_output_violations, extraction_output_violations, inspection_output_violations
+from .input_guards import evaluation_input_violations
 from .provider_diagnostics import emit_failure
 
 logger = logging.getLogger("runner")
