@@ -4,7 +4,9 @@ Date: 2026-10-17, Asia/Saigon. Scope: Backend + AI audit, **no source fixes**. [
 
 ## Readiness and source identity
 
-**Audit documents: complete. Remote implementation handoff: BLOCKED.** The owner subsequently authorized pushing the audit to **`duc` only**. The publication contains exactly these four audit Markdown files; it does not silently publish hundreds of pre-existing staged/untracked implementation changes. No source fix, DB migration, runtime replacement or cloud processing is authorized by that docs publication.
+**Source availability: READY on `duc`. Runtime/clean-clone acceptance: NOT VERIFIED.** After the initial docs-only publication, the owner explicitly requested all latest code and folders. The reviewed source snapshot is now pinned to **`b528225c7e39ee2476f5c117ce6113b037352fdd`**, commit `chore: publish latest AIC application source`: 454 changed paths covering Backend, Frontend, AI, all migrations/contracts, synthetic ZIP fixtures, scripts and technical documents. Runtime/secret files remain excluded. The earlier remote-absence statements below describe the audit-time snapshot, not the source publication now available.
+
+Publication hygiene changed only `scripts/dev-all.cjs`: embedded DB-password and internal-key fallbacks were removed; explicit environment configuration is required before any process starts. Four VM cases passed with zero real processes or `.env` reads; API no-emit typecheck also passed. BE-001 remains open for hardcoded live mode/shared role configuration, and BE-002 remains open for absent intake topology. The source snapshot is a handoff of current code, not a claim that the audit backlog is fixed. No DB migration, current-process replacement or cloud call occurred.
 
 `AUDIT_BASE_HEAD = 8b0b7ed9e983ba4a2ea4d43f79d1816eaad7dbf0`, local branch `duc`, no upstream at audit start. Source audited is that HEAD **plus dirty worktree**, not HEAD alone. Snapshot at **2026-10-17 21:52:23 +07:00**:
 
@@ -42,12 +44,12 @@ git log -1 --format='%H %cI %s'
 git status --short
 ```
 
-Read this index and both reports. **Stop before implementation if the selected ticket's source/fixtures are absent or hashes differ.** Do not request the owner's database, `.env`, DPAPI profile, backup or real documents. The current docs-only publication is sufficient to inspect backlog/reproduction design, not to reproduce the entire audited application.
+Read this index and both reports. **Stop before implementation if the selected ticket's source/fixtures are absent or differ from its pinned source revision.** Do not request the owner's database, `.env`, DPAPI profile, backup or real documents. Source and the new synthetic ZIPs are included in the pinned publication; externally referenced real/holdout/scan bundles are not required baseline fixtures and were not uploaded.
 
-Once the owner has reviewed and published a complete safe source revision, the integrator must record its actual immutable SHA here, run a clean-clone bootstrap, and recheck findings against that SHA. No such source SHA exists for this audited worktree yet; do not substitute a guessed branch tip. Then:
+The owner has now approved source publication. Pin the source commit below, establish a clean-clone baseline and recheck findings before implementing. Audit-time fingerprints remain historical evidence; only the launcher changed during publication hygiene. A fresh-clone install/full acceptance has not yet been executed. The current `duc` tip may also include later documentation updates; do not substitute it for this immutable source revision without checking its diff.
 
 ```bash
-git checkout --detach <VERIFIED_PUBLISHED_SOURCE_SHA>
+git checkout --detach b528225c7e39ee2476f5c117ce6113b037352fdd
 git switch -c codex/<issue-id>-short-description
 # Read the ticket, reproduce first, patch only its owned files, run focused tests.
 # Open one reviewable PR per work package after that task's publication approval.
@@ -78,7 +80,7 @@ Next.js proxy (integration boundary only)
 | [demo API contract](../implementation/AIC-DEMO-48H-API-CONTRACT.md) | 2026-10-17 additive demo path | Legacy caps/routes separate; no FHI approval inferred |
 | [owner decisions](../implementation/MVP-OWNER-DECISIONS.md) | Owner methodology/scope context | Read with code; FHI method unconfigured, pilot unauthorized; no scoring permission |
 
-Source/contract links are relative and checked against the local worktree. **Many are absent on the current remote publication.** That is the declared source-publication blocker, not a claim that GitHub already resolves those links. A clean source publication must resolve them before READY.
+Source/contract links are relative and checked against the local worktree. The source publication now includes the previously absent BE/dossier/contracts paths. Historical parity tables remain evidence of why the initial docs-only handoff was blocked; they do not override the pinned publication update above.
 
 No schema mismatch was found in the tested canonical transport vectors. Error status/code handling in AI-004/AI-005 needs explicit cross-service review; do not change shared field definitions as an incidental OCR patch.
 
@@ -172,7 +174,7 @@ Each card requires the **actual published source SHA supplied by the integrator*
 
 ## Test recipes
 
-These are auditable source/in-memory recipes, not new source files. Shell syntax below uses Bash heredocs; PowerShell can pass the same body through `@' ... '@ | node` or `@' ... '@ | ./.venv/Scripts/python.exe -B -`. They require the **source-complete clone**, which is currently the publication blocker. The same bodies were executed through PowerShell during audit, with current working-tree paths.
+These are auditable source/in-memory recipes, not new source files. Shell syntax below uses Bash heredocs; PowerShell can pass the same body through `@' ... '@ | node` or `@' ... '@ | ./.venv/Scripts/python.exe -B -`. They require the source-complete pinned clone and installed development dependencies. The bodies were executed through PowerShell during audit, except the launcher reproduction below was adapted after removal of its unsafe defaults; the four publication VM cases were executed separately.
 
 ### T2 — Execute existing Node boundary tests against current TypeScript without a build
 
@@ -306,21 +308,22 @@ asyncio.run(run())
 const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const script=fs.readFileSync('scripts/dev-all.cjs','utf8');
 function probe(env){
- const calls=[],proc={env:{...env},platform:'win32',execPath:process.execPath,on(){},exit(){}};
+ const calls=[],proc={env:{...env},platform:'win32',execPath:process.execPath,on(){},exit(code){throw Error('EXIT_'+code)}};
  const fakeFs={existsSync(p){return !String(p).endsWith('.env')},readFileSync(){throw Error('NO_ENV_READ')}};
  const spawn=(exe,args,opts={})=>{calls.push({args,env:opts.env});return{pid:100+calls.length,stdout:{on(){}},stderr:{on(){}},kill(){}}};
- vm.runInNewContext(script,{require(n){if(n==='node:child_process')return{spawn};if(n==='node:path')return path;if(n==='node:fs')return fakeFs;throw Error('UNEXPECTED_IMPORT')},
-  __dirname:path.resolve('scripts'),process:proc,console:{log(){}},Buffer},{timeout:1000});
+ try{vm.runInNewContext(script,{require(n){if(n==='node:child_process')return{spawn};if(n==='node:path')return path;if(n==='node:fs')return fakeFs;throw Error('UNEXPECTED_IMPORT')},
+  __dirname:path.resolve('scripts'),process:proc,console:{log(){},error(){}},Buffer},{timeout:1000});}
+ catch(exc){if(exc.message==='EXIT_1')return{exited:1,planned_children:calls.length};throw exc;}
  const api=calls.find(c=>c.args.some(x=>/dist[\\/]main\.js$/.test(x))),worker=calls.find(c=>c.args.some(x=>/run-worker\.js$/.test(x)));
  return{planned_children:calls.length,api_mode:api?.env.AIC_DOCUMENT_AI_MODE,ai_mode:calls[0]?.env.AI_MODE,
   shared_role_url:api?.env.DATABASE_URL===worker?.env.DATABASE_URL,
   has_intake:calls.some(c=>c.args.some(x=>/run-dossier-worker/.test(x)))};
 }
 console.log(probe({}));
-console.log(probe({AI_MODE:'mock',AIC_DOCUMENT_AI_MODE:'mock',DATABASE_URL:'postgresql://aic_runtime_api@127.0.0.1:1/synthetic'}));
+console.log(probe({AI_MODE:'mock',AIC_DOCUMENT_AI_MODE:'mock',DATABASE_URL:'postgresql://aic_runtime_api@127.0.0.1:1/synthetic',INTERNAL_API_KEY:'synthetic-key'}));
 ```
 
-Do not print constructed URLs/keys or run the original script directly. Current GitHub docs-only branch lacks that file; no implicit license to obtain owner secrets is needed to implement a replacement from this task description.
+Do not print constructed URLs/keys or run the original script directly. The published source includes the file with its unsafe defaults removed. The first case now exits before spawning; the second still exposes the remaining live/mock mismatch and missing intake child. No owner secret is needed to reproduce those issues.
 
 ### R-BE-2 — Readiness stub without a DB
 
@@ -342,5 +345,5 @@ svc.onModuleInit().then(()=>console.log({ready:true,simulated_ledger_rows:1,file
 - **LIVE_PROVIDER_NOT_TESTED / BROWSER_E2E_NOT_VERIFIED / MAIN_DB_NOT_ACCESSED.** Actual local OCR three-language quality, whole-process memory/latency, full current PostgreSQL race/HTTP integration and production readiness remain unverified.
 - Historical runtime might have changed since earlier reports. This audit neither examined process credentials nor changed process state; do not assume current ports/modes/roles from old logs.
 - Existing DB data, real PDF provenance, backups/DPAPI and actual grants are not transferable fixtures. No requirement here permits using them for fixes.
-- Owner gates: safe source/fixture publication; foreign identifier/accounting semantics; live-provider/real-document transfer; DB migration/grant/data changes; FHI methodology or scoring; process replacement/deployment. The subsequent branch instruction authorizes the current **four-doc publication to duc**, not silent staging of the entire dirty tree.
+- Owner gates still apply to foreign identifier/accounting semantics, live-provider/real-document transfer, DB migration/grant/data changes, FHI methodology/scoring and process replacement/deployment. Source/fixture publication was explicitly authorized by the later request to push all latest code to `duc` and is recorded by the pinned source commit above.
 - After merge: rerun per-language OCR benchmark, complete disposable API/AI/DB acceptance and Antigravity browser tests. Passing mock/component tests is necessary evidence, not a real-dossier readiness certificate.
