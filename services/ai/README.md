@@ -79,6 +79,8 @@ Trang chỉ gồm file tĩnh và dữ liệu giả lập. **Không dán hồ sơ
   render; ảnh OCR tối đa 8M pixel, cạnh 5000px, PNG 10MB, dưới 100dpi thì từ chối. Vượt -> 413 `PDF_TOO_LARGE`/`PDF_TOO_MANY_PAGES`.
 - Thời gian: mỗi lời gọi Gemini nhận phần budget còn lại (timeout HTTP, retry, backoff), `maxOutputTokens` 8192; kết quả về sau
   hạn bị bỏ (503). Trang có chữ nhúng ở đầu nhưng thân là ảnh scan được OCR cả trang (`PARTIAL_TEXT_LAYER`, field uncertain).
+  Trang có chữ nhúng không giải mã được (font Type0/Identity mất ToUnicode: MuPDF báo glyph không có Unicode) cũng
+  được OCR cả trang, kể cả khi trang không có ảnh (`BROKEN_TEXT_LAYER`).
 - **Chưa chặn được trong process** (cần giới hạn ở mức tiến trình/container, vd. memory limit của Render, hoặc worker riêng):
   thời gian CPU và bộ nhớ bên trong một lệnh MuPDF native (thread Python không hủy được); font/stream nén bằng filter khác
   Flate; HTTP đang chạy dở chỉ bị bỏ kết quả chứ không bị hủy ngay; httpx timeout tính theo từng pha, không phải tổng.
