@@ -1,0 +1,27 @@
+Bản hiện hành: AIC Rating 2.0.0 — CR-AIC-01, ngày 16/10/2026. Định vị được chủ dự án xác nhận: SME đánh giá nhà cung cấp/khách hàng cho trả trước và khoản phải thu; cho vay/đầu tư công cụ nợ là phạm vi phụ. Một role nội bộ Chuyên viên. Demo Việt Nam; giao diện en mặc định, zh-CN và vi. Đây là cập nhật thiết kế, không xác nhận code/runtime hoặc phương pháp tính điểm đã hoàn thành.
+Prompt frontend hiện hành — AIC Rating, CR-AIC-01
+Bạn là frontend engineer/UI designer. Đọc master2.0.0, trang11 và DTO/API09/10 trước xây dựng; không thực thi prompt reviewer-bank cũ trong history. Đây là đặc tả để triển khai sau, lượt cập nhật này chưa code.
+Sản phẩm và người dùng
+SME đánh giá nhà cung cấp trước trả trước và khách hàng trước bán chịu; cho vay/đầu tư nợ phụ. Một role nội bộ Chuyên viên; counterparties là đối tượng được đánh giá. Link respondent giới hạn chỉ thu dữ liệu, không role contributor.
+Màn hình bắt buộc
+Login/session/error/expired.
+Counterparties/Cases: chọn đối tác/case, hiển thị RECEIVABLE/PREPAYMENT chính và nợ phụ, proposed/active; không danh sách borrower duy nhất.
+Overview & Transaction: SME đang sử dụng, đối tác, vai buyer/seller, số tiền, thời hạn và điều kiện; tiền dự kiến/đã trả/đã thu phân biệt.
+Files: upload mới/replace/response, classification/correction, jobs/error/unreadable; source đúng version.
+Document Review: findings, severity/unknown/conflicting, request/waiver/verification và nguồn. Waiver có lý do/flag, không resolve như đúng.
+Non-Financial Information: categories BA, missing/submitted/self-assessed/skipped/verified/conflicting, staff entry giữ SME origin.
+Risk Assessment: tổng/nhóm khi có method, nhận xét strengths/weaknesses/red flags và source; hiển thị khác profile cùng tổng. Thiếu method không phát điểm thật, giữ unavailable+reason; numeric mock chỉ preview có nhãn.
+Requests & History: draft/approve/export, wrong/correct supplement, waived/revoked, rerun/stale/history; không gửi email tự động.
+Respondent Questionnaire: link không tài khoản, đúng scope, trả lời/tự đánh giá/bỏ qua mục cho phép, receipt/expired/revoked.
+States và tương tác
+Hai core exposure flows đều bấm thử; source cards→PDF drawer đúng page/version; profile→factors/detail/source. Financial minimum thiếu chặn numeric nhưng review vẫn dùng; được bypass theo policy, missing vẫn flag. Method chưa cấu hình còn blocker riêng.
+Specialist chỉ thao tác case được phép; link respondent không thấy score/notes. Không nút loan approval/giải ngân/mua trái phiếu tự động. Không biến nợ phụ thành trang marketplace.
+Empty/loading/success/409conflict/401/403/404/422/429/503, providerdown, partial, unknown, stale, source unavailable phải rõ. Không tạo fake % progress/confidence/PD.
+Thiết kế và dữ liệu
+Enterprise Fintech SaaS light, desktop-first, dễ hiểu với chuyên viên SME; ba locale en(default)/zh-CN/vi, lưu preference/route/draft, dịch UI nhưng không source. Desktop1440/1280, tablet1024/768, mobile390; các viewport là QA targets, không business inputs.
+Nếu preview: synthetic/mock, không gọi thật backend/OCR/search/auth; score và sourceInternet mock có nhãn. Nếu production sau duyệt: API AIC version được phát hành, không lắp adapter1.0.x ngầm hoặc invent endpoint.
+Bàn giao
+Screen/state/role→API→test matrix; click-through cả PREPAYMENT/RECEIVABLE và entry nợ phụ; source/provisional/waiver/blocked scenarios; lệnh chạy/screenshot/test actual khi đã làm. Chỉ báo ready đúng phần thật; không coi static docs/mock là live rating.
+Lịch sử trước CR-AIC-01
+Nội dung dưới đây đã bị thay thế cho triển khai mới. Chỉ giữ để truy vết kỹ thuật, bằng chứng và task cũ. Các câu “hiện hành”, “bất biến”, “không thay đổi P0”, quyền reviewer/contributor, borrower, gate và phiên bản trong mục lịch sử không có ưu tiên hơn đặc tả AIC ở trên. Không nhập bundle 1.0.x rồi coi đã có AIC 2.0.0.
+Lịch sử trước 16/10/2026 — không dùng làm đặc tả AIC hiện hành

@@ -2,6 +2,18 @@
 
 Date: 2026-10-17, Asia/Saigon. [Entry point](AIC_AGENT_FIX_HANDOFF.md) · [BE audit](AIC_BACKEND_AUDIT.md) · [AI audit](AIC_AI_SERVICE_AUDIT.md).
 
+## Latest owner-approved source publication
+
+The owner subsequently explicitly requested **all latest code/folders**, including the launcher, on `duc`. Source snapshot **`b528225c7e39ee2476f5c117ce6113b037352fdd`** contains **454 changed paths / 86,327 insertions / 64 deletions**: 146 Backend, 193 Frontend, 12 AI, 13 contracts, 19 scripts, 57 docs and 14 other root/synthetic paths. This closes the source-availability blocker described in the historical checklist below. A later documentation commit records the immutable source SHA; it does not change application behavior.
+
+Before staging, all 558 nonignored candidate paths were reviewed by source/private-path/secret-pattern checks: no private/runtime candidate paths, symlinks or files >=1 MiB; after launcher sanitization, no token/private-key/credential-URL findings outside recognized placeholders/synthetic test literals. All six new ZIPs were inspected for private/credential member paths (zero); the five synthetic test archives and existing brand asset archive are included byte-exact. This scan is not an assertion that every possible secret or license issue can be detected automatically. `.env`, credentials, DPAPI/dumps, caches, dependency installations and real uploaded dossiers were not included.
+
+Only source edit during publication: remove the launcher's embedded DB-password and internal-key defaults, require explicit env configuration before any process spawn. Four synthetic VM cases passed (missing both, missing key, missing DB, explicit config), zero real processes/`.env` reads; `node --check` and API TypeScript `--noEmit --incremental false` passed. Hardcoded live modes/shared role and missing intake remain audit issues, not silently fixed.
+
+Whitespace verification was disclosed rather than overstated: plain cached `git diff --check` exited 2 because of existing CRLF/trailing whitespace; with CRLF recognized, seven diagnostics remained in three pre-existing frontend/evidence report files. They were preserved as requested; no formatting rewrite or test-log cleanup was performed. These are publication-format observations, not functional test failures. Historical 232 Node / 227 Python passes remain audit evidence; no new full DB/browser/provider acceptance is claimed.
+
+The sections below retain the original docs-only publication plan and audit-time remote inventory as historical provenance. Source/fixture publication approval is now satisfied by the later user request; remaining approval gates concern live data/providers, DB/grants/migrations, methodology/scoring and process/deployment changes.
+
 ## Publication authorized now
 
 The original audit prompt prohibited commit/push until owner confirmation. The owner subsequently requested creation/use of branch **`duc` and push to that branch only**. Local `duc` already exists, so it must be preserved rather than recreated/reset. The authorized concrete publication in this audit is limited to the four reports below; all other staged/unstaged/untracked code remains as found. The auditor disclosed this docs-only scope before publication.

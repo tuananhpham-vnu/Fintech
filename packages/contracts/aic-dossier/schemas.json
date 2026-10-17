@@ -1,0 +1,127 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Additive one-ZIP dossier DTOs implemented by the local backend. Merge definitions after aic-foundation/schemas.json and aic-demo-48h/schemas.json, including the existing ExtractionSummary. Internal refs resolve against that merged root; this fragment is not a standalone validator. Verification evidence and pending browser/operator gates are recorded in docs/implementation/AIC-ONE-ZIP-DOSSIER-API-CONTRACT.md.",
+  "definitions": {
+    "DossierAccepted": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["archive_id", "case_id", "archive_sha256", "revision", "intake_state", "manifest_url"],
+      "properties": {
+        "archive_id": {"type": "string", "format": "uuid"},
+        "case_id": {"type": "string", "format": "uuid"},
+        "archive_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "revision": {"type": "integer", "minimum": 1, "maximum": 9007199254740991},
+        "intake_state": {"const": "queued"},
+        "manifest_url": {"type": "string", "pattern": "^/api/v2/dossier-archives/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"}
+      }
+    },
+    "DossierArchiveSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "case_id", "archive_sha256", "intake_state", "processing_state", "created_at", "counters", "error_code"],
+      "properties": {
+        "id": {"type": "string", "format": "uuid"},
+        "case_id": {"type": "string", "format": "uuid"},
+        "archive_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "intake_state": {"enum": ["queued", "validating", "registering", "accepted", "partially_accepted", "rejected"]},
+        "processing_state": {"enum": ["waiting", "processing", "finished", "finished_with_errors"]},
+        "created_at": {"type": "string", "format": "date-time"},
+        "counters": {"$ref": "#/definitions/DossierCounters"},
+        "error_code": {"type": ["string", "null"]}
+      }
+    },
+    "DossierArchive": {
+      "description": "Archive summary fields plus members in stable ZIP entry order; flattened to keep strict additionalProperties semantics in draft-07.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "case_id", "archive_sha256", "intake_state", "processing_state", "created_at", "counters", "error_code", "members"],
+      "properties": {
+        "id": {"type": "string", "format": "uuid"},
+        "case_id": {"type": "string", "format": "uuid"},
+        "archive_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "intake_state": {"enum": ["queued", "validating", "registering", "accepted", "partially_accepted", "rejected"]},
+        "processing_state": {"enum": ["waiting", "processing", "finished", "finished_with_errors"]},
+        "created_at": {"type": "string", "format": "date-time"},
+        "counters": {"$ref": "#/definitions/DossierCounters"},
+        "error_code": {"type": ["string", "null"]},
+        "members": {"type": "array", "maxItems": 128, "items": {"$ref": "#/definitions/DossierMember"}}
+      }
+    },
+    "DossierArchiveList": {
+      "type": "array",
+      "maxItems": 4,
+      "items": {"$ref": "#/definitions/DossierArchiveSummary"}
+    },
+    "DossierMember": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "archive_id", "entry_index", "entry_path", "byte_size", "sha256", "detected_mime", "group", "suggested_type", "classification_verification", "period_suggestion", "subject_verification", "intake_state", "processing_state", "page_count", "document_id", "job_id", "error_code", "retryable", "source_url"],
+      "properties": {
+        "id": {"type": "string", "format": "uuid"},
+        "archive_id": {"type": "string", "format": "uuid"},
+        "entry_index": {"type": "integer", "minimum": 0, "maximum": 127},
+        "entry_path": {"type": "string", "minLength": 1},
+        "byte_size": {"type": "integer", "minimum": 0, "maximum": 9007199254740991},
+        "sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+        "detected_mime": {"type": ["string", "null"]},
+        "group": {"enum": ["financial_statements", "contracts", "tax", "payments", "other"]},
+        "suggested_type": {"enum": ["registration", "loan_request", "financial_statement", "contract", "acceptance_record", "payment_record", "invoice", "other"]},
+        "classification_verification": {"const": "unverified"},
+        "period_suggestion": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["year", "kind", "basis", "verification"],
+          "properties": {
+            "year": {"type": ["integer", "null"]},
+            "kind": {"const": "unresolved"},
+            "basis": {"const": "unresolved"},
+            "verification": {"const": "unverified"}
+          }
+        },
+        "subject_verification": {"const": "unresolved"},
+        "intake_state": {"enum": ["awaiting_inspection", "inspecting", "registered", "rejected", "needs_review"]},
+        "processing_state": {"enum": ["waiting", "queued", "running", "completed_with_usable_data", "completed_zero_usable", "failed", "needs_review", "not_applicable"]},
+        "page_count": {"type": ["integer", "null"], "minimum": 1},
+        "document_id": {"type": ["string", "null"], "format": "uuid"},
+        "job_id": {"type": ["string", "null"], "format": "uuid"},
+        "error_code": {"type": ["string", "null"]},
+        "retryable": {"type": "boolean"},
+        "source_url": {"type": ["string", "null"], "pattern": "^/api/v2/dossier-members/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/source$"}
+      }
+    },
+    "DossierMemberSummary": {
+      "description": "Response of GET /api/v2/dossier-members/:id/extraction-summary. ExtractionSummary is the unchanged existing demo definition in the merged definitions root.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["member_id", "archive_id", "document_id", "job_id", "intake_state", "processing_state", "error_code", "extraction"],
+      "properties": {
+        "member_id": {"type": "string", "format": "uuid"},
+        "archive_id": {"type": "string", "format": "uuid"},
+        "document_id": {"type": ["string", "null"], "format": "uuid"},
+        "job_id": {"type": ["string", "null"], "format": "uuid"},
+        "intake_state": {"enum": ["awaiting_inspection", "inspecting", "registered", "rejected", "needs_review"]},
+        "processing_state": {"enum": ["waiting", "queued", "running", "completed_with_usable_data", "completed_zero_usable", "failed", "needs_review", "not_applicable"]},
+        "error_code": {"type": ["string", "null"]},
+        "extraction": {"anyOf": [{"$ref": "#/definitions/ExtractionSummary"}, {"type": "null"}]}
+      }
+    },
+    "DossierCounters": {
+      "description": "Snapshot counters, not a single additive partition. registered counts stored source PDFs that are not rejected, including awaiting_inspection, inspecting, and needs_review; it does not imply canonical document/job assignment, queued extraction, or analysis. awaiting_inspection includes inspecting. needs_review counts each member once across both state axes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["discovered", "registered", "rejected", "awaiting_inspection", "queued", "running", "completed_with_usable_data", "completed_zero_usable", "failed", "needs_review"],
+      "properties": {
+        "discovered": {"type": "integer", "minimum": 0, "maximum": 128},
+        "registered": {"type": "integer", "minimum": 0, "maximum": 128},
+        "rejected": {"type": "integer", "minimum": 0, "maximum": 128},
+        "awaiting_inspection": {"type": "integer", "minimum": 0, "maximum": 128},
+        "queued": {"type": "integer", "minimum": 0, "maximum": 128},
+        "running": {"type": "integer", "minimum": 0, "maximum": 128},
+        "completed_with_usable_data": {"type": "integer", "minimum": 0, "maximum": 128},
+        "completed_zero_usable": {"type": "integer", "minimum": 0, "maximum": 128},
+        "failed": {"type": "integer", "minimum": 0, "maximum": 128},
+        "needs_review": {"type": "integer", "minimum": 0, "maximum": 128}
+      }
+    }
+  }
+}

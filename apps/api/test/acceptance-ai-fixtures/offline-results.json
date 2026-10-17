@@ -1,0 +1,421 @@
+{
+  "mode": "OFFLINE_NATIVE_AND_FAKE_MODEL_NOT_LIVE",
+  "inspections": [
+    {
+      "filename": "DOC_ADV_01_Prompt_Injection.pdf",
+      "passed": true,
+      "response": {
+        "schema_version": "1.0.2",
+        "sha256": "61e2cf03e0d10badb2a4e9d004dd79efb89b134ab880741e7b4efc883c488a0b",
+        "page_count": 1,
+        "byte_size": 1002976,
+        "encrypted": false,
+        "has_embedded_files": false
+      }
+    },
+    {
+      "filename": "DOC_PRE_01_Contract_Prepayment.pdf",
+      "passed": true,
+      "response": {
+        "schema_version": "1.0.2",
+        "sha256": "6fb67ef4d583becf4a0ab403a59217dfcbac511fecb26add52f0050b5d831f42",
+        "page_count": 1,
+        "byte_size": 1003359,
+        "encrypted": false,
+        "has_embedded_files": false
+      }
+    },
+    {
+      "filename": "DOC_PRE_02_Payment_Record_Valid.pdf",
+      "passed": true,
+      "response": {
+        "schema_version": "1.0.2",
+        "sha256": "1000cc4ff14fe7dbcd735e2fce36a8045ab979021d03ee885d6ca15c89d80301",
+        "page_count": 1,
+        "byte_size": 1003177,
+        "encrypted": false,
+        "has_embedded_files": false
+      }
+    },
+    {
+      "filename": "DOC_PRE_03_Payment_Record_Ambiguous.pdf",
+      "passed": true,
+      "response": {
+        "schema_version": "1.0.2",
+        "sha256": "7a8f71e81a886834c028e9d5a57f7cbedb9892307c09fddb92a17f5d16014d8d",
+        "page_count": 1,
+        "byte_size": 1003079,
+        "encrypted": false,
+        "has_embedded_files": false
+      }
+    },
+    {
+      "filename": "DOC_REC_01_Contract_Standard.pdf",
+      "passed": true,
+      "response": {
+        "schema_version": "1.0.2",
+        "sha256": "ce4d391b8659eca964b1050db1a5476c72c3b8eccaef307bb951eb9a586723c8",
+        "page_count": 1,
+        "byte_size": 1003190,
+        "encrypted": false,
+        "has_embedded_files": false
+      }
+    },
+    {
+      "filename": "DOC_REC_02_Acceptance_Matching.pdf",
+      "passed": true,
+      "response": {
+        "schema_version": "1.0.2",
+        "sha256": "dc06ab8c243b915c47b9082c3dd722d0b7b420584923c25d542edfe4f2aa0419",
+        "page_count": 1,
+        "byte_size": 1003216,
+        "encrypted": false,
+        "has_embedded_files": false
+      }
+    },
+    {
+      "filename": "DOC_REC_03_Acceptance_Mismatch.pdf",
+      "passed": true,
+      "response": {
+        "schema_version": "1.0.2",
+        "sha256": "f0ce014e7a5f067da1986e8320ce1bd0ed4fe269a11d530454103a0e98cbdd10",
+        "page_count": 1,
+        "byte_size": 1003149,
+        "encrypted": false,
+        "has_embedded_files": false
+      }
+    },
+    {
+      "filename": "DOC_REC_04_Contract_Role_Inversion.pdf",
+      "passed": true,
+      "response": {
+        "schema_version": "1.0.2",
+        "sha256": "a760d1272e0eb1d7890190d756f1ac05bb9f8e1471a612f4fddbefdfba008a17",
+        "page_count": 1,
+        "byte_size": 1002656,
+        "encrypted": false,
+        "has_embedded_files": false
+      }
+    },
+    {
+      "filename": "DOC_REC_05_Contract_Missing_Condition.pdf",
+      "passed": true,
+      "response": {
+        "schema_version": "1.0.2",
+        "sha256": "3ce87025680459ceed665d067ee18978807d6cb3bec68ac60968dce2e9a25eb0",
+        "page_count": 1,
+        "byte_size": 1002738,
+        "encrypted": false,
+        "has_embedded_files": false
+      }
+    },
+    {
+      "filename": "DOC_SCAN_01_Contract_ImageOnly.pdf",
+      "passed": true,
+      "response": {
+        "schema_version": "1.0.2",
+        "sha256": "13bcc083a705f35daec4b526287b4e7c6c0b20d66292e75204acda16bb6a67f9",
+        "page_count": 1,
+        "byte_size": 6532172,
+        "encrypted": false,
+        "has_embedded_files": false
+      }
+    }
+  ],
+  "rehearsals": [
+    {
+      "filename": "DOC_REC_01_Contract_Standard.pdf",
+      "scored_fields": 7,
+      "mismatches": [],
+      "missing_scored_values": 0,
+      "diagnostics": []
+    },
+    {
+      "filename": "DOC_REC_04_Contract_Role_Inversion.pdf",
+      "scored_fields": 7,
+      "mismatches": [
+        {
+          "field_key": "parties.borrower.tax_id",
+          "attribute": "value",
+          "expected": "0109876543",
+          "actual": null
+        },
+        {
+          "field_key": "parties.borrower.tax_id",
+          "attribute": "quality",
+          "expected": "readable",
+          "actual": "uncertain"
+        },
+        {
+          "field_key": "parties.borrower.tax_id",
+          "attribute": "missing_reason",
+          "expected": null,
+          "actual": "ambiguous"
+        },
+        {
+          "field_key": "parties.counterparty.tax_id",
+          "attribute": "value",
+          "expected": "0102030405",
+          "actual": null
+        },
+        {
+          "field_key": "parties.counterparty.tax_id",
+          "attribute": "quality",
+          "expected": "readable",
+          "actual": "uncertain"
+        },
+        {
+          "field_key": "parties.counterparty.tax_id",
+          "attribute": "missing_reason",
+          "expected": null,
+          "actual": "ambiguous"
+        }
+      ],
+      "missing_scored_values": 2,
+      "diagnostics": [
+        {
+          "code": "UNGROUNDED_VALUE",
+          "message": "Giá trị model đề xuất không có căn cứ trong trích dẫn (UNVERIFIED_FIELD_ROLE); để trống.",
+          "document_id": "7fc45e23-a372-5e51-b18b-65714e9d1a64",
+          "field_key": "parties.borrower.tax_id"
+        },
+        {
+          "code": "UNGROUNDED_VALUE",
+          "message": "Giá trị model đề xuất không có căn cứ trong trích dẫn (UNVERIFIED_FIELD_ROLE); để trống.",
+          "document_id": "7fc45e23-a372-5e51-b18b-65714e9d1a64",
+          "field_key": "parties.counterparty.tax_id"
+        }
+      ]
+    },
+    {
+      "filename": "DOC_REC_05_Contract_Missing_Condition.pdf",
+      "scored_fields": 6,
+      "mismatches": [],
+      "missing_scored_values": 0,
+      "diagnostics": []
+    },
+    {
+      "filename": "DOC_PRE_01_Contract_Prepayment.pdf",
+      "scored_fields": 5,
+      "mismatches": [
+        {
+          "field_key": "parties.borrower.tax_id",
+          "attribute": "value",
+          "expected": "0309988776",
+          "actual": null
+        },
+        {
+          "field_key": "parties.borrower.tax_id",
+          "attribute": "quality",
+          "expected": "readable",
+          "actual": "uncertain"
+        },
+        {
+          "field_key": "parties.borrower.tax_id",
+          "attribute": "missing_reason",
+          "expected": null,
+          "actual": "ambiguous"
+        },
+        {
+          "field_key": "parties.counterparty.tax_id",
+          "attribute": "value",
+          "expected": "0301122334",
+          "actual": null
+        },
+        {
+          "field_key": "parties.counterparty.tax_id",
+          "attribute": "quality",
+          "expected": "readable",
+          "actual": "uncertain"
+        },
+        {
+          "field_key": "parties.counterparty.tax_id",
+          "attribute": "missing_reason",
+          "expected": null,
+          "actual": "ambiguous"
+        }
+      ],
+      "missing_scored_values": 2,
+      "diagnostics": [
+        {
+          "code": "UNGROUNDED_VALUE",
+          "message": "Giá trị model đề xuất không có căn cứ trong trích dẫn (UNVERIFIED_FIELD_ROLE); để trống.",
+          "document_id": "811f0882-33d1-55e9-b1b9-aad4330eb070",
+          "field_key": "parties.borrower.tax_id"
+        },
+        {
+          "code": "UNGROUNDED_VALUE",
+          "message": "Giá trị model đề xuất không có căn cứ trong trích dẫn (UNVERIFIED_FIELD_ROLE); để trống.",
+          "document_id": "811f0882-33d1-55e9-b1b9-aad4330eb070",
+          "field_key": "parties.counterparty.tax_id"
+        }
+      ]
+    },
+    {
+      "filename": "DOC_PRE_02_Payment_Record_Valid.pdf",
+      "scored_fields": 8,
+      "mismatches": [
+        {
+          "field_key": "payment.ref",
+          "attribute": "value",
+          "expected": "UNC20261016-01",
+          "actual": null
+        },
+        {
+          "field_key": "payment.ref",
+          "attribute": "quality",
+          "expected": "readable",
+          "actual": "uncertain"
+        },
+        {
+          "field_key": "payment.ref",
+          "attribute": "missing_reason",
+          "expected": null,
+          "actual": "ambiguous"
+        },
+        {
+          "field_key": "parties.payer.tax_id",
+          "attribute": "value",
+          "expected": "0301122334",
+          "actual": null
+        },
+        {
+          "field_key": "parties.payer.tax_id",
+          "attribute": "quality",
+          "expected": "readable",
+          "actual": "uncertain"
+        },
+        {
+          "field_key": "parties.payer.tax_id",
+          "attribute": "missing_reason",
+          "expected": null,
+          "actual": "ambiguous"
+        },
+        {
+          "field_key": "parties.payee.tax_id",
+          "attribute": "value",
+          "expected": "0309988776",
+          "actual": null
+        },
+        {
+          "field_key": "parties.payee.tax_id",
+          "attribute": "quality",
+          "expected": "readable",
+          "actual": "uncertain"
+        },
+        {
+          "field_key": "parties.payee.tax_id",
+          "attribute": "missing_reason",
+          "expected": null,
+          "actual": "ambiguous"
+        },
+        {
+          "field_key": "payment.date",
+          "attribute": "value",
+          "expected": "2026-10-16",
+          "actual": null
+        },
+        {
+          "field_key": "payment.date",
+          "attribute": "quality",
+          "expected": "readable",
+          "actual": "uncertain"
+        },
+        {
+          "field_key": "payment.date",
+          "attribute": "missing_reason",
+          "expected": null,
+          "actual": "ambiguous"
+        }
+      ],
+      "missing_scored_values": 4,
+      "diagnostics": [
+        {
+          "code": "UNGROUNDED_VALUE",
+          "message": "Giá trị model đề xuất không có căn cứ trong trích dẫn (UNVERIFIED_FIELD_LABEL); để trống.",
+          "document_id": "8f7365b5-e4e4-5a52-8559-ddfbbceb330b",
+          "field_key": "payment.ref"
+        },
+        {
+          "code": "UNGROUNDED_VALUE",
+          "message": "Giá trị model đề xuất không có căn cứ trong trích dẫn (UNVERIFIED_FIELD_ROLE); để trống.",
+          "document_id": "8f7365b5-e4e4-5a52-8559-ddfbbceb330b",
+          "field_key": "parties.payee.tax_id"
+        },
+        {
+          "code": "UNGROUNDED_VALUE",
+          "message": "Giá trị model đề xuất không có căn cứ trong trích dẫn (UNVERIFIED_FIELD_ROLE); để trống.",
+          "document_id": "8f7365b5-e4e4-5a52-8559-ddfbbceb330b",
+          "field_key": "parties.payer.tax_id"
+        },
+        {
+          "code": "UNGROUNDED_VALUE",
+          "message": "Giá trị model đề xuất không có căn cứ trong trích dẫn (VALUE_NOT_IN_QUOTE); để trống.",
+          "document_id": "8f7365b5-e4e4-5a52-8559-ddfbbceb330b",
+          "field_key": "payment.date"
+        }
+      ]
+    },
+    {
+      "filename": "DOC_ADV_01_Prompt_Injection.pdf",
+      "scored_fields": 7,
+      "mismatches": [],
+      "missing_scored_values": 0,
+      "diagnostics": [
+        {
+          "code": "SUSPECTED_PROMPT_INJECTION",
+          "message": "Trang 1 có dòng dạng chỉ dẫn; đã ẩn khỏi model và không dùng làm căn cứ.",
+          "document_id": "c706060d-432d-5d20-b539-dafbdad37b79",
+          "field_key": null
+        }
+      ]
+    }
+  ],
+  "date_probes": [
+    {
+      "filename": "DOC_REC_02_Acceptance_Matching.pdf",
+      "field_key": "acceptance.date",
+      "expected_date": "2026-10-15",
+      "source_quote": "Ngày nghiệm thu: 2026‐10‐15. Phạm vi: S1.",
+      "actual_value": null,
+      "problem": "VALUE_NOT_IN_QUOTE"
+    },
+    {
+      "filename": "DOC_REC_03_Acceptance_Mismatch.pdf",
+      "field_key": "acceptance.date",
+      "expected_date": "2026-10-18",
+      "source_quote": "Ngày nghiệm thu: 2026‐10‐18. Phạm vi: S2.",
+      "actual_value": null,
+      "problem": "VALUE_NOT_IN_QUOTE"
+    },
+    {
+      "filename": "DOC_PRE_02_Payment_Record_Valid.pdf",
+      "field_key": "payment.date",
+      "expected_date": "2026-10-16",
+      "source_quote": "Ngày giao dịch: 2026‐10‐16.",
+      "actual_value": null,
+      "problem": "VALUE_NOT_IN_QUOTE"
+    },
+    {
+      "filename": "DOC_PRE_03_Payment_Record_Ambiguous.pdf",
+      "field_key": "payment.date",
+      "expected_date": "2026-10-17",
+      "source_quote": "Ngày giao dịch: 2026‐10‐17.",
+      "actual_value": null,
+      "problem": "VALUE_NOT_IN_QUOTE"
+    }
+  ],
+  "scan_without_ocr": {
+    "status": 503,
+    "code": "PROVIDER_UNAVAILABLE",
+    "passed": true
+  },
+  "counts": {
+    "native_inspect_passed": 10,
+    "fake_model_documents": 6,
+    "scored_fields": 40,
+    "mismatched_field_attributes": 24,
+    "missing_scored_values": 8,
+    "date_probes_rejected": 4
+  }
+}

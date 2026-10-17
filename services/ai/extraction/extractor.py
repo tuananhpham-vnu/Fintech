@@ -136,6 +136,9 @@ class Extractor:
         pages, notes, used_ocr = [], [], False
         for p in info.pages:
             text, method = p.text, "text"
+            if "\x03" in text:
+                notes.append(("TEXT_SEPARATOR_NORMALIZED", f"Trang {p.page}: đối chiếu U+0003 như khoảng trắng; "
+                                                          "trích dẫn giữ nguyên text nguồn.", None))
             if p.needs_ocr:
                 if self.ocr is None:
                     raise ServiceError(503, PROVIDER_UNAVAILABLE,
@@ -150,9 +153,14 @@ class Extractor:
                 if p.ocr_reason == "image_region":
                     notes.append(("PARTIAL_TEXT_LAYER", f"Trang {p.page} chỉ có một phần chữ nhúng, phần lớn là ảnh; "
                                                         f"đã OCR cả trang và bỏ lớp chữ nhúng.", None))
+                elif p.ocr_reason in ("vector_content", "garbled"):
+                    notes.append(("VECTOR_OCR_USED" if p.ocr_reason == "vector_content" else "GARBLED_TEXT_LAYER",
+                                  f"Trang {p.page}: OCR do {p.ocr_reason}; cần đối chiếu nguồn.", None))
             if not text.strip():
                 notes.append(("BLANK_PAGE", f"Trang {p.page} không có chữ.", None))
             pages.append(Page(p.page, text, method, p.width, p.height, grounding.injection_spans(text)))
+            if sum(len(page.text) for page in pages) > limits.max_text_chars:
+                raise ServiceError(413, pdf.PDF_TOO_LARGE, "Combined text/OCR exceeds the document text budget.")
         if not any(p.text.strip() for p in pages):
             raise ServiceError(422, PDF_NO_TEXT, "No text could be read from any page.")
         return pages, notes, used_ocr
@@ -186,7 +194,7 @@ class Extractor:
             lines.append(f"- {key} ({spec['value_type']}{extra}){meaning}")
         lines.append("<tai_lieu>")
         for page in pages:
-            lines += [f'<trang so="{page.page}">', grounding.mask(page.text, page.blocked), "</trang>"]
+            lines += [f'<trang so="{page.page}">', grounding.comparison_text(grounding.mask(page.text, page.blocked)), "</trang>"]
         lines.append("</tai_lieu>")
         return "\n".join(lines)
 

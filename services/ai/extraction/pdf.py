@@ -63,7 +63,7 @@ class PageInfo:
     image_count: int
     needs_ocr: bool
     blank: bool
-    ocr_reason: str | None = None     # no_text | garbled | image_region
+    ocr_reason: str | None = None     # no_text | garbled | image_region | vector_content
 
 
 @dataclass
@@ -95,7 +95,8 @@ def _open(data: bytes) -> pymupdf.Document:
 
 
 def _garbled_ratio(text: str) -> float:
-    chars = [c for c in text if not c.isspace()]
+    # U+0003 is a reviewed separator; other controls remain evidence of corruption.
+    chars = [c for c in text if not c.isspace() and c != "\x03"]
     if not chars:
         return 0.0
     bad = sum(1 for c in chars if c == "�" or unicodedata.category(c) in ("Co", "Cn", "Cc"))
@@ -163,17 +164,27 @@ def _page_info(doc: pymupdf.Document, page: pymupdf.Page, limits: Limits) -> Pag
     if len(text) > limits.max_page_text_chars:
         raise _too_large(f"Page {page.number + 1} has more than {limits.max_page_text_chars} characters of text.")
     images = len(page.get_images(full=False))
-    visible = sum(1 for c in text if not c.isspace())
+    visible = sum(1 for c in text if not c.isspace() and c != "\x03")
     reason = None
-    if images:
+    ink = False
+    if visible and _garbled_ratio(text) > MAX_GARBLED_RATIO:
+        reason = "garbled"  # corrupt font mappings need OCR even with no image XObjects
+    elif images:
         if visible < MIN_TEXT_CHARS:
             reason = "no_text"
-        elif _garbled_ratio(text) > MAX_GARBLED_RATIO:
-            reason = "garbled"
         elif _scan_like_image(page):
             reason = "image_region"
+    elif visible == 0:
+        # Vector outlines / inline images can paint a page without text or image
+        # XObjects. A bounded grayscale probe distinguishes ink from real blank.
+        # Apply the normal minimum-resolution/page-size guard before native render.
+        zoom = min(0.5, render_zoom(page.rect.width, page.rect.height, limits))
+        pix = page.get_pixmap(matrix=pymupdf.Matrix(zoom, zoom), colorspace=pymupdf.csGRAY, alpha=False)
+        ink = any(value < 250 for value in pix.samples)
+        if ink:
+            reason = "vector_content"
     return PageInfo(page=page.number + 1, text=text, width=float(page.rect.width), height=float(page.rect.height),
-                    image_count=images, needs_ocr=reason is not None, blank=visible == 0 and images == 0,
+                    image_count=images, needs_ocr=reason is not None, blank=visible == 0 and images == 0 and not ink,
                     ocr_reason=reason)
 
 

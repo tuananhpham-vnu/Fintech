@@ -1,0 +1,6 @@
+.next/
+node_modules/
+.reports/
+public/
+pnpm-lock.yaml
+next-env.d.ts

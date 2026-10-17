@@ -1,0 +1,69 @@
+Bản hiện hành: AIC Rating 2.0.0 — CR-AIC-01, ngày 16/10/2026. Định vị được chủ dự án xác nhận: SME đánh giá nhà cung cấp/khách hàng cho trả trước và khoản phải thu; cho vay/đầu tư công cụ nợ là phạm vi phụ. Một role nội bộ Chuyên viên. Demo Việt Nam; giao diện en mặc định, zh-CN và vi. Đây là cập nhật thiết kế, không xác nhận code/runtime hoặc phương pháp tính điểm đã hoàn thành.
+1. Quy trình hiện hành
+Tạo/chọn đối tác → khai báo giao dịch → thu hồ sơ → inspection/OCR/extract → đối chiếu đúng chủ thể/kỳ/đơn vị → chuyên viên kiểm findings → yêu cầu bổ sung hoặc waiver theo policy → tính chỉ số và nhận xét có nguồn → rating chỉ khi method hợp lệ → chuyên viên ghi nhận → tài liệu mới làm stale/chạy lại.
+Một role specialist thực hiện toàn bộ thao tác nội bộ được cấp trong case. Respondent link là capability bên ngoài chỉ trả lời được yêu cầu, không có quyền xem score/notes.
+2. Rulebook AIC-RULES-2.0-DRAFT
+Rule
+
+Logic và kết quả
+
+
+AIC-R01 Readiness
+
+Checklist theo exposure_kind/policy. Không financial input đủ → rating blocked, review vẫn chạy. Thiếu required khác → request hoặc waiver nếu policy cho; thiếu optional là limitation, không tự trừ điểm. Method thiếu → method_unconfigured.
+
+
+AIC-R02 Identity
+
+So counterparty với đúng role buyer ở RECEIVABLE, seller ở PREPAYMENT, borrower/issuer ở luồng nợ. Sai pháp nhân tạo mismatch; ambiguous tạo unknown; không so mọi MST trên PDF với một mã.
+
+
+AIC-R03 Finance
+
+Chuẩn hóa kỳ/đơn vị; phép tính có formula/input evidence. Nhận xét điều kiện và dữ liệu thiếu. Không coi tỷ số đơn lẻ là PD hay grade; missing không thành 0.
+
+
+AIC-R04 Receivable
+
+Đối chiếu số tiền/thời hạn/delivery/acceptance/dispute/payment theo hợp đồng và exposure. Dự kiến thu khác đã thu; tiền chưa tới hạn khác quá hạn. Không hợp đồng → proposed/limitations. Không tự dự báo ngày trả.
+
+
+AIC-R05 Prepayment
+
+Đối chiếu bên bán, khoản ứng, delivery milestones, refund/guarantee nếu có, lịch sử thực hiện; thiếu bằng chứng → flag/unknown. Không coi có BCTC tốt là bảo đảm giao hàng.
+
+
+AIC-R06 Auxiliary debt
+
+Giữ LOAN/DEBT_INVESTMENT: người vay/phát hành, gốc/lãi, kỳ hạn, bảo đảm; dùng engine tài liệu chung. Không tự giải ngân hay suy mọi trái phiếu có bảo lãnh.
+
+
+AIC-R07 Supplement
+
+Liên kết response đúng request, counterparty, contract/scope/version. Sai giữ flag và nêu lý do; đúng tạo đề xuất verified/resolved, specialist xác nhận; ghi history. Waiver giữ bằng chứng thiếu và flag, không là bổ sung đúng.
+
+
+AIC-R08 Profile explanation
+
+Tổng điểm bằng nhau nhưng vector thành phần khác nhau phải hiển thị điểm yếu và rationale khác. Không tự đặt veto/penalty/điều kiện cấp tín dụng khi method chưa có.
+3. State và phân biệt quyết định
+Review issue: open → verified_resolved hoặc dismissed có lý do; waiver là handling_state riêng, không biến finding thành đúng. False issue dismissal có evidence, không tăng completeness giả.
+Assessment đã tạo: draft → queued/running → completed/provisional/failed; completed không đồng nghĩa low-risk. Blocked/method_unconfigured là kết quả Readiness trước khi tạo numeric job, không phải state của record chạy; create bị từ chối422 có blockers. Thay input/policy/method/source tạo stale=true trên snapshot cũ và kết quả mới độc lập. Review partial không tự resolve vấn đề.
+Financial missing không có score thật; method chưa cấu hình không có score thật; waiver cho phép chỉ provisional khi method missingness cho tính. Người dùng vẫn xem facts/ratios/findings khi score unavailable.
+4. Module và giữ nền kỹ thuật
+M1: org/user/case/counterparty/exposure, session+ACL, upload/jobs.
+M2: PDF/OCR/extraction/evidence, entity-role map, financial periods và unit; nghi ngờ giữ null và raw candidate.
+M3: finance calculations + rules + explanations + method adapter, không tự ghi DB/human decisions.
+M4: requests/waiver/verification/assessment snapshot/audit; một transaction cho state+revision+audit.
+M5: workspace đối tác/giao dịch, score/strengths/weaknesses/source, supplement and history.
+M6: financial/source oracle, transaction cases, benchmark và security.
+Giữ giới hạn kỹ thuật ban đầu 10MiB/10trang/file, 10file/40trang active/case như cấu hình demo; tài liệu ba năm vượt giới hạn phải báo rõ và điều chỉnh policy kỹ thuật công khai, không lén bỏ trang. Backend sole DB writer, AI service private, immutable source, corrections, bounded retry, idempotency và CSRF vẫn áp dụng.
+5. Phương pháp và đầu ra
+Sáu nhóm BA tổ chức nội dung: pháp lý, quan hệ tín dụng, ngành, lịch sử, tài chính, bảo đảm. Không gọi là sáu factor Moody’s. Lớp giao dịch chạy riêng theo loại. Chi tiết nghiên cứu tại
+13 — Nghiên cứu Moody’s & phương pháp đánh giá — AIC Rating.
+Các endpoint/DTO mới dùng
+09 — API Design & JSON Examples — AIC 2.0 và
+10 — Từ điển DTO & Validation — AIC 2.0. Phần machine-readable chưa được phát hành; không tự nối schema 1.0.3 như thể đã có AIC rating.
+Lịch sử trước CR-AIC-01
+Nội dung dưới đây đã bị thay thế cho triển khai mới. Chỉ giữ để truy vết kỹ thuật, bằng chứng và task cũ. Các câu “hiện hành”, “bất biến”, “không thay đổi P0”, quyền reviewer/contributor, borrower, gate và phiên bản trong mục lịch sử không có ưu tiên hơn đặc tả AIC ở trên. Không nhập bundle 1.0.x rồi coi đã có AIC 2.0.0.
+Lịch sử trước 16/10/2026 — không dùng làm đặc tả AIC hiện hành

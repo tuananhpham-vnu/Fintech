@@ -2,6 +2,8 @@
 
 Date: 2026-10-17, Asia/Saigon. [Handoff index](AIC_AGENT_FIX_HANDOFF.md) · [Backend findings](AIC_BACKEND_AUDIT.md) · [publication checklist](AIC_GITHUB_PUBLISH_CHECKLIST.md).
 
+Publication update: all current AI source/tests and additive runtime dependencies are included in owner-approved source commit **`b528225c7e39ee2476f5c117ce6113b037352fdd`** on `duc`. AI code was not changed during publication. The earlier `NOT_ON_REMOTE`/parity statements below describe the audit-time state; they are superseded for source availability by this pinned commit. Actual multilingual OCR, live-provider accuracy and external real-PDF bundles remain unverified/unpublished.
+
 ## Revision and summary
 
 Branch `duc`; base HEAD `8b0b7ed9e983ba4a2ea4d43f79d1816eaad7dbf0` plus the worktree fingerprint captured at 21:52:23 +07:00. Current extractor/grounding/PDF/app changes and additional tests are unpublished. Remote AI files exist but are not generally equal to this audited source; branch names alone cannot identify the audited version.

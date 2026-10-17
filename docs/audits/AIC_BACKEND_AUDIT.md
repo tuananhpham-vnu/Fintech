@@ -2,6 +2,8 @@
 
 Audit date: 2026-10-17, Asia/Saigon. Entry point: [agent handoff](AIC_AGENT_FIX_HANDOFF.md). Publication details: [checklist](AIC_GITHUB_PUBLISH_CHECKLIST.md).
 
+Publication update: the owner subsequently authorized all latest source on `duc`; pinned source commit **`b528225c7e39ee2476f5c117ce6113b037352fdd`** includes Backend, AI, Frontend, contracts, migrations and fixtures. `NOT_ON_REMOTE` and remote-blocker wording below are historical audit-time observations. Publication hygiene removed only the launcher's hardcoded DB/internal-key fallbacks; four no-spawn/configuration VM checks passed. BE-001 remains open for mode/role separation and BE-002 for intake topology. The original probe evidence and source fingerprint are retained with provenance; no main DB/runtime/cloud verification was added.
+
 ## Revision and evidence boundary
 
 Audited branch `duc`, base HEAD `8b0b7ed9e983ba4a2ea4d43f79d1816eaad7dbf0`, plus the dirty worktree captured at **2026-10-17 21:52:23 +07:00**. HEAD alone contains **zero `apps/api/**` files**. Source fingerprint and drift inventory are in the handoff/checklist. None of the findings below is a claim about a running production database.

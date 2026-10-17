@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:aic:proposal:exposure:2026-10-17",
+  "title": "DRAFT persisted aggregate proposal; NOT public API or approved contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "organization_id", "case_id", "counterparty_id", "exposure_kind", "lifecycle_stage", "exposure"],
+  "properties": {
+    "schema_version": {"const": "AIC-EXPOSURE-DRAFT-1"},
+    "organization_id": {"$ref": "#/$defs/id"},
+    "case_id": {"$ref": "#/$defs/id"},
+    "counterparty_id": {"$ref": "#/$defs/id"},
+    "exposure_kind": {"enum": ["RECEIVABLE", "PREPAYMENT"]},
+    "lifecycle_stage": {"enum": ["proposed", "active"]},
+    "exposure": {"$ref": "#/$defs/exposure"}
+  },
+  "allOf": [
+    {"if": {"properties": {"exposure_kind": {"const": "RECEIVABLE"}}}, "then": {"properties": {"exposure": {"properties": {"organization_role": {"const": "seller"}, "counterparty_role": {"const": "buyer"}}}}}},
+    {"if": {"properties": {"exposure_kind": {"const": "PREPAYMENT"}}}, "then": {"properties": {"exposure": {"properties": {"organization_role": {"const": "buyer"}, "counterparty_role": {"const": "seller"}}}}}}
+  ],
+  "$defs": {
+    "id": {"type": "string", "format": "uuid"},
+    "nullableDate": {"type": ["string", "null"], "format": "date"},
+    "nullableText": {"type": ["string", "null"], "minLength": 1},
+    "source": {
+      "type": "object", "additionalProperties": false,
+      "required": ["organization_id", "case_id", "counterparty_id", "document_id", "document_version", "document_sha256", "evidence_ref"],
+      "properties": {
+        "organization_id": {"$ref": "#/$defs/id"}, "case_id": {"$ref": "#/$defs/id"}, "counterparty_id": {"$ref": "#/$defs/id"},
+        "document_id": {"$ref": "#/$defs/id"}, "document_version": {"type": "integer", "minimum": 1, "maximum": 9007199254740991},
+        "document_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "evidence_ref": {"type": ["string", "null"], "format": "uuid"}
+      }
+    },
+    "sources": {"type": "array", "items": {"$ref": "#/$defs/source"}},
+    "verification": {
+      "type": "object", "additionalProperties": false,
+      "required": ["state", "actor_id", "verified_at", "source_revision", "reason"],
+      "properties": {
+        "state": {"enum": ["unverified", "verified", "rejected"]},
+        "actor_id": {"type": ["string", "null"], "format": "uuid"},
+        "verified_at": {"type": ["string", "null"], "format": "date-time"},
+        "source_revision": {"type": ["integer", "null"], "minimum": 1, "maximum": 9007199254740991},
+        "reason": {"$ref": "#/$defs/nullableText"}
+      },
+      "allOf": [
+        {"if": {"properties": {"state": {"const": "unverified"}}}, "then": {"properties": {"actor_id": {"type": "null"}, "verified_at": {"type": "null"}, "source_revision": {"type": "null"}}}},
+        {"if": {"properties": {"state": {"enum": ["verified", "rejected"]}}}, "then": {"properties": {"actor_id": {"type": "string"}, "verified_at": {"type": "string"}, "source_revision": {"type": "integer"}, "reason": {"type": "string"}}}}
+      ]
+    },
+    "condition": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "kind", "scope", "trigger_text", "reported_state", "due_on", "missing_reason", "source_refs"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "kind": {"enum": ["payment", "delivery", "acceptance", "refund", "guarantee", "other"]},
+        "scope": {"type": "string", "minLength": 1}, "trigger_text": {"type": ["string", "null"], "minLength": 1},
+        "reported_state": {"enum": ["proposed", "reported_satisfied", "unknown"]},
+        "due_on": {"$ref": "#/$defs/nullableDate"}, "missing_reason": {"$ref": "#/$defs/nullableText"},
+        "source_refs": {"$ref": "#/$defs/sources"}
+      },
+      "allOf": [
+        {"if": {"properties": {"reported_state": {"const": "reported_satisfied"}}}, "then": {"properties": {"source_refs": {"minItems": 1}}}},
+        {"if": {"properties": {"reported_state": {"const": "unknown"}}}, "then": {"properties": {"missing_reason": {"type": "string"}}}}
+      ]
+    },
+    "claim": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "kind", "event_state", "claimant_party", "payer_party", "payee_party", "currency", "amount_vnd", "amount_state", "amount_missing_reason", "occurred_on", "planned_on", "date_missing_reason", "obligation_ref", "source_refs", "verification"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"}, "kind": {"enum": ["paid", "received"]},
+        "event_state": {"enum": ["proposed", "actual"]},
+        "claimant_party": {"enum": ["organization", "counterparty"]},
+        "payer_party": {"enum": ["organization", "counterparty"]}, "payee_party": {"enum": ["organization", "counterparty"]},
+        "currency": {"const": "VND"},
+        "amount_vnd": {"type": ["string", "null"], "pattern": "^(0|[1-9][0-9]{0,23})$"},
+        "amount_state": {"enum": ["available", "missing", "unreadable", "conflicting"]},
+        "amount_missing_reason": {"$ref": "#/$defs/nullableText"},
+        "occurred_on": {"$ref": "#/$defs/nullableDate"}, "planned_on": {"$ref": "#/$defs/nullableDate"},
+        "date_missing_reason": {"$ref": "#/$defs/nullableText"}, "obligation_ref": {"$ref": "#/$defs/nullableText"},
+        "source_refs": {"allOf": [{"$ref": "#/$defs/sources"}], "minItems": 1},
+        "verification": {"$ref": "#/$defs/verification"}
+      },
+      "allOf": [
+        {"if": {"properties": {"amount_state": {"const": "available"}}}, "then": {"properties": {"amount_vnd": {"type": "string"}, "amount_missing_reason": {"type": "null"}}}, "else": {"properties": {"amount_vnd": {"type": "null"}, "amount_missing_reason": {"type": "string"}}}},
+        {"if": {"properties": {"event_state": {"const": "proposed"}}}, "then": {"properties": {"occurred_on": {"type": "null"}, "verification": {"properties": {"state": {"const": "unverified"}}}}}},
+        {"if": {"properties": {"event_state": {"const": "actual"}, "occurred_on": {"type": "null"}}}, "then": {"properties": {"date_missing_reason": {"type": "string"}}}}
+      ]
+    },
+    "exposure": {
+      "type": "object", "additionalProperties": false,
+      "required": ["currency", "amount_vnd", "organization_role", "counterparty_role", "source_origin", "term_days", "term_null_reason", "contract_ref", "due_date", "source_refs", "conditions", "claims"],
+      "properties": {
+        "currency": {"const": "VND"}, "amount_vnd": {"type": "string", "pattern": "^[1-9][0-9]{0,23}$"},
+        "organization_role": {"enum": ["seller", "buyer"]}, "counterparty_role": {"enum": ["buyer", "seller"]},
+        "source_origin": {"enum": ["specialist_declared", "document_supported"]},
+        "term_days": {"type": ["integer", "null"], "minimum": 0, "maximum": 9007199254740991},
+        "term_null_reason": {"type": ["string", "null"], "enum": [null, "not_agreed", "source_missing", "ambiguous"]},
+        "contract_ref": {"$ref": "#/$defs/nullableText"}, "due_date": {"$ref": "#/$defs/nullableDate"},
+        "source_refs": {"$ref": "#/$defs/sources"},
+        "conditions": {"type": "array", "items": {"$ref": "#/$defs/condition"}},
+        "claims": {"type": "array", "items": {"$ref": "#/$defs/claim"}}
+      },
+      "allOf": [
+        {"if": {"properties": {"term_days": {"type": "null"}}}, "then": {"properties": {"term_null_reason": {"type": "string"}}}, "else": {"properties": {"term_null_reason": {"type": "null"}}}},
+        {"if": {"properties": {"source_origin": {"const": "document_supported"}}}, "then": {"properties": {"source_refs": {"minItems": 1}}}}
+      ]
+    }
+  }
+}

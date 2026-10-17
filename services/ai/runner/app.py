@@ -22,7 +22,7 @@ from .contracts import SCHEMA_VERSION, Contracts, Violation
 from .errors import (FORBIDDEN, INVALID_MODEL_OUTPUT, INVALID_REQUEST, PAYLOAD_TOO_LARGE, ServiceError, error_body,
                      error_response)
 from .guards import evaluation_output_violations, extraction_output_violations, inspection_output_violations
-from .input_guards import evaluation_input_violations
+from .provider_diagnostics import emit_failure
 
 logger = logging.getLogger("runner")
 
@@ -69,8 +69,15 @@ def create_app(settings: Settings | None = None, backend: Backend | None = None,
     app.state.input_guards = {"evaluate": lambda payload: evaluation_input_violations(payload, registry)}
 
     @app.exception_handler(ServiceError)
-    async def _service_error(_: Request, exc: ServiceError) -> JSONResponse:
-        return error_response(exc)
+    async def _service_error(request: Request, exc: ServiceError) -> JSONResponse:
+        response = error_response(exc)
+        # Internal diagnostics are opt-in and content-free. Keep the exact
+        # public envelope; correlate its existing request UUID with the job's
+        # validated document UUID, never with a prompt/header/source body.
+        emit_failure(exc, getattr(request.state, "ai_operation", None),
+                     getattr(request.state, "ai_document_id", None),
+                     json.loads(response.body)["error"]["request_id"])
+        return response
 
     @app.exception_handler(Exception)
     async def _unexpected(_: Request, exc: Exception) -> JSONResponse:
@@ -134,6 +141,9 @@ def _make_handler(operation: str, input_schema: str, output_schema: str, guard: 
         violations = app.state.input_guards.get(operation, lambda _: [])(payload)
         if violations:
             raise ServiceError(422, INVALID_REQUEST, f"{input_schema} is not internally consistent.", violations)
+
+        request.state.ai_operation = operation
+        request.state.ai_document_id = payload.get("document_id")
 
         output = await run_in_threadpool(getattr(app.state.backend, operation), payload)
 

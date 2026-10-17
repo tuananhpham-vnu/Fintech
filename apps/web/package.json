@@ -1,0 +1,47 @@
+{
+  "name": "@fintech/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "predev": "node scripts/prepare-pdf-assets.cjs",
+    "typecheck": "next typegen && tsc --noEmit",
+    "check:aic": "node tests/architecture/boundaries.cjs && node --test tests/unit/*.test.cjs && node tests/integration/api-contracts.cjs",
+    "check:integration": "node tests/integration/api-contracts.cjs",
+    "qa:serve": "node scripts/qa/serve.cjs",
+    "qa:seed-pages": "node scripts/qa/seed-pages.cjs",
+    "build": "next build",
+    "prebuild": "node scripts/prepare-pdf-assets.cjs",
+    "start": "next start",
+    "postinstall": "node scripts/prepare-pdf-assets.cjs",
+    "check:architecture": "node tests/architecture/boundaries.cjs",
+    "lint": "pnpm check:architecture && pnpm format:check",
+    "format": "prettier --write src tests scripts docs README.md *.json *.mjs",
+    "format:check": "prettier --check src tests scripts docs README.md *.json *.mjs",
+    "test:unit": "node --test tests/unit/*.test.cjs",
+    "check:qa": "node tests/integration/qa-flow.cjs"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "printWidth": 100,
+    "trailingComma": "all"
+  },
+  "dependencies": {
+    "lucide-react": "^1.16.0",
+    "next": "16.4.0",
+    "pdfjs-dist": "^6.4.299",
+    "react": "^19",
+    "react-dom": "^19"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^24",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "postcss": "^8.5",
+    "prettier": "3.9.10",
+    "tailwindcss": "^4.3.3",
+    "typescript": "5.7.3"
+  }
+}

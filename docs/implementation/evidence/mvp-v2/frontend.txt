@@ -1,0 +1,81 @@
+Command: pnpm check:aic; pnpm typecheck; pnpm lint
+Observed exit: 0
+Mode: consumer mocked fetch / unit / architecture / compile / format
+Sanitization: workspace/temp paths only; no credentials emitted by these commands.
+
+$ pnpm --filter @fintech/web check:aic
+$ node tests/architecture/boundaries.cjs && node --test tests/unit/*.test.cjs && node tests/integration/api-contracts.cjs
+PASS architecture boundaries (100 runtime files, 11 modules, no cycles or orphaned modules)
+✔ Exposure edits preserve opaque conditions/dates and string money on all four business roles (4.381ms)
+✔ Readiness must match current case revision and configured method even if score flag is true (0.5201ms)
+✔ Exposure rebase emits write projection without server aggregate or source identities (0.6819ms)
+✔ Upload mode creates only its own binding and retains server revision; invalid bytes never pass preflight (46.6457ms)
+✔ Respondent requiredness, allowed skip and unsupported answer types remain distinct (0.7167ms)
+✔ counterparty write projection preserves declaration and text identifiers, drops server metadata and read refs (2.2717ms)
+✔ retry consumer sends exact reason/revision, scoped key and CSRF; decodes frozen job/revision (22.3446ms)
+✔ retry rejects malformed output; 409 and lost response retain intent for explicit retry (3.3769ms)
+✔ retry reason and conflict recovery copy is available in en/vi/zh-CN (0.2499ms)
+✔ core claim roles derive from direction and observation; source reporting must match claimant (4.8913ms)
+✔ unknown base amount and each null-term reason serialize as null, never zero or an empty string (1.9377ms)
+✔ claim amounts allow zero/string precision and require reasons only for null (0.7444ms)
+✔ actual/proposed dates obey released semantics and valid calendar dates (0.6139ms)
+✔ condition kinds/states support staff declarations without any document (1.6576ms)
+✔ write projection whitelists aggregate, record and source fields with or without read identities (1.1135ms)
+✔ document source options come only from extraction evidence and preserve exact version/hash/ref (0.9511ms)
+✔ historical source tuples survive hydration and explicit rebase even when current documents differ (0.7288ms)
+✔ unsupported historical rows stay visible and cannot silently become declarations (0.9022ms)
+✔ record and source cardinality limits are enforced (2.813ms)
+✔ local editor copy covers the three locales actually released by LocaleProvider (0.4391ms)
+✔ native transport omits specialist credentials, scopes payload, decodes receipt and preserves one retry intent (22.1494ms)
+✔ invitation delivers ephemeral header secret only on first response; replay metadata cannot fabricate it (1.0794ms)
+✔ native optional questions require either actual text or explicit skip reason; all locales keep identity limitation (0.3412ms)
+✔ questionnaire source projection pins response revision and strips server verification/provenance from writes (0.6821ms)
+✔ financial consumer gates all numeric scores and retains exact input projection and set selection (2.0621ms)
+✔ Staff questionnaire policy/provenance and stale verification fail closed at the consumer (2.4199ms)
+✔ Historical issue dispositions decode separately from current detector findings (0.6302ms)
+✔ Sandbox source review and creation history decode without inventing a prior revision (2.3536ms)
+✔ International counterparties remain distinct from the VN demo organization (0.5073ms)
+✔ Current method lifecycle is accepted; superseded lifecycle cannot authorize a score (0.5203ms)
+✔ Malformed optional expansions fail at the API boundary, before rendering (0.4161ms)
+✔ FHI requires all seven components and preserves transaction UNKNOWN independently (2.1865ms)
+✔ Extracted fields strictly require evidence_refs array and reject raw evidence_ids (2.2797ms)
+✔ Pending contract operations reject with CONTRACT_NOT_RELEASED to prevent unreleased mutations (1.8313ms)
+ℹ tests 34
+ℹ suites 0
+ℹ pass 34
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 699.0423
+PASS VND amounts preserve integers above Number.MAX_SAFE_INTEGER and reject decimals
+PASS Each of four exposures has the specified party-role pair
+PASS Session decoder rejects old reviewer/contributor roles and expired sessions
+PASS Draft case/readiness decoders do not manufacture a score or convert null to zero
+PASS Safe return route rejects external redirects and backslashes
+PASS Proxy permits catalogued public routes only; blocks private AI and traversal
+PASS Backend URL rejects embedded credentials, query, fragment and non-http schemes
+PASS One idempotency key belongs to one unchanged payload; edits get a new key
+PASS JSON transport sends CSRF, same-origin cookies and exact string money; no data envelope
+PASS 409 preserves server code/reference and is never automatically retried
+PASS 204 logout is not JSON parsed; approved export bytes are unchanged
+PASS Multipart upload keeps browser boundary and respondent has no specialist cookie credentials
+PASS Proxy fails closed without backend; rejects cross-origin mutation before upstream
+PASS Proxy requires CSRF and idempotency and never forwards a private service key
+PASS Origin validation accepts the public Host when Next uses a different listen hostname
+PASS 401 signals session expiry exactly once without automatically replaying the write
+PASS Malformed extraction and mismatched party roles fail decoding instead of becoming usable evidence
+PASS Active route import graph excludes preview fixtures, score engine and public samples
+
+18 frontend integration checks passed.
+$ pnpm --filter @fintech/web typecheck
+$ next typegen && tsc --noEmit
+Generating route types...
+✓ Types generated successfully
+$ pnpm --filter @fintech/web lint
+$ pnpm check:architecture && pnpm format:check
+$ node tests/architecture/boundaries.cjs
+PASS architecture boundaries (100 runtime files, 11 modules, no cycles or orphaned modules)
+$ prettier --check src tests scripts docs README.md *.json *.mjs
+Checking formatting...
+All matched files use Prettier code style!
