@@ -33,10 +33,49 @@ def doc(snapshot: dict, filename: str) -> dict:
     return next(d for d in snapshot["documents"] if d["document"]["filename"] == filename)
 
 
+# Câu nguồn giả lập cho giá trị đã sửa: biến thể phải nhất quán như snapshot thật (giá trị nằm trong quote, quote nằm
+# nguyên văn trên trang), nếu không input guard của evaluate chặn đúng như với dữ liệu bị sửa trái phép.
+QUOTES: dict[str, Any] = {
+    "payment.ref": "Số UNC: {v}", "payment.contract_ref": "Hợp đồng số: {v}",
+    "parties.payee.tax_id": "Bên nhận: Mã số thuế: {v}", "parties.payer.tax_id": "Bên chuyển: Mã số thuế: {v}",
+    "money.currency": "Loại tiền: {v}", "acceptance.ref": "Số biên bản: {v}",
+    "payment.status": {"completed": "Trạng thái: Thành công", "pending": "Trạng thái: Đang xử lý"},
+    "receipt.claim_type": {"received": "Khoản thu đã nhận đủ.", "expected": "Khoản thu dự kiến.", "due": "Khoản thu đến hạn."},
+}
+
+
+def source_quote(key: str, value: Any) -> str:
+    template = QUOTES.get(key)
+    if isinstance(template, dict):
+        return template[value]
+    if key.endswith(".amount"):
+        return f"Số tiền: {value} VND"
+    if key.endswith(".date") and isinstance(value, str) and len(value) == 10:
+        y, m, d = value.split("-")
+        return f"Ngày: {d}/{m}/{y}"
+    return (template or "{v}").format(v=value)
+
+
+def ground(snapshot_document: dict, field: dict, quote: str) -> None:
+    """Gắn field với một evidence mới có quote nằm nguyên văn trên trang 1 (thêm dòng vào trang nếu chưa có)."""
+    ex, doc_id = snapshot_document["extraction"], snapshot_document["document"]["id"]
+    page = ex["pages"][0]
+    if quote not in page["text"]:
+        page["text"] = page["text"].rstrip("\n") + "\n" + quote
+    ev_id = str(uuid.uuid5(TEST_NS, f"{doc_id}:ev:{field['field_key']}:{quote}"))
+    if not any(e["id"] == ev_id for e in ex["evidence"]):
+        ex["evidence"].append({"id": ev_id, "document_id": doc_id, "page": 1, "quote": quote, "bbox": None,
+                               "precision": "page"})
+    field.update(raw_value=quote, evidence_ids=[ev_id])
+
+
 def set_field(snapshot_document: dict, key: str, value: Any, raw: str | None = None) -> None:
     field = next(f for f in snapshot_document["extraction"]["fields"] if f["field_key"] == key)
     field["value"] = value
-    field["raw_value"] = raw if raw is not None else (value if isinstance(value, str) else field["raw_value"])
+    if isinstance(value, str):
+        ground(snapshot_document, field, raw if raw is not None else source_quote(key, value))
+    elif raw is not None:
+        field["raw_value"] = raw
 
 
 def blank_field(snapshot_document: dict, key: str, reason: str = "unreadable") -> None:
@@ -70,10 +109,12 @@ def clone(snapshot: dict, filename: str, new_filename: str, doc_type: str | None
     if doc_type:
         d["type"] = d["declared_type"] = ex["detected_type"] = doc_type
     if fields is not None:
-        any_evidence = [ex["evidence"][0]["id"]]
-        ex["fields"] = [{"id": str(uuid.uuid5(TEST_NS, f"{seed}:f:{k}")), "document_id": new_id, "field_key": k,
-                         "raw_value": v, "value": v, "quality": "readable", "evidence_ids": any_evidence,
-                         "missing_reason": None} for k, v in fields.items()]
+        ex["fields"] = []
+        for k, v in fields.items():
+            f = {"id": str(uuid.uuid5(TEST_NS, f"{seed}:f:{k}")), "document_id": new_id, "field_key": k,
+                 "raw_value": v, "value": v, "quality": "readable", "evidence_ids": [], "missing_reason": None}
+            ex["fields"].append(f)
+            ground(source, f, source_quote(k, v))
     snapshot["documents"].append(source)
     return source
 
