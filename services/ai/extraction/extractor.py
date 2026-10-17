@@ -20,7 +20,7 @@ from providers import semantic
 from runner.contracts import SCHEMA_VERSION, Contracts, Violation
 from runner.errors import INVALID_MODEL_OUTPUT, PROVIDER_UNAVAILABLE, ServiceError
 
-from . import conditions, doctype, grounding, pdf
+from . import conditions, grounding, pdf, trace as live_trace
 from .grounding import Registry, Span
 from .llm import Deadline, MalformedOutput, call_json
 from .ocr import OcrEngine
@@ -28,7 +28,7 @@ from .storage import StoredFile
 
 logger = logging.getLogger("extraction")
 
-PROMPT_VERSION = "extraction-v2"
+PROMPT_VERSION = "extraction-v2"   # v2: định nghĩa vai trò các bên (live: borrower/counterparty bị đảo)
 ID_NAMESPACE = uuid.UUID("254068b3-5226-4c48-86c1-42c8c85cd381")   # manifest namespace_uuid
 PAYMENT_KEY = "contract.payment_condition"
 DOC_TYPES = ["registration", "loan_request", "financial_statement", "contract", "acceptance_record",
@@ -57,7 +57,7 @@ Không suy đoán, không tự tính toán, không dùng kiến thức ngoài t�
 - Số tiền: chỉ chữ số, dấu "." cho phần thập phân, không phân cách nghìn. Tài liệu Việt Nam dùng "." phân cách nghìn.
   financial.total_assets, financial.liabilities, financial.equity: giữ ĐÚNG con số in trên báo cáo, KHÔNG nhân đơn vị.
   financial.unit_multiplier: hệ số đơn vị của báo cáo (đồng=1, nghìn=1000, triệu=1000000, tỷ=1000000000).
-  Các số tiền khác: số tiền đầy đủ (vd "500 triệu" -> 500000000).
+  Các số tiền khác: số tiền đầy đủ (vd "250 triệu" -> 250000000).
 - Ngày: YYYY-MM-DD. Tài liệu Việt Nam ghi ngày trước tháng (dd/mm/yyyy).
 - money.currency: mã tiền tệ như tài liệu ghi (VND, USD...); không tự đổi sang VND.
 - Field có danh sách giá trị cho phép: chỉ chọn trong danh sách; không rõ thì "unknown".
@@ -68,9 +68,34 @@ Không suy đoán, không tự tính toán, không dùng kiến thức ngoài t�
   counting_convention chỉ "exclude_event_day"/"include_event_day" khi tài liệu nói rõ có tính ngày sự kiện hay không;
   other_conditions_state "none" CHỈ khi tài liệu khẳng định không có điều kiện khác, có điều kiện khác thì "present" và
   liệt kê vào other_conditions, không khẳng định gì thì "unknown". Field khác để payment_condition null.
-detected_type: loại tài liệu theo TIÊU ĐỀ và NỘI DUNG, độc lập với loại khai báo. Loại khai báo có thể sai vì người
-dùng tải nhầm file (vd. tải hợp đồng vào ô biên bản nghiệm thu): khi đó detected_type là loại thật, không phải loại khai
-báo. Không phải hồ sơ vay (ảnh, thực đơn, thư từ...) thì "other". classification_confident true chỉ khi chắc chắn."""
+- Mã số thuế của các bên (field có mô tả vai trò): chỉ gán theo NHÃN VAI TRÒ ghi trong tài liệu (vd. "Bên bán", "Bên
+  mua"). "borrower" ở đây KHÔNG có nghĩa là bên nợ tiền. Không suy vai trò từ thứ tự xuất hiện, tên công ty, hay nhãn
+  trung tính như "Bên A"/"Bên B" khi tài liệu không nói bên nào bán/mua, nhận/trả tiền: khi đó dùng "ambiguous" kèm câu
+  trích. Không đổi chỗ hai bên cho hợp lý.
+detected_type: loại tài liệu theo nội dung; classification_confident true chỉ khi chắc chắn."""
+
+# Vai trò của field MST các bên, ĐỊNH NGHĨA THEO VAI TRÒ TRONG TÀI LIỆU, khớp bảng alias của grounding.py (có test).
+# Kịch bản P0 (khoản phải thu từ hợp đồng): "borrower" là bên ĐƯỢC THANH TOÁN, "counterparty" là bên PHẢI TRẢ.
+# ExtractionInput không mang danh tính người vay của hồ sơ, nên extraction KHÔNG xác định ai là người vay; M3 đối
+# chiếu field này với Case.borrower_tax_id (CONTRACT_BORROWER_NOT_VERIFIED / PARTY_MISMATCH nếu bên vay là bên mua).
+PARTY_ROLE_WORDS: dict[str, tuple[str, tuple[str, ...]]] = {
+    "parties.borrower.tax_id": ("bên ĐƯỢC THANH TOÁN theo tài liệu (bên có khoản phải thu)",
+                                ("bên bán", "bên cung cấp", "bên cung ứng", "nhà cung cấp", "nhà thầu", "bên nhận thầu")),
+    "parties.counterparty.tax_id": ("bên PHẢI TRẢ TIỀN theo tài liệu",
+                                    ("bên mua", "bên đặt hàng", "chủ đầu tư", "bên giao thầu")),
+    "parties.payee.tax_id": ("bên NHẬN TIỀN trên chứng từ thanh toán",
+                             ("bên nhận", "người nhận", "bên thụ hưởng", "đơn vị thụ hưởng")),
+    "parties.payer.tax_id": ("bên CHUYỂN/TRẢ TIỀN trên chứng từ thanh toán",
+                             ("bên chuyển", "người chuyển", "bên trả", "bên thanh toán")),
+    "borrower.tax_id": ("doanh nghiệp đứng tên tài liệu (đăng ký, báo cáo tài chính, đề nghị vay)",
+                        ("tên doanh nghiệp", "doanh nghiệp")),
+}
+
+
+def party_field_meaning(key: str) -> str:
+    meaning, words = PARTY_ROLE_WORDS[key]
+    return (f"MST của {meaning}, nhãn vai trò thường gặp: {', '.join(words)}. "
+            f"Không có nhãn vai trò rõ ràng thì status ambiguous.")
 
 
 @dataclass
@@ -157,7 +182,8 @@ class Extractor:
         for spec in self.registry.fields(doc_type):
             key = spec["field_key"]
             extra = f"; chỉ nhận: {', '.join(self.registry.enum_values[key])}" if key in self.registry.enum_values else ""
-            lines.append(f"- {key} ({spec['value_type']}{extra})")
+            meaning = f": {party_field_meaning(key)}" if key in PARTY_ROLE_WORDS else ""
+            lines.append(f"- {key} ({spec['value_type']}{extra}){meaning}")
         lines.append("<tai_lieu>")
         for page in pages:
             lines += [f'<trang so="{page.page}">', grounding.mask(page.text, page.blocked), "</trang>"]
@@ -180,7 +206,8 @@ class Extractor:
                     found.append(Violation(f"/fields/{i}/evidence/{j}/page", f"document has {page_count} pages"))
         return found
 
-    def ask_model(self, doc_type: str, pages: list[Page], deadline: Deadline) -> tuple[dict, bool]:
+    def ask_model(self, doc_type: str, pages: list[Page], deadline: Deadline,
+                  trace: live_trace.Trace | None = None) -> tuple[dict, bool]:
         schema, user = self.response_schema(doc_type), self.user_prompt(doc_type, pages)
         problems: list[Violation] = []
         for attempt in range(2):  # lượt 2 là repair duy nhất
@@ -192,8 +219,12 @@ class Extractor:
                 data = call_json(self.provider, SYSTEM_PROMPT, prompt, schema, deadline, "field extraction")
             except MalformedOutput:
                 problems = [Violation("/", "response was not parseable JSON")]
+                if trace:
+                    trace.attempt(attempt + 1, malformed=True)
                 continue
             problems = self.structural_violations(data, doc_type, len(pages))
+            if trace:
+                trace.attempt(attempt + 1, data, violations=problems)
             if not problems:
                 return data, attempt == 1
         logger.warning("extraction model output invalid after repair: %d violations", len(problems))
@@ -206,9 +237,16 @@ class Extractor:
         deadline = Deadline(self.settings.deadline_s)
         document_id, doc_type = payload["document_id"], payload["type"]
         pages, notes, used_ocr = self.read_pages(stored, deadline)
-        data, repaired = self.ask_model(doc_type, pages, deadline)
+        trace = live_trace.start(stored.sha256, self.provider.model_id if self.provider else "")   # None unless opted in
+        try:
+            data, repaired = self.ask_model(doc_type, pages, deadline, trace)
+        except ServiceError as exc:
+            if trace:
+                trace.finish([], [], error=exc.code)
+            raise
 
         build = _Builder(document_id, pages)
+        build.trace = trace
         for code, message, key in notes:
             build.diagnostic(code, message, key)
         if any(p.blocked for p in pages):
@@ -231,6 +269,8 @@ class Extractor:
             build.withhold_values()
 
         build.attach_bboxes(stored.data)
+        if trace:
+            trace.finish(build.fields, build.diagnostics)
         return {
             "schema_version": SCHEMA_VERSION,
             "document_id": document_id,
@@ -257,6 +297,8 @@ class Extractor:
                 rejected += 1
             elif span not in spans:
                 spans.append(span)
+            if build.trace:
+                build.trace.grounding.get(key, {}).setdefault("quotes_found_verbatim", []).append(span is not None)
         if rejected:
             build.diagnostic("QUOTE_NOT_FOUND", f"{rejected} trích dẫn của model không có nguyên văn trên trang nêu; "
                                                 f"đã bỏ.", key)
@@ -274,9 +316,15 @@ class Extractor:
         if key == PAYMENT_KEY:
             return self._payment_condition(build, entry.get("payment_condition"), raw, spans)
         checked = grounding.check_value(key, spec["value_type"], entry["value"], raw, self.registry)
+        if build.trace:
+            build.trace.note(key, "check_value", live_trace._checked(checked))
         if checked.value is not None:
             contextual = grounding.check_source(key, spec["value_type"], checked.value, spans,
                                                 [p.text for p in build.pages], self.registry)
+            if build.trace:
+                build.trace.note(key, "check_source", live_trace._checked(contextual))
+                build.trace.note(key, "role_at_value", live_trace.value_roles(
+                    grounding, key, checked.value, spans, [p.text for p in build.pages]))
             if contextual.value is None or contextual.quality != "readable":
                 checked = contextual
         if checked.value is None:
@@ -316,6 +364,7 @@ class _Builder:
         self.evidence: list[dict] = []
         self.diagnostics: list[dict] = []
         self._evidence_ids: dict[Span, str] = {}
+        self.trace: live_trace.Trace | None = None
 
     def diagnostic(self, code: str, message: str, field_key: str | None = None) -> None:
         entry = {"code": code, "message": message, "document_id": self.document_id, "field_key": field_key}
