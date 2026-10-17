@@ -64,6 +64,7 @@ fixtures/real/
 !.env.example
 *.pem
 *.key
+.kaggle/
 
 # Original import retained locally; apps/web is the evaluated application.
 /apps/FE Fintech/
@@ -77,3 +78,6 @@ logs/
 .idea/
 .DS_Store
 ~$*
+
+# Local demo models/binaries (delete the whole dir to remove)
+MODEL_DIR/

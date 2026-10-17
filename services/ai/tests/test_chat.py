@@ -251,3 +251,34 @@ def test_route_with_fake_model(contracts):
 def test_internal_aliases_are_removed_from_answer(raw, expected):
     from chat.verify import _clean_aliases
     assert _clean_aliases(raw) == expected
+
+
+@pytest.mark.parametrize("answer, flagged", [
+    ("Đề nghị vay 30 triệu VND [1].", "30 triệu"),             # thật là 300 triệu
+    ("Đề nghị vay 300 triệu VND [1].", None),
+    ("Tổng tài sản 1.000 triệu VND [1].", None),                # 1000 trên báo cáo, đơn vị triệu
+    ("资产总额 1000万 VND [1].", "1000万"),                      # = 10 triệu, sai
+    ("资产总额 10亿 VND [1].", None),                            # = 1 tỷ, đúng
+    ("Total assets of 1,000 million VND [1].", None),
+])
+def test_scaled_amounts_are_checked(chat_contracts, answer, flagged):
+    payload = chat_input()
+    out = run(FakeModel(model_answer(payload, answer, [
+        {"id": 1, "doc": doc_alias(payload, FIN_ID), "page": 1, "quote": "Tổng tài sản: 1000"}])), payload,
+        chat_contracts)
+    message = next((d["message"] for d in out["diagnostics"] if d["code"] == "UNSOURCED_NUMBER"), "")
+    assert (flagged in message) if flagged else not message
+
+
+def test_parenthesised_internal_codes_are_removed():
+    from chat.verify import _clean_aliases
+    assert _clean_aliases("Nợ/Tài sản (M1) là 0,6; kiểm tra R10 (R10) phát hiện [1].") == \
+        "Nợ/Tài sản là 0,6; kiểm tra R10 phát hiện [1]."
+
+
+def test_strict_chat_schema_requires_citations_when_answering():
+    from chat.context import strict_response_schema
+    answering, insufficient = strict_response_schema()["anyOf"]
+    assert answering["properties"]["citations"]["minItems"] == 1
+    assert answering["properties"]["insufficient_information"]["enum"] == [False]
+    assert insufficient["properties"]["citations"]["minItems"] == 0

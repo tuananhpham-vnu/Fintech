@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import re
+from decimal import Decimal, InvalidOperation
 
 from extraction import grounding
 
@@ -16,13 +17,58 @@ _MARKER = re.compile(r"\[(\d{1,2})\]")
 # Mã nội bộ của prompt (D1, M2, R10) không có nghĩa với người đọc: bỏ khỏi câu trả lời, giữ dấu số [n].
 _ALIAS_GROUP = re.compile(r"(\s*)\[((?:\s*(?:[DM]\d{1,3}|R\d{2,3}|\d{1,2})\s*,?)+)\]")
 _ALIAS = re.compile(r"\b(?:[DM]\d{1,3}|R\d{2,3})\b")
+_ALIAS_PAREN = re.compile(r"\s*\((?:\s*(?:[DM]\d{1,3}|R\d{2,3})\s*,?)+\)")
+# Số kèm đơn vị (vi/en/zh): "30 triệu", "1.000 triệu", "500 million", "1000万", "10亿" -> giá trị tuyệt đối.
+_SCALES = {"nghìn": 10**3, "ngàn": 10**3, "triệu": 10**6, "tỷ": 10**9, "tỉ": 10**9, "thousand": 10**3,
+           "million": 10**6, "billion": 10**9, "千": 10**3, "万": 10**4, "亿": 10**8}
+_SCALED = re.compile(r"(?<![\w.,])(\d+(?:[.,]\d+)*)\s*(nghìn|ngàn|triệu|tỷ|tỉ|thousand|million|billion|千|万|亿)",
+                     re.IGNORECASE)
 
 
 def _clean_aliases(answer: str) -> str:
     def repl(match: re.Match) -> str:
         numbers = re.findall(r"\d{1,2}", _ALIAS.sub("", match.group(2)))
         return match.group(1) + "".join(f"[{n}]" for n in numbers) if numbers else ""
-    return _ALIAS_GROUP.sub(repl, answer)
+    return _ALIAS_PAREN.sub("", _ALIAS_GROUP.sub(repl, answer))
+
+
+def _parse_number(token: str) -> Decimal | None:
+    """'1.000' / '1,000' (phân cách nghìn) -> 1000; '1,5' / '0.6' (thập phân) -> 1.5 / 0.6."""
+    if re.fullmatch(r"\d{1,3}(?:[.,]\d{3})+", token):
+        token = re.sub(r"[.,]", "", token)
+    else:
+        token = token.replace(",", ".")
+    try:
+        return Decimal(token)
+    except InvalidOperation:
+        return None
+
+
+def _scaled_amounts(text: str) -> list[tuple[str, Decimal]]:
+    found = []
+    for match in _SCALED.finditer(text):
+        number = _parse_number(match.group(1))
+        if number is not None:
+            found.append((match.group(0), number * _SCALES[match.group(2).lower()]))
+    return found
+
+
+def _known_amounts(payload: dict, context: Context) -> set[Decimal]:
+    """Giá trị tuyệt đối có trong nguồn: số trơn, số trơn x đơn vị được nhắc trên cùng trang, số kèm đơn vị."""
+    known: set[Decimal] = set()
+    texts = [payload["question"]] + [t["content"] for t in payload["history"]]
+    texts += [f["value"] for view in context.docs for f in view.doc["fields"] if f["value"]]
+    texts += [m.as_output()["value"] for _, m in context.metrics if m.value is not None]
+    for text in texts:
+        known |= {_parse_number(t) for t in _NUMBER.findall(text)} - {None}
+        known |= {value for _, value in _scaled_amounts(text)}
+    for view in context.docs:
+        for page in view.pages.values():
+            plain = {_parse_number(t) for t in _NUMBER.findall(page)} - {None}
+            scales = {_SCALES[w.lower()] for w in re.findall("|".join(_SCALES), page, re.IGNORECASE)}
+            known |= plain | {p * s for p in plain for s in scales}
+            known |= {value for _, value in _scaled_amounts(page)}
+    return {k.normalize() for k in known}
 _NUMBER = re.compile(r"(?<![\w.,])\d(?:[\d.,]*\d)?(?![\w])")
 
 
@@ -105,8 +151,13 @@ def check(raw: dict, payload: dict, context: Context) -> tuple[str, list[dict], 
 
     known = _known_numbers(payload, context)
     cleaned = _MARKER.sub(" ", answer)
-    unsourced = sorted({m.group().strip() for m in _NUMBER.finditer(cleaned)
-                        if (key := _number_key(m.group())) and key not in known})
+    amounts = _known_amounts(payload, context)
+    scaled = _scaled_amounts(cleaned)
+    unsourced = {text for text, value in scaled if value.normalize() not in amounts}
+    plain_text = _SCALED.sub(" ", cleaned)        # số đã kiểm theo đơn vị không kiểm lại theo chữ số
+    unsourced |= {m.group().strip() for m in _NUMBER.finditer(plain_text)
+                  if (key := _number_key(m.group())) and key not in known}
+    unsourced = sorted(unsourced)
     if unsourced:
         diagnostics.append({"code": "UNSOURCED_NUMBER",
                             "message": "Số không tìm thấy trong hồ sơ hoặc chỉ số: " + ", ".join(unsourced[:10])})
