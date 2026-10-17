@@ -1,4 +1,5 @@
-"""FastAPI app nội bộ: POST /internal/v1/{inspect,extract,evaluate} theo internal-openapi.json 1.0.2.
+"""FastAPI app nội bộ: POST /internal/v1/{inspect,extract,evaluate} theo internal-openapi.json 1.0.2,
+và POST /internal/v1/chat theo bundle riêng packages/contracts/aic-chat (trợ lý hỏi đáp trong một case).
 
 Mỗi route đi cùng một pipeline:
   X-Internal-Key -> JSON -> validate input schema -> backend -> validate output schema -> semantic guards -> 200
@@ -55,8 +56,21 @@ def build_backend(settings: Settings, contracts: Contracts | None = None) -> Bac
     return LiveBackend(evaluator=functools.partial(rules.evaluate, semantic=semantic))
 
 
+def build_chat(settings: Settings):
+    from chat import ChatService
+    if settings.mode == MODE_MOCK:
+        return ChatService("mock")
+    provider = None
+    if settings.gemini_key_configured:   # thiếu key: route trả 503 khi được gọi, không rơi về mock
+        from providers.gemini import GeminiConfig, GeminiProvider
+        config = GeminiConfig.from_env()
+        provider = GeminiProvider(GeminiConfig(config.api_key, settings.model_id or config.model_id))
+    return ChatService("live", provider)
+
+
 def create_app(settings: Settings | None = None, backend: Backend | None = None,
-               contracts: Contracts | None = None) -> FastAPI:
+               contracts: Contracts | None = None, chat=None) -> FastAPI:
+    from chat import ChatContracts
     settings = settings or Settings.from_env()
     contracts = contracts or Contracts(settings.contracts_dir)
     backend = backend or build_backend(settings, contracts)
@@ -64,6 +78,8 @@ def create_app(settings: Settings | None = None, backend: Backend | None = None,
     # Internal service: spec chuẩn là packages/contracts/internal-openapi.json, không tự sinh docs.
     app = FastAPI(title="Fintech AI internal", version=SCHEMA_VERSION, docs_url=None, redoc_url=None, openapi_url=None)
     app.state.settings, app.state.contracts, app.state.backend = settings, contracts, backend
+    app.state.chat_contracts = ChatContracts(settings.contracts_dir)
+    app.state.chat = chat or build_chat(settings)
     # Kiểm toàn vẹn input sau schema, trước backend (chỉ evaluate nhận snapshot nhiều tham chiếu chéo).
     from extraction.grounding import Registry
     registry = Registry.from_json(contracts.load("field-registry.json"))
@@ -92,6 +108,7 @@ def create_app(settings: Settings | None = None, backend: Backend | None = None,
     for operation, spec in OPERATIONS.items():
         app.add_api_route(f"/internal/v1/{operation}", _make_handler(operation, *spec), methods=["POST"],
                           name=f"post_{operation}")
+    app.add_api_route("/internal/v1/chat", _chat_handler, methods=["POST"], name="post_chat")
     if settings.test_console:
         _mount_console(app)
     return app
@@ -158,3 +175,27 @@ def _make_handler(operation: str, input_schema: str, output_schema: str, guard: 
 
     handler.__name__ = f"post_{operation}"
     return handler
+
+
+async def _chat_handler(request: Request) -> JSONResponse:
+    """Cùng pipeline với 3 route kia: key -> JSON có giới hạn -> schema input -> service -> schema output."""
+    app = request.app
+    _authorize(app.state.settings, request.headers.get("X-Internal-Key"))
+    payload = await _read_json(request, app.state.settings.max_request_bytes)
+    contracts = app.state.chat_contracts
+    violations = contracts.violations("CaseChatInput", payload)
+    if violations:
+        raise ServiceError(422, INVALID_REQUEST, "Request does not match CaseChatInput aic-chat-0.1.", violations)
+    ids = [d["document_id"] for d in payload["documents"]]
+    if len(set(ids)) != len(ids):
+        raise ServiceError(422, INVALID_REQUEST, "CaseChatInput lists a document twice.")
+    request.state.ai_operation = "chat"
+    output = await run_in_threadpool(app.state.chat.answer, payload)
+    violations = contracts.violations("CaseChatOutput", output)
+    if not violations and (output["case_id"] != payload["case_id"]
+                           or any(c["document_id"] not in ids for c in output["citations"])):
+        violations = [Violation("/citations", "citation outside the requested case")]
+    if violations:
+        logger.error("chat output rejected: %d violations", len(violations))
+        raise ServiceError(422, INVALID_MODEL_OUTPUT, "CaseChatOutput failed validation; not returned.", violations)
+    return JSONResponse(output, headers={"X-AI-Mode": output["provenance"]["mode"]})

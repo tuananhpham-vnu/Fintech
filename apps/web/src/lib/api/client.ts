@@ -25,6 +25,8 @@ type Options = {
   respondentToken?: string
   auth?: boolean
   bytes?: boolean
+  /** Defaults: 90s for uploads, 30s otherwise. Long model-backed reads may raise it (proxy caps at 85s). */
+  timeoutMs?: number
   /** Successful headers are ephemeral; callers must never persist capability secrets. */
   onSuccessHeaders?: (headers: Headers) => void
 }
@@ -47,7 +49,7 @@ export async function request<T>(
     abort = () => controller.abort(options.signal?.reason)
   const timeout = setTimeout(
     () => controller.abort(),
-    options.body instanceof FormData ? 90_000 : 30_000,
+    options.timeoutMs ?? (options.body instanceof FormData ? 90_000 : 30_000),
   )
   options.signal?.addEventListener('abort', abort, { once: true })
   if (options.signal?.aborted) abort()

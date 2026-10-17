@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "fintech-ai"
 version = "0.1.0"
-description = "Internal AI service (inspect/extract/evaluate) — Fintech Blueprint contracts 1.0.2"
+description = "Internal AI service (inspect/extract/evaluate + case chat) — Fintech Blueprint contracts 1.0.2"
 requires-python = ">=3.11"
 dependencies = [
   "fastapi==0.115.6",
@@ -21,7 +21,7 @@ dependencies = [
 dev = ["pytest>=8", "httpx==0.28.1", "datamodel-code-generator==0.26.3"]
 
 [tool.setuptools.packages.find]
-include = ["runner*", "extraction*", "normalize*", "linking*", "rules*", "providers*", "evaluation*"]
+include = ["runner*", "extraction*", "normalize*", "linking*", "rules*", "providers*", "evaluation*", "chat*"]
 
 [tool.setuptools.package-data]
 runner = ["console/*.html", "console/*.json"]

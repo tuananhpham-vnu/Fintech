@@ -29,9 +29,12 @@ function verifyClusterFiles(row, source, files = fs) {
   assert.equal(path.basename(data), 'data', 'Unexpected cluster data directory')
   assert.match(path.basename(root), /^aic-pg-check-[A-Za-z0-9]+$/)
   assert.equal(files.realpathSync.native(path.dirname(root)), files.realpathSync.native(os.tmpdir()))
+  // macOS: os.tmpdir() itself sits behind the system /var -> /private/var link; only links below it are refused.
+  const tmp = os.tmpdir(), realTmp = files.realpathSync.native(tmp)
   for (const name of [root, data]) {
     assert.ok(!files.lstatSync(name).isSymbolicLink(), 'Cluster directory must not be a link')
-    assert.equal(files.realpathSync.native(name).toLowerCase(), name.toLowerCase())
+    assert.equal(files.realpathSync.native(name).toLowerCase(),
+      path.join(realTmp, path.relative(tmp, name)).toLowerCase())
   }
   const proof = files.readFileSync(path.join(root, 'password'), 'utf8')
   // Never put passwords into assertion actual/expected output.

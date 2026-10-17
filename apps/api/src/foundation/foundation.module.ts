@@ -31,6 +31,8 @@ import { MvpFinancialController } from '../controllers/mvp-financial.controller'
 import { DocumentArchivesController } from '../documents/document-archives.controller'
 import { DossiersController } from '../documents/dossiers.controller'
 import { DossierRepository } from '../documents/dossier.repository'
+import { AssistantController } from '../assistant/assistant.controller'
+import { AssistantService } from '../assistant/assistant.service'
 
 @Module({})
 export class FoundationModule implements NestModule {
@@ -52,6 +54,7 @@ export class FoundationModule implements NestModule {
               MvpQuestionnairesController,
               MvpCapabilitiesController,
               MvpFinancialController,
+              AssistantController,
             ]
           : []),
       ],
@@ -74,6 +77,7 @@ export class FoundationModule implements NestModule {
               DocumentDecisions,
               DocumentRetryService,
               FinancialRegistry,
+              AssistantService,
               { provide: DOCUMENT_REPOSITORY, useExisting: PostgresDocumentRepository },
               {
                 provide: DOCUMENT_FILES,
