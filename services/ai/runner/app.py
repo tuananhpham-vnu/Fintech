@@ -47,12 +47,14 @@ def build_backend(settings: Settings, contracts: Contracts | None = None) -> Bac
 
     import rules  # rule deterministic chạy được cả khi chưa có Gemini key; ca khó khi đó chuyển HITL
     semantic = None
-    if settings.gemini_key_configured and contracts is not None:
-        from providers.gemini import GeminiConfig, GeminiProvider
+    if contracts is not None:
+        from providers import build_provider
+        from providers.gemini import ProviderUnavailable
         from providers.semantic import PaymentConditionResolver
-        config = GeminiConfig.from_env()
-        semantic = PaymentConditionResolver(GeminiProvider(GeminiConfig(config.api_key, settings.model_id or config.model_id)),
-                                            contracts)
+        try:   # local Ollama mặc định; lỗi khi gọi -> resolver chuyển người duyệt (SEMANTIC_PROVIDER_UNAVAILABLE)
+            semantic = PaymentConditionResolver(build_provider(), contracts)
+        except ProviderUnavailable:
+            semantic = None
     return LiveBackend(evaluator=functools.partial(rules.evaluate, semantic=semantic))
 
 
@@ -60,11 +62,12 @@ def build_chat(settings: Settings):
     from chat import ChatService
     if settings.mode == MODE_MOCK:
         return ChatService("mock")
-    provider = None
-    if settings.gemini_key_configured:   # thiếu key: route trả 503 khi được gọi, không rơi về mock
-        from providers.gemini import GeminiConfig, GeminiProvider
-        config = GeminiConfig.from_env()
-        provider = GeminiProvider(GeminiConfig(config.api_key, settings.model_id or config.model_id))
+    from providers import build_provider
+    from providers.gemini import ProviderUnavailable
+    try:   # cấu hình sai (vd. cloud chưa được phép): route trả 503 khi được gọi, không rơi về mock
+        provider = build_provider()
+    except ProviderUnavailable:
+        provider = None
     return ChatService("live", provider)
 
 

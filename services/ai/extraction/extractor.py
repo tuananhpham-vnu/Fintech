@@ -167,23 +167,43 @@ class Extractor:
 
     # ------------------------------------------------------------------ model
 
-    def response_schema(self, doc_type: str) -> dict:
+    def response_schema(self, doc_type: str, strict: bool = True) -> dict:
+        """strict: schema gửi model. Với mọi provider, "found" phải có >= 1 trích dẫn; provider khai báo
+        `positional_schema` (Ollama: decoder theo grammar) còn nhận mảng cố định từng vị trí, mỗi field_key đúng một
+        lần theo thứ tự registry, nên model nhỏ không lặp/bỏ field. strict=False: kiểm output nhận về; field thiếu
+        trích dẫn vẫn hợp lệ cấu trúc để guard hạ từng field (UNGROUNDED_VALUE) thay vì loại cả tài liệu."""
         condition = semantic.response_schema(self.contracts)["properties"]["condition"]
         evidence = {"type": "object", "additionalProperties": False, "required": ["page", "quote"],
                     "properties": {"page": {"type": "integer", "minimum": 1}, "quote": {"type": "string"}}}
-        item = {"type": "object", "additionalProperties": False,
-                "required": ["field_key", "status", "value", "payment_condition", "evidence"],
-                "properties": {
-                    "field_key": {"type": "string", "enum": [f["field_key"] for f in self.registry.fields(doc_type)]},
-                    "status": {"type": "string", "enum": STATUSES},
-                    "value": {"anyOf": [{"type": "string"}, {"type": "null"}]},
-                    "payment_condition": {"anyOf": [condition, {"type": "null"}]},
-                    "evidence": {"type": "array", "items": evidence}}}
+        keys = [f["field_key"] for f in self.registry.fields(doc_type)]
+
+        def variant(statuses: list[str], min_evidence: int, key_schema: dict) -> dict:
+            return {"type": "object", "additionalProperties": False,
+                    "required": ["field_key", "status", "value", "payment_condition", "evidence"],
+                    "properties": {
+                        "field_key": key_schema,
+                        "status": {"type": "string", "enum": statuses},
+                        "value": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+                        "payment_condition": {"anyOf": [condition, {"type": "null"}]},
+                        "evidence": {"type": "array", "items": evidence, "minItems": min_evidence}}}
+
+        def item(key_schema: dict) -> dict:
+            if not strict:
+                return variant(STATUSES, 0, key_schema)
+            return {"anyOf": [variant(["found"], 1, key_schema),
+                              variant([s for s in STATUSES if s != "found"], 0, key_schema)]}
+
+        if strict and getattr(self.provider, "positional_schema", False):
+            # Không dùng "items": false (Ollama không nhận); minItems = maxItems = số field đã chặn phần tử thừa.
+            fields = {"type": "array", "prefixItems": [item({"type": "string", "enum": [k]}) for k in keys],
+                      "minItems": len(keys), "maxItems": len(keys)}
+        else:
+            fields = {"type": "array", "items": item({"type": "string", "enum": keys})}
         return {"type": "object", "additionalProperties": False,
                 "required": ["detected_type", "classification_confident", "fields"],
                 "properties": {"detected_type": {"type": "string", "enum": DOC_TYPES},
                                "classification_confident": {"type": "boolean"},
-                               "fields": {"type": "array", "items": item}}}
+                               "fields": fields}}
 
     def user_prompt(self, doc_type: str, pages: list[Page]) -> str:
         lines = [f"Loại tài liệu khai báo: {doc_type}", "Các field_key cần trả (đủ, mỗi key đúng một lần):"]
@@ -199,7 +219,7 @@ class Extractor:
         return "\n".join(lines)
 
     def structural_violations(self, data: Any, doc_type: str, page_count: int) -> list[Violation]:
-        validator = Draft202012Validator(self.response_schema(doc_type))
+        validator = Draft202012Validator(self.response_schema(doc_type, strict=False))
         found = [Violation("/" + "/".join(map(str, e.absolute_path)), e.message[:200])
                  for e in sorted(validator.iter_errors(data), key=lambda e: list(e.absolute_path))][:20]
         if found:

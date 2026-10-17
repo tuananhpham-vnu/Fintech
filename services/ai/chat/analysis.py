@@ -150,7 +150,9 @@ def _tax_id_metric(documents: list[dict]) -> list[Metric]:
     if not seen:
         return []
     ids = sorted({d for docs in seen.values() for d in docs})
-    return [Metric("distinct_borrower_tax_ids", "Số MST bên vay khác nhau giữa các hồ sơ", Decimal(len(seen)),
+    label = ("Số MST bên vay khác nhau giữa các hồ sơ (1 = mọi hồ sơ ghi cùng một MST, nhất quán; "
+             ">1 = có hồ sơ ghi MST khác)")
+    return [Metric("distinct_borrower_tax_ids", label, Decimal(len(seen)),
                    "count", None, "count(distinct borrower tax_id)", ids)]
 
 

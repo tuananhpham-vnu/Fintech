@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from functools import cached_property
 from pathlib import Path
 from typing import Any
@@ -23,7 +24,7 @@ logger = logging.getLogger("chat")
 
 SCHEMA_VERSION = "aic-chat-0.1"
 PROMPT_VERSION = "case-chat-v1"
-DEADLINE_S = 75.0                 # backend chờ 80s, proxy web 85s
+DEADLINE_S = float(os.environ.get("CHAT_DEADLINE_S", 75))   # backend chờ 80s, proxy web 85s
 MAX_OUTPUT_TOKENS = 4096
 
 
@@ -91,9 +92,11 @@ class ChatService:
             raise ServiceError(503, PROVIDER_UNAVAILABLE, "Assistant needs GEMINI_API_KEY and MODEL_ID.")
         deadline = Deadline(self.deadline_s)
         user = ctx.user_prompt(payload, context)
+        schema = (ctx.strict_response_schema() if getattr(self.provider, "positional_schema", False)
+                  else ctx.RESPONSE_SCHEMA)
         for _ in range(2):                    # JSON hỏng thì hỏi lại đúng 1 lần
             try:
-                data = call_json(self.provider, ctx.SYSTEM, user, ctx.RESPONSE_SCHEMA, deadline, "case chat",
+                data = call_json(self.provider, ctx.SYSTEM, user, schema, deadline, "case chat",
                                  max_output_tokens=MAX_OUTPUT_TOKENS)
             except MalformedOutput:
                 continue
