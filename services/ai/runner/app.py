@@ -21,6 +21,7 @@ from .config import MODE_MOCK, Settings
 from .contracts import SCHEMA_VERSION, Contracts, Violation
 from .errors import FORBIDDEN, INVALID_MODEL_OUTPUT, INVALID_REQUEST, ServiceError, error_body, error_response
 from .guards import evaluation_output_violations, extraction_output_violations, inspection_output_violations
+from .provider_diagnostics import emit_failure
 
 logger = logging.getLogger("runner")
 
@@ -63,8 +64,15 @@ def create_app(settings: Settings | None = None, backend: Backend | None = None,
     app.state.settings, app.state.contracts, app.state.backend = settings, contracts, backend
 
     @app.exception_handler(ServiceError)
-    async def _service_error(_: Request, exc: ServiceError) -> JSONResponse:
-        return error_response(exc)
+    async def _service_error(request: Request, exc: ServiceError) -> JSONResponse:
+        response = error_response(exc)
+        # Internal diagnostics are opt-in and content-free. Keep the exact
+        # public envelope; correlate its existing request UUID with the job's
+        # validated document UUID, never with a prompt/header/source body.
+        emit_failure(exc, getattr(request.state, "ai_operation", None),
+                     getattr(request.state, "ai_document_id", None),
+                     json.loads(response.body)["error"]["request_id"])
+        return response
 
     @app.exception_handler(Exception)
     async def _unexpected(_: Request, exc: Exception) -> JSONResponse:
@@ -117,6 +125,9 @@ def _make_handler(operation: str, input_schema: str, output_schema: str, guard: 
         violations = app.state.contracts.violations(input_schema, payload)
         if violations:
             raise ServiceError(422, INVALID_REQUEST, f"Request does not match {input_schema} 1.0.2.", violations)
+
+        request.state.ai_operation = operation
+        request.state.ai_document_id = payload.get("document_id")
 
         output = await run_in_threadpool(getattr(app.state.backend, operation), payload)
 

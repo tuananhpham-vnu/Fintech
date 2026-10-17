@@ -1,0 +1,73 @@
+{
+  "id": "c2000000-0000-4000-8000-000000000002",
+  "organization_id": "00000000-0000-4000-8000-000000000100",
+  "counterparty_id": "00000000-0000-4000-8000-000000000002",
+  "exposure_kind": "PREPAYMENT",
+  "lifecycle_stage": "proposed",
+  "revision": 1,
+  "policy_version": "AIC-TRANSPORT-TEST",
+  "method_version": null,
+  "latest_review_run_id": null,
+  "latest_assessment_id": null,
+  "created_at": "2026-10-16T10:00:00.000Z",
+  "updated_at": "2026-10-16T10:00:00.000Z",
+  "metadata": {
+    "source_class": "synthetic_input",
+    "description": "Synthetic test fixture for PREPAYMENT exposure (Buyer: Organization, Seller: Counterparty Supplier). No real AI output attached.",
+    "is_synthetic_input": true
+  },
+  "exposure": {
+    "amount_vnd": "200000000",
+    "term_days": 45,
+    "organization_role": "buyer",
+    "counterparty_role": "seller",
+    "contract_ref": "SYNTH-PRE-2026-002",
+    "conditions": [],
+    "source_origin": "staff_entered",
+    "due_date": "2026-11-30"
+  },
+  "documents": [
+    {
+      "id": "d2000000-0000-4000-8000-000000000002",
+      "lineage": "l2000000-0000-4000-8000-000000000002",
+      "version": 1,
+      "hash": "33a453e3558ff0e8b5a770b70b38f2fb1bc32a2484cd3e916742ed973d378764",
+      "pages": 1,
+      "source": "UPLOADED_PDF",
+      "owner_party_ref": "00000000-0000-4000-8000-000000000002",
+      "type": "contract",
+      "classification": "contract",
+      "status": "ready",
+      "name": "04_contract.pdf",
+      "extraction": null
+    }
+  ],
+  "jobs": [],
+  "findings": [],
+  "waivers": [],
+  "requests": [],
+  "questionnaires": [],
+  "financial_metrics": [],
+  "readiness": {
+    "case_revision": 1,
+    "document_review_allowed": true,
+    "numeric_assessment_allowed": false,
+    "method_status": "unconfigured",
+    "blockers": [
+      {
+        "code": "METHOD_UNCONFIGURED",
+        "message": "Method is unconfigured for synthetic pilot test"
+      }
+    ],
+    "limitations": [
+      "Synthetic test fixture — not a real transaction"
+    ],
+    "waivable_requirements": [
+      {
+        "requirement_key": "transaction.advance_payment_guarantee",
+        "label": "Bảo lãnh hoàn trả tiền tạm ứng"
+      }
+    ]
+  },
+  "assessment": null
+}

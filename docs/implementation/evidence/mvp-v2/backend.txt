@@ -1,0 +1,252 @@
+Command: pnpm api:test:mvp
+Observed exit: 0
+Mode: real PostgreSQL18 + real Nest/FastAPI native inspect/private storage; synthetic labelled AI publication; pure engine
+Sanitization: workspace/temp paths and credential/provider-token patterns only; full remaining output preserved.
+
+$ pnpm api:build && node scripts/test-local-postgres.cjs --test-concurrency=1 apps/api/dist/auth/auth.helpers.test.js apps/api/test/fhi-scorer.cjs apps/api/test/foundation.integration.cjs apps/api/test/policy-exposure-migration.cjs apps/api/test/mvp-case.integration.cjs apps/api/test/mvp-counterparty.integration.cjs apps/api/test/document-retry.integration.cjs apps/api/test/documents-repository.cjs apps/api/test/mvp-workflow.integration.cjs apps/api/test/document-http.integration.cjs apps/api/test/sandbox-bootstrap.integration.cjs
+$ pnpm --filter @fintech/api build
+$ tsc -p tsconfig.json
+The files belonging to this database system will be owned by user "52ducbanh".
+This user must also own the server process.
+
+The database cluster will be initialized with locale "C".
+The default text search configuration will be set to "english".
+
+Data page checksums are enabled.
+
+creating directory C:/Users/52duc/AppData/Local/Temp/aic-pg-check-lL7wFF/data ... ok
+creating subdirectories ... ok
+selecting dynamic shared memory implementation ... windows
+selecting default "max_connections" ... 100
+selecting default "shared_buffers" ... 128MB
+selecting default time zone ... Asia/Bangkok
+creating configuration files ... ok
+running bootstrap script ... ok
+performing post-bootstrap initialization ... ok
+syncing data to disk ... ok
+
+Success. You can now start the database server using:
+
+    ^"C^:^\Program^ Files^\PostgreSQL^\18^\bin^\pg^_ctl^" -D ^"C^:^\Users^\52duc^\AppData^\Local^\Temp^\aic^-pg^-check^-lL7wFF^\data^" -l logfile start
+
+waiting for server to start.... done
+server started
+✔ scrypt v1 round trips, salts differ, and password whitespace is significant (418.126ms)
+✔ missing, malformed, noncanonical and attacker-selected KDF costs fail closed (575.2251ms)
+✔ password byte limits bound work before the KDF (1.1083ms)
+✔ published transport byte limits handle Unicode without coercion or truncation (180.1022ms)
+✔ login accepts only the exact two nonblank, bounded string fields (0.4814ms)
+✔ hash and versioned CSRF have stable vectors and use the opaque token as HMAC key (0.6541ms)
+✔ account+IP hashes separate both dimensions and cannot collide through delimiters (0.283ms)
+✔ wire cookies honor the configured name and reject ambiguous or malformed tokens (0.4985ms)
+✔ session cookie presence distinguishes absent from supplied invalid tokens (0.2248ms)
+✔ Origin must be an exact canonical allowlisted HTTP(S) origin (0.6156ms)
+✔ CSRF accepts only the exact token, rejecting missing, duplicate, padded and changed values (0.4554ms)
+✔ every method except GET, HEAD and OPTIONS requires mutation protection (0.1863ms)
+✔ wire sessions expose only principal, CSRF and absolute expiry (0.2753ms)
+▶ local document HTTP + actual FastAPI live native inspection + PostgreSQL source
+  ✔ both core cases created through HTTP and independently review/request/approve/export with FHI disabled (666.8324ms)
+  ✔ v2 native form and financial registry through actual HTTP; direct capability needs no specialist cookies (261.5748ms)
+  ✔ unsafe request and outsider rejected; no source/job side effects (27.7298ms)
+  ✔ native PDF inspection then atomic202; exact source hash and detail DTO (1467.8131ms)
+  ✔ source/job/extraction ACL; incomplete extraction remains409 (24.0239ms)
+  ✔ provider stopped: frozen replay still202; mismatched key409; new intent503 (1156.8384ms)
+  ✔ actual Nest close/recreate retains source and session (770.7542ms)
+  ✔ actual worker uses private cache + HTTP transport + PostgreSQL publication; no live model claim (6197.7327ms)
+✔ local document HTTP + actual FastAPI live native inspection + PostgreSQL source (14609.5726ms)
+ℹ Private synthetic cache namespace: <temp>\aic-doc-http-RTj9ri
+▶ manual document retry: actual PostgreSQL, runtime roles and guarded HTTP
+  ✔ automatic default remains queued; explicit worker option leaves known retryable failure (116.0992ms)
+  ✔ known transient failure -> manual retry -> actual worker claim/publish; frozen provider-independent replay (145.1628ms)
+  ✔ parallel duplicate returns one intent; different concurrent keys cannot requeue twice (95.4761ms)
+  ✔ Origin/CSRF/session/ACL and strict reason DTO are enforced at HTTP boundary (70.2987ms)
+  ✔ stale revision and stale job snapshot are rejected independently (26.671ms)
+  ✔ running/live lease, expired lease and unreconciled/unknown failure cannot be manually queued (146.708ms)
+  ✔ superseded source and mismatched outcome source/fence are rejected (57.6933ms)
+  ✔ deadline and minimum remaining worker budget are bounded by original creation time (39.4968ms)
+  ✔ audit/replay failure rolls back job, revision and command intent (71.7907ms)
+  ✔ frozen replay precedes source/deadline checks but still requires current session and ACL; expired keys conflict (77.0192ms)
+  ✔ API grants cannot reset attempt/fence/source or forge results; worker has no session authority (99.5771ms)
+✔ manual document retry: actual PostgreSQL, runtime roles and guarded HTTP (2049.6836ms)
+▶ MVP document repository: actual PostgreSQL with separate least-privileged roles
+  ✔ atomic acceptance, exact frozen replay before revision check, full DTO and changed metadata conflict (80.3207ms)
+  ✔ source bytes/hash, active list, safe invalid UUID and current tenant/membership/session ACL (20.9507ms)
+  ✔ accept rolls back canonical bytes, metadata, pointer, job, revision and replay when audit fails (10.8074ms)
+  ✔ worker claims canonical snapshot; owner/fence checks; publish full raw once with operator audit (56.6221ms)
+  ✔ replace CAS creates immutable version/new ID/same lineage; old exact bytes remain readable (24.5995ms)
+  ✔ published evidence lookup returns exact old version and hides other tenants/case nonmembers (7.6895ms)
+  ✔ superseded source cannot publish; full historical output retained; public stale maps to failed (24.3541ms)
+  ✔ retryable bounded retries increment fences; obsolete worker cannot heartbeat/publish/fail (15.1691ms)
+  ✔ publish rejects wrong source IDs/hash and mode even if transport is bypassed (72.2136ms)
+  ✔ expired leases never revive and reclaim records expiry with incremented fence (21.4262ms)
+  ✔ response acceptance freezes approved request atomically; cancellation blocks new acceptance but permits exact replay (32.9956ms)
+  ✔ case-scoped job listing projects only public states and enforces membership (4.3704ms)
+  ✔ case quotas count only current versions and reject oversized files/pages/hash (69.8403ms)
+  ✔ identical concurrent accepts create one version/revision; expiry is rechecked after case lock wait (398.109ms)
+  ✔ immutable object/document/raw/replay/audit triggers and tenant composite FK enforcement (7.4211ms)
+  ✔ expired replay cannot be reused or purged and current membership is checked before cached replay (41.7267ms)
+✔ MVP document repository: actual PostgreSQL with separate least-privileged roles (1386.0109ms)
+✔ Notion §4.3 exact manual example:73.736111...,73.7,F2; runtime publication remains null (7.1654ms)
+✔ Every canonical anchor, segment interpolation and endpoint clamp uses exact Decimal (1.5897ms)
+✔ Missing/unverified/stale/foreign scope and decimal inputs block; no reweight or financial proxies (7.8665ms)
+✔ Zero interest exception needs verified zero debt; EBITDA still positive, negatives preserved (4.4304ms)
+▶ Phase1 foundation: actual PostgreSQL and HTTP (no mock DB/auth)
+  ✔ empty database readiness fails closed without auto-migrating (28.1492ms)
+  ✔ migration checksum canonicalizes line endings but detects substantive edits (0.4547ms)
+  ✔ numbered migrations apply once with checksum ledger (305.42ms)
+  ✔ invalid, unknown and disabled credentials fail uniformly; no prototype login (383.3414ms)
+  ✔ strict LoginInput and same-origin enforcement (7.18ms)
+  ✔ real password login, hash-only persistent session and configured cookie (159.5686ms)
+  ✔ missing/invalid session401, outsider404 across org and case membership (76.5033ms)
+  ✔ scoped list/cursor pagination, no cross-case or cross-org rows (57.3085ms)
+  ✔ creator membership automatic and same transaction; policy version immutable (5.252ms)
+  ✔ same-tenant composite FKs and resource/domain checks reject forged rows (6.1821ms)
+  ✔ atomic revision/audit/idempotency commit; exact replay is side-effect free (43.8191ms)
+  ✔ different payload/key scope and stale revision are409; canonical JSON stable (5.8153ms)
+  ✔ failed transaction rolls back data/revision/audit/replay record together (4.8839ms)
+  ✔ concurrent same scoped key yields one mutation and original response (28.3595ms)
+  ✔ current ACL and revocation checked before cached replay (76.4676ms)
+  ✔ history is persisted audit under ACL; runtime cannot edit/delete audit (10.4848ms)
+  ✔ absolute expiry, idle expiry and account disable enforce actual401 (223.7453ms)
+  ✔ active logout rejects missing/wrong CSRF and foreign Origin; revoked logout204 (80.2105ms)
+  ✔ five failed account/IP attempts persist, then15min block; other IP separate (471.6616ms)
+  ✔ active access refreshes idle activity without extending absolute expiry (4.0228ms)
+  ✔ unreleased business writes/document/AI/scoring routes stay closed (12.5034ms)
+  ✔ PostgreSQL data + sessions survive actual API process restart (1674.7028ms)
+  ✔ production config requires HTTPS, forbids prototype and sets secure cookies (1.704ms)
+  ✔ Secure/HttpOnly/SameSite cookie flags are actually emitted with production transport config (105.074ms)
+  ✔ same key is isolated by case, actor and operation, not a global replay Map (76.8887ms)
+Actual PostgreSQL18 foundation checks completed; disposable DB aic_phase1_test_82a3f8294bfd retained in isolated cluster.
+  ✔ absolute/idle expiry during a real PostgreSQL lock wait prevents both replay and fresh work (1348.9668ms)
+✔ Phase1 foundation: actual PostgreSQL and HTTP (no mock DB/auth) (5738.2433ms)
+▶ MVP case/Exposure service: actual PostgreSQL transactions and source guards
+  ✔ fixture artifact bytes equal the shared canonical policy hash (0.9591ms)
+  ✔ least-privilege runtime cannot insert users/memberships or mutate/register policy rows (3.5693ms)
+  ✔ create atomically pins policy, grants creator-only access and writes one audit/version/replay (117.7641ms)
+  ✔ create exact replay is frozen, side-effect free and non-sliding (9.8789ms)
+  ✔ concurrent identical creates commit one case/audit/version and replay one frozen result (66.2381ms)
+  ✔ same key is isolated by actor/org, never a tenant-wide credential (12.294ms)
+  ✔ cross-org counterparty and forged session principal are rejected before writes (5.6896ms)
+  ✔ revoked case access blocks frozen create replay (19.1313ms)
+  ✔ revoked/disabled/expired/idle sessions cannot obtain cached create responses (306.7733ms)
+  ✔ expired create key conflicts without deletion, key reuse or a new case (13.4463ms)
+  ✔ 24h default and configured replay duration are honored without automatic cleanup (12.6485ms)
+  ✔ unknown exposure amount remains null with its reason and is never zero-filled (7.4303ms)
+  ✔ both core roles preserve actual/proposed unverified declarations without summing observations (21.2986ms)
+  ✔ reject numeric amount, with no committed side effect (3.5206ms)
+  ✔ reject unknown amount without reason, with no committed side effect (1.8552ms)
+  ✔ reject known amount with missing reason, with no committed side effect (1.4723ms)
+  ✔ reject null term without explanation, with no committed side effect (3.2645ms)
+  ✔ reject known term with null-term explanation, with no committed side effect (2.0605ms)
+  ✔ reject reversed PREPAYMENT roles, with no committed side effect (2.8081ms)
+  ✔ reject auxiliary exposure kind, with no committed side effect (1.7899ms)
+  ✔ reject client policy override, with no committed side effect (2.9377ms)
+  ✔ reject client actor injection, with no committed side effect (3.2348ms)
+  ✔ reject client verification, with no committed side effect (2.8755ms)
+  ✔ reject SME direct origin, with no committed side effect (3.5573ms)
+  ✔ reject client claim identity, with no committed side effect (2.143ms)
+  ✔ reject client claim verification, with no committed side effect (2.9236ms)
+  ✔ reject client source identity, with no committed side effect (2.9644ms)
+  ✔ reject questionnaire source unsupported, with no committed side effect (2.9132ms)
+  ✔ reject third-party payment unsupported, with no committed side effect (3.6583ms)
+  ✔ reject paid reported by payee, with no committed side effect (2.8431ms)
+  ✔ reject declaration source from wrong reporting party, with no committed side effect (3.7803ms)
+  ✔ reject missing claim source, with no committed side effect (6.3789ms)
+  ✔ reject null claim amount without reason, with no committed side effect (2.5483ms)
+  ✔ reject proposed claim with actual date, with no committed side effect (3.6409ms)
+  ✔ reject actual claim without date or reason, with no committed side effect (2.117ms)
+  ✔ reject unknown condition without reason, with no committed side effect (1.9257ms)
+  ✔ reject invalid calendar date, with no committed side effect (3.3153ms)
+  ✔ no matching policy and future assignments fail closed (72.7618ms)
+  ✔ registry rejects overlapping organization/kind policy intervals (1.3235ms)
+  ✔ policy draft is rejected even with an assignment (76.818ms)
+  ✔ policy ineligible is rejected even with an assignment (82.774ms)
+  ✔ policy missing approval evidence is rejected even with an assignment (71.0351ms)
+  ✔ policy wrong core scope is rejected even with an assignment (75.6388ms)
+  ✔ policy wrong currency scope is rejected even with an assignment (71.6284ms)
+  ✔ policy numeric method activation is rejected even with an assignment (72.3879ms)
+  ✔ policy artifact hash mismatch is rejected even with an assignment (72.7638ms)
+  ✔ update uses CaseMutations, preserves lifecycle/policy and advances immutable source history (22.3682ms)
+  ✔ create replay after updates still returns the original case snapshot (2.8692ms)
+  ✔ update replay precedes revision check, preserves generated IDs and adds no audit/version (19.839ms)
+  ✔ concurrent updates on one expected revision commit once (11.7963ms)
+  ✔ current session/case ACL are checked before update replay (89.0647ms)
+  ✔ expired update key cannot execute or reuse its reservation (17.9774ms)
+  ✔ historical cases without an approved pinned hash remain closed to MVP updates (6.5343ms)
+  ✔ valid historical binding is checked at creation, without reselecting current assignment (79.4938ms)
+  ✔ real audit failure rolls back case/membership/version/bindings/replay; same intent can retry (16.066ms)
+  ✔ real audit failure rolls back an update and its immutable version/source bindings (16.788ms)
+  ✔ session expiry during advisory lock wait is rechecked before create work (437.2151ms)
+  ✔ document sources bind an actual published exact document/version/hash/evidence (43.8571ms)
+  ✔ reject invented document without advancing case/source revision (7.7315ms)
+  ✔ reject wrong document version without advancing case/source revision (7.1676ms)
+  ✔ reject wrong document hash without advancing case/source revision (6.9522ms)
+  ✔ reject invented evidence without advancing case/source revision (7.7564ms)
+  ✔ published evidence cannot be borrowed from another case or tenant (20.1276ms)
+  ✔ Exposure revision invalidates an in-flight document dependency snapshot and retains stale output (32.6066ms)
+  ✔ declaration FK rejects binding one exposure revision to another revision source (1.623ms)
+  ✔ policy, exposure snapshots and source bindings are immutable at the database boundary (2.2528ms)
+✔ MVP case/Exposure service: actual PostgreSQL transactions and source guards (2804.0771ms)
+▶ MVP counterparty: actual PostgreSQL, sessions, restricted grants and immutable provenance
+  ✔ create through controller persists server IDs, text identifiers, staff declaration and null-case audit (53.8335ms)
+  ✔ strict input rejects server metadata, arbitrary sources, whitespace, bounds and invalid revisions atomically (12.416ms)
+  ✔ attribute and source-only edits reset confirmed identity, append versions and keep history (13.5149ms)
+  ✔ create replay freezes old body without reverting current data or extending retention (9.2786ms)
+  ✔ update replay is exact, target-bound, does not require old revision to remain current (24.7166ms)
+  ✔ expired idempotency key remains reserved and unchanged (10.7343ms)
+  ✔ same key is separately scoped to organization, actor and operation (14.4627ms)
+  ✔ foreign organization and forged principal cannot read, update or replay; current org specialist can edit (10.613ms)
+  ✔ duplicate tax identity produces409 and rolls back update/create intent (18.1641ms)
+  ✔ concurrent same-key create/update publish once; competing revisions yield one409 (43.9233ms)
+  ✔ waiting input and principal are snapshots, including nested declaration (80.8059ms)
+  ✔ session expiry during advisory wait blocks fresh mutation and frozen replay (880.7577ms)
+  ✔ session expiry during counterparty row wait is rechecked before mutation (449.6091ms)
+  ✔ revoked/disabled/idle/expired auth rejects replay before returning saved body (289.5229ms)
+  ✔ disable committed while initial session lock waits is rechecked (71.0193ms)
+  ✔ real database audit failure atomically rolls back counterparty/version/replay; same key retries (27.2841ms)
+  ✔ tenant FKs, append-only versions and least privilege enforce database boundary (235.7838ms)
+  ✔ foundation controller remains503 without optional service, scoped404 before disabled update (26.1855ms)
+✔ MVP counterparty: actual PostgreSQL, sessions, restricted grants and immutable provenance (3107.9638ms)
+▶ MVP workflow: real PostgreSQL, authenticated sessions and approved sandbox policy
+  ✔ both core cases review without financial inputs or an approved FHI method (128.1589ms)
+  ✔ case revision, frozen replay, concurrency, ACL and derived staleness use real locks (199.2045ms)
+  ✔ actual paid declaration plus invoice retains missing payment support without inferred settlement (59.9123ms)
+  ✔ both core flows: draft/approve/frozen export, wrong type rejected, response/recheck/ack and history (489.7198ms)
+  ✔ waiver preserves missing finding and unknown facts; financial/identity conflict cannot be waived into verification (132.0377ms)
+  ✔ source changes after draft block stale approval; cancel freezes prior export and rejects new response (192.9162ms)
+  ✔ wrong-subject supplement remains blocked; exact replacement plus human source review allows limited acknowledgement (360.4171ms)
+  ✔ issue resolve/dismiss/reopen preserve detector gates, exact sources, history and replay (617.3691ms)
+  ✔ optional questionnaires: real declarations, skip policy, exact revision verification and stale invalidation (748.1249ms)
+  ✔ native capability form: hash-only token, exact questions, direct origin, replay, reissue/revoke/expiry/close races (386.6825ms)
+  ✔ counterparty source revision makes dependent review stale without granting organization-wide case rights (95.1707ms)
+  ✔ financial registry: versioned scope/raw decimals/normalization, human verification, immutable evidence and gated metrics (442.5642ms)
+✔ MVP workflow: real PostgreSQL, authenticated sessions and approved sandbox policy (6783.8728ms)
+▶ MVP policy/Exposure migration: real PostgreSQL constraints, synthetic unapproved fixtures
+  ✔ explicit organization registry allows adjacency/other kind/other org and has no implicit match (10.9384ms)
+  ✔ overlap, invalid intervals, pre-effective assignment, unsupported kind and wrong hash fail closed (6.8021ms)
+  ✔ advisory lock prevents concurrent overlapping registry insertions (83.0111ms)
+  ✔ case pin references exact artifact pair; historical null and pinned content cannot change (5.8664ms)
+  ✔ immutable declaration/version source has real author provenance and case/tenant FKs (10.1162ms)
+  ✔ document source requires exact immutable ID/version/hash in the same case (15.3068ms)
+  ✔ policy registry and Exposure/source versions reject UPDATE DELETE TRUNCATE without extra function grants (14.5794ms)
+  ✔ 0006 creator trigger permits runtime case INSERT without membership/user DML (13.8849ms)
+  ✔ 0006 null amount requires a reason; zero, absent and malformed amounts stay rejected (9.985ms)
+  ✔ 0006 workflow publication stays frozen while request revision advances; history/waivers remain immutable (35.7648ms)
+✔ MVP policy/Exposure migration: real PostgreSQL constraints, synthetic unapproved fixtures (1075.7609ms)
+Sandbox tenant, specialist, unresolved synthetic counterparties and explicit core policy assignments created. No case or verified facts seeded.
+▶ insert-only operator bootstrap on a fresh disposable sandbox
+  ✔ real hashed identity, two unresolved counterparties, two scoped assignments and no seeded case (231.7472ms)
+  ✔ existing organization refuses bootstrap and preserves old credentials/assignments (130.4818ms)
+  ✔ missing opt-in and production refuse without changing the database (1.4767ms)
+✔ insert-only operator bootstrap on a fresh disposable sandbox (1251.0725ms)
+ℹ tests 196
+ℹ suites 0
+ℹ pass 196
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 46746.3824
+waiting for server to shut down.... done
+server stopped
+Disposable cluster stopped; diagnostic data retained at <temp>\aic-pg-check-lL7wFF

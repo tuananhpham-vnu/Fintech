@@ -1,0 +1,114 @@
+{
+  "artifact_kind": "case_policy_proposal",
+  "policy_version": "AIC-CASE-DRAFT-2026-10-17.1",
+  "status": "draft",
+  "runtime_eligible": false,
+  "approval": null,
+  "effective_from": null,
+  "effective_until": null,
+  "proposed_effective_from": "2026-10-20T00:00:00+07:00",
+  "scope": {
+    "exposure_kinds": ["RECEIVABLE", "PREPAYMENT"],
+    "currency": "VND",
+    "lifecycle_stages": ["proposed", "active"],
+    "organization_scope": "explicit registry assignment; no automatic assignment to every tenant",
+    "auxiliary_debt": "not released by this proposal"
+  },
+  "selection_proposal": {
+    "clock": "database transaction timestamp, compared as UTC instants",
+    "eligible": "status approved, approval evidence present, effective_from <= created_at, effective_until null or created_at < effective_until, and explicit organization/exposure scope matches",
+    "effective_interval": "[effective_from, effective_until)",
+    "overlap": "reject overlapping approved assignments at registration; if multiple still match at creation, fail closed without choosing newest",
+    "no_match": "reject case creation; no draft/pilot/default fallback",
+    "case_binding": "persist selected policy_version and approved artifact hash in the same transaction as case and creator membership; never reselect an existing case",
+    "approval_boundary": "operator registers an externally approved artifact; no new business role or approval API"
+  },
+  "inherited_invariants": [
+    "creator belongs to organization and gets only this case membership in the creation transaction",
+    "identity mismatch or unresolved identity cannot be waived into a positive legal-entity conclusion",
+    "missing financial inputs block numeric assessment; missing method separately blocks numeric assessment",
+    "waiver retains missing finding/limitation and never means verified",
+    "proposed transaction does not certify that an obligation or payment occurred",
+    "optional missing information is a limitation, not an invented numerical penalty"
+  ],
+  "checklist_proposal": [
+    {
+      "requirement_key": "counterparty_identity_source",
+      "document_types": ["registration"],
+      "classification": "required",
+      "when": "all core cases",
+      "waivable": true,
+      "waiver_scope": "provisional document review only; no verified identity conclusion while source missing/conflicting",
+      "missing_behavior": "request source or retain explicit missing limitation; legal-entity conclusion unavailable"
+    },
+    {
+      "requirement_key": "financial_minimum",
+      "document_types": ["financial_statement"],
+      "classification": "required",
+      "when": "numeric assessment requested; exact financial set remains controlled by the separate approved method",
+      "waivable": false,
+      "waiver_scope": null,
+      "missing_behavior": "numeric blocked; documentary review may continue with limitations"
+    },
+    {
+      "requirement_key": "transaction_contract",
+      "document_types": ["contract"],
+      "classification": "conditional",
+      "when": "required for active transaction assertions; proposed case may instead carry explicit proposed scope and limitations",
+      "waivable": true,
+      "waiver_scope": "documentary review only, never certify contract existence or realized obligation",
+      "missing_behavior": "do not treat transaction as supported active obligation; retain proposed/unsupported limitation for review"
+    },
+    {
+      "requirement_key": "delivery_acceptance_source",
+      "document_types": ["delivery_record", "acceptance_record"],
+      "classification": "conditional",
+      "when": "case condition or actual claim relies on delivery/acceptance as payment trigger or performance evidence",
+      "waivable": true,
+      "waiver_scope": "missing-support handling only; trigger satisfaction remains unknown",
+      "missing_behavior": "flag unsupported performance/trigger; do not mark condition satisfied"
+    },
+    {
+      "requirement_key": "paid_received_source",
+      "document_types": ["payment_record"],
+      "classification": "conditional",
+      "when": "a paid/received actual claim is used in transaction review",
+      "waivable": true,
+      "waiver_scope": "missing-support handling only; no verified payment or computed settlement from waiver",
+      "missing_behavior": "retain source claim as unverified or incomplete, never infer zero or nonpayment"
+    },
+    {
+      "requirement_key": "refund_guarantee_source",
+      "document_types": ["contract", "collateral_document"],
+      "classification": "conditional",
+      "when": "PREPAYMENT relies on a refund or guarantee condition; or any core case explicitly claims a guarantee",
+      "waivable": true,
+      "waiver_scope": "missing-document handling only; no guarantee coverage or refund entitlement inferred",
+      "missing_behavior": "flag unsupported safeguard, do not substitute financial health for delivery guarantee"
+    },
+    {
+      "requirement_key": "supplementary_tax_invoice",
+      "document_types": ["tax_report", "invoice"],
+      "classification": "optional",
+      "when": "not activated by a specific claim/condition; the activated source requirement above takes precedence",
+      "waivable": false,
+      "waiver_scope": null,
+      "missing_behavior": "limitation only; no automatic score penalty"
+    }
+  ],
+  "financial_method_boundary": {
+    "method_version": null,
+    "activate_fhi_pilot": false,
+    "allow_numeric_without_separate_method_approval": false,
+    "score": null,
+    "grade": null,
+    "pd": null
+  },
+  "approval_questions": [
+    "Approve or amend each checklist classification, activation condition and waiver scope",
+    "Confirm explicit organization scope and registration authority/evidence",
+    "Approve proposed effectivity date or supply another; no retroactive default",
+    "Approve reject-on-overlap and reject-on-no-match rules",
+    "After approval, publish a separately signed/checksummed approved artifact; this draft remains ineligible"
+  ]
+}

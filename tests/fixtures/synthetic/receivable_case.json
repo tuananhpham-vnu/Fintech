@@ -1,0 +1,73 @@
+{
+  "id": "c1000000-0000-4000-8000-000000000001",
+  "organization_id": "00000000-0000-4000-8000-000000000100",
+  "counterparty_id": "00000000-0000-4000-8000-000000000001",
+  "exposure_kind": "RECEIVABLE",
+  "lifecycle_stage": "proposed",
+  "revision": 1,
+  "policy_version": "AIC-TRANSPORT-TEST",
+  "method_version": null,
+  "latest_review_run_id": null,
+  "latest_assessment_id": null,
+  "created_at": "2026-10-16T10:00:00.000Z",
+  "updated_at": "2026-10-16T10:00:00.000Z",
+  "metadata": {
+    "source_class": "synthetic_input",
+    "description": "Synthetic test fixture for RECEIVABLE exposure (Seller: Borrower, Buyer: Counterparty). No real AI output attached.",
+    "is_synthetic_input": true
+  },
+  "exposure": {
+    "amount_vnd": "500000000",
+    "term_days": 30,
+    "organization_role": "seller",
+    "counterparty_role": "buyer",
+    "contract_ref": "SYNTH-REC-2026-001",
+    "conditions": [],
+    "source_origin": "staff_entered",
+    "due_date": "2026-11-15"
+  },
+  "documents": [
+    {
+      "id": "d1000000-0000-4000-8000-000000000001",
+      "lineage": "l1000000-0000-4000-8000-000000000001",
+      "version": 1,
+      "hash": "33a453e3558ff0e8b5a770b70b38f2fb1bc32a2484cd3e916742ed973d378764",
+      "pages": 1,
+      "source": "UPLOADED_PDF",
+      "owner_party_ref": "00000000-0000-4000-8000-000000000001",
+      "type": "contract",
+      "classification": "contract",
+      "status": "ready",
+      "name": "04_contract.pdf",
+      "extraction": null
+    }
+  ],
+  "jobs": [],
+  "findings": [],
+  "waivers": [],
+  "requests": [],
+  "questionnaires": [],
+  "financial_metrics": [],
+  "readiness": {
+    "case_revision": 1,
+    "document_review_allowed": true,
+    "numeric_assessment_allowed": false,
+    "method_status": "unconfigured",
+    "blockers": [
+      {
+        "code": "METHOD_UNCONFIGURED",
+        "message": "Method is unconfigured for synthetic pilot test"
+      }
+    ],
+    "limitations": [
+      "Synthetic test fixture — not a real transaction"
+    ],
+    "waivable_requirements": [
+      {
+        "requirement_key": "transaction.acceptance_record",
+        "label": "Biên bản nghiệm thu"
+      }
+    ]
+  },
+  "assessment": null
+}

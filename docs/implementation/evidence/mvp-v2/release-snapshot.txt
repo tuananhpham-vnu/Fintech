@@ -1,0 +1,18 @@
+Command: node --test scripts/tests/foundation-release.test.cjs scripts/tests/review-snapshot.test.cjs
+Observed exit: 0
+Mode: current release examples/security/checksums + snapshot tamper/path unit
+Sanitization: workspace/temp paths only; no credentials emitted by these commands.
+
+✔ published request examples validate without acting as server IDs, verification or approval (77.0949ms)
+✔ released capability security matches runtime: bearer without session/CSRF, origin+key on submit and one-time header (2.48ms)
+✔ source request schema requires exact kind-specific tuple and rejects mixed or server-owned fields (16.754ms)
+✔ snapshot path rejects traversal and absolute paths (1.3456ms)
+✔ fixed review bytes verify; changed or missing source fails without changing the original (4.8389ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 292.1746

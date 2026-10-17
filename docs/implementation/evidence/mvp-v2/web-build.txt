@@ -1,0 +1,40 @@
+Command: pnpm build
+Observed exit: 0
+Mode: Next production compilation only; no app server/browser
+Sanitization: workspace/temp paths only; no credentials emitted by these commands.
+
+$ pnpm --filter @fintech/web build
+$ node scripts/prepare-pdf-assets.cjs
+$ next build
+▲ Next.js 16.4.0 (Turbopack)
+- Environments: .env.local
+✓ Running next.config.mjs took 26ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 1145ms
+  Running TypeScript ...
+  Finished TypeScript in 2.3s ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/10) ...
+  Generating static pages using 11 workers (2/10) 
+  Generating static pages using 11 workers (4/10) 
+  Generating static pages using 11 workers (7/10) 
+✓ Generating static pages using 11 workers (10/10) in 326ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/v2/[...path]
+├ ○ /apple-icon.png
+├ ○ /cases
+├ ƒ /cases/[caseId]
+├ ○ /counterparties
+├ ○ /icon.svg
+├ ○ /login
+└ ○ /respondent
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

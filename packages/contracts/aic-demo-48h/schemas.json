@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Additive local demo DTOs. Definitions merge with aic-foundation/schemas.json; legacy contracts unchanged.",
+  "definitions": {
+    "ArchiveImportOutput": {
+      "type": "object", "additionalProperties": false,
+      "required": ["archive_sha256", "case_id", "revision", "state", "items"],
+      "properties": {
+        "archive_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "case_id": {"type": "string", "format": "uuid"},
+        "revision": {"type": "integer", "minimum": 1, "maximum": 9007199254740991},
+        "state": {"enum": ["accepted", "partial", "rejected"]},
+        "items": {"type": "array", "minItems": 1, "maxItems": 32, "items": {"$ref": "#/definitions/ArchiveImportItem"}}
+      }
+    },
+    "ArchiveImportItem": {
+      "type": "object", "additionalProperties": false,
+      "required": ["entry_index", "entry_path", "group", "suggested_type", "classification_verification", "status", "document", "job", "rejection"],
+      "properties": {
+        "entry_index": {"type": "integer", "minimum": 0, "maximum": 31},
+        "entry_path": {"type": "string", "minLength": 1, "maxLength": 512},
+        "group": {"enum": ["financial_statements", "contracts", "tax", "payments", "other"]},
+        "suggested_type": {"enum": ["registration", "loan_request", "financial_statement", "contract", "acceptance_record", "payment_record", "invoice", "other"]},
+        "classification_verification": {"const": "unverified"},
+        "status": {"enum": ["accepted", "rejected"]},
+        "document": {"anyOf": [{"$ref": "#/definitions/Document"}, {"type": "null"}]},
+        "job": {"anyOf": [{"$ref": "#/definitions/Job"}, {"type": "null"}]},
+        "rejection": {"anyOf": [{"type": "object", "additionalProperties": false, "required": ["code", "retryable"], "properties": {"code": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]+$"}, "retryable": {"type": "boolean"}}}, {"type": "null"}]}
+      },
+      "allOf": [
+        {"if": {"properties": {"status": {"const": "accepted"}}}, "then": {"properties": {"document": {"$ref": "#/definitions/Document"}, "job": {"$ref": "#/definitions/Job"}, "rejection": {"type": "null"}}}, "else": {"properties": {"document": {"type": "null"}, "job": {"type": "null"}, "rejection": {"type": "object"}}}}
+      ]
+    },
+    "ExtractionSummary": {
+      "type": "object", "additionalProperties": false,
+      "required": ["document_id", "document_version", "source_hash", "job_state", "ai_mode", "verification", "group", "suggested_type", "classification_verification", "outcome", "total_fields", "non_null_fields", "usable_fields", "diagnostics", "fields"],
+      "properties": {
+        "document_id": {"type": "string", "format": "uuid"},
+        "document_version": {"type": "integer", "minimum": 1},
+        "source_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "job_state": {"enum": ["queued", "running", "completed", "partial", "failed"]},
+        "ai_mode": {"enum": ["live", "mock"]}, "verification": {"const": "unverified"},
+        "group": {"enum": ["financial_statements", "contracts", "tax", "payments", "other"]},
+        "suggested_type": {"enum": ["registration", "loan_request", "financial_statement", "contract", "acceptance_record", "payment_record", "invoice", "other"]},
+        "classification_verification": {"const": "unverified"},
+        "outcome": {"enum": ["processing", "ready_for_review", "zero_usable_fields", "failed"]},
+        "total_fields": {"type": "integer", "minimum": 0},
+        "non_null_fields": {"type": "integer", "minimum": 0},
+        "usable_fields": {"type": "integer", "minimum": 0},
+        "diagnostics": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["code", "field_key"], "properties": {"code": {"type": "string"}, "field_key": {"type": ["string", "null"]}}}},
+        "fields": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["field_key", "has_value", "quality", "missing_reason", "evidence_count"], "properties": {"field_key": {"type": "string"}, "has_value": {"type": "boolean"}, "quality": {"enum": ["readable", "uncertain", "unreadable"]}, "missing_reason": {"type": ["string", "null"]}, "evidence_count": {"type": "integer", "minimum": 0}}}}
+      }
+    }
+  }
+}

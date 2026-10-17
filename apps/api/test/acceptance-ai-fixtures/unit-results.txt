@@ -1,0 +1,18 @@
+.............................................................s.......... [ 19%]
+.............sss........................................................ [ 39%]
+........................................................................ [ 59%]
+........................................................................ [ 78%]
+........................................................................ [ 98%]
+......                                                                   [100%]
+============================== warnings summary ===============================
+..\..\.venv\Lib\site-packages\starlette\testclient.py:40
+  C:\Users\52duc\Desktop\Fintech\.venv\Lib\site-packages\starlette\testclient.py:40: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+SKIPPED [1] tests\test_extraction.py:245: symlinks not permitted on this machine
+SKIPPED [1] tests\test_extraction.py:529: 07_contract_scan.pdf only exists in the handoff bundle
+SKIPPED [1] tests\test_extraction.py:529: 08_correct_record_scan.pdf only exists in the handoff bundle
+SKIPPED [1] tests\test_extraction.py:537: tesseract binary not installed
+362 passed, 4 skipped, 1 warning in 10.36s

@@ -1,0 +1,45 @@
+Command: node scripts/check-regression-prerequisites.cjs
+Observed exit: 1
+Mode: historical25-test prototype preflight only; current loopback listener observations, not MVP startup advice
+Sanitization: workspace/temp paths and credential/provider-token patterns only; full remaining output preserved.
+
+[OBSERVED] 127.0.0.1:3000: listener not confirmed; connection-refused
+[OBSERVED] 127.0.0.1:3001: listener not confirmed; connection-refused
+[OBSERVED] 127.0.0.1:8100: listener not confirmed; connection-refused
+[OK] Node >=22
+[OK] Run from repository root (unchanged test uses cwd)
+[OK] Artifact present: scripts/test-e2e-feasibility.cjs
+[OK] Artifact present: apps/api/dist/main.js
+[OK] Artifact present: apps/api/dist/config/configuration.js
+[OK] Artifact present: apps/api/dist/app.module.js
+[OK] Artifact present: services/ai/runner/app.py
+[OK] Artifact present: services/ai/runner/backends.py
+[OK] Artifact present: apps/api/dist/prototype/prototype.module.js
+[OK] Artifact present: apps/api/dist/ai-client/ai-client.service.js
+[OK] Checksum list and listed files: packages/contracts
+[OK] Checksum list and listed files: packages/contracts/fixtures
+[OK] Checksum list and listed files: packages/contracts/aic-foundation
+[OK] Legacy contract VERSION is 1.0.2
+[OK] Synthetic contract PDF, manifest and gold identity/hash agree
+[OK] Synthetic input labels/core roles only: receivable_case.json
+[OK] Synthetic input labels/core roles only: prepayment_case.json
+[OK] Synthetic valid PDF signature (not parser acceptance)
+[OK] Corrupted synthetic fixture present
+[OK] Negative-input catalogue present (not executed)
+[UNRESOLVED] AIC_BACKEND_URL requires /api/v2 suffix: caller must declare exact loopback backend base
+[OK] Caller frontend origin agrees with fixed suite origin
+[OK] Caller API port agrees with fixed suite port
+[UNRESOLVED] Caller declares all three explicit prototype gates
+[UNRESOLVED] Caller explicitly declares AI mock mode
+[UNRESOLVED] Caller internal key present (value suppressed; service equality unproven)
+[UNRESOLVED] Caller declares absolute local prototype storage path (not opened or write-tested)
+[OK] Caller AI URL agrees with fixed loopback target
+[UNRESOLVED] Port 3000 unauthenticated auth/me rejects with 401/403 (mode unproven)
+[UNRESOLVED] Port 3001 unauthenticated auth/me rejects with 401/403 (mode unproven)
+[UNRESOLVED] AI health explicitly reports ok/schema1.0.2/mock (not inspection proof)
+[UNRESOLVED] Existing API mode and actual proxy target require main launch/config evidence; caller env and HTTP status cannot prove them
+[UNRESOLVED] Main must verify current build/dependencies and private disposable storage; no imports/builds/write probes performed
+[UNRESOLVED] Main must check auxiliary ports 59998 available / 59999 unused; preflight does not probe or bind them
+[UNRESOLVED] Full FE-BE-AI NOT RUN/BLOCKED: renewed ordinary Next3000 attempt was rejected blocked by policy; no alternate startup
+[UNRESOLVED] Real synthetic PDF parser inspection is a separate gate; mock manifest inspection does not satisfy it
+READINESS UNRESOLVED (prototype); no services/tests started; no files changed; no secrets emitted.

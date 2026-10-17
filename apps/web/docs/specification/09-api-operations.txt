@@ -1,0 +1,163 @@
+Bản hiện hành: AIC Rating 2.0.0 — CR-AIC-01, ngày 16/10/2026. Định vị được chủ dự án xác nhận: SME đánh giá nhà cung cấp/khách hàng cho trả trước và khoản phải thu; cho vay/đầu tư công cụ nợ là phạm vi phụ. Một role nội bộ Chuyên viên. Demo Việt Nam; giao diện en mặc định, zh-CN và vi. Đây là cập nhật thiết kế, không xác nhận code/runtime hoặc phương pháp tính điểm đã hoàn thành.
+1. API AIC-2.0-DRAFT — thiết kế, chưa phát hành OpenAPI
+Namespace dự kiến /api/v2 để không đổi nghĩa wire1.0.3 đang tồn tại ở dịch vụ AI nhóm. FE chỉ dùng cùng version được phát hành sau này. Role nội bộ specialist; ACL tenant/case backend; mutations có Origin/CSRF, Idempotency-Key (trừ auth), expected_revision khi sửa dữ liệu hiện hữu.
+Guard: session→Origin/CSRF→org/case ACL→shape→idempotency→revision→method/policy/state/source→transaction. JSON không bọc data;204 không body; source/export là bytes; upload multipart.
+2. Catalogue operation
+Method và path
+
+Input → output; guard/side effect
+
+
+POST /auth/login; GET /auth/me; POST /auth/logout
+
+LoginInput→SessionOutput; me trả specialist/org/CSRF, không raw token. Logout revoke→204. Session/auth giữ controls trang06.
+
+
+POST /counterparties; GET /counterparties; GET /counterparties/{id}; PATCH /counterparties/{id}
+
+CounterpartyInput/Revision→Counterparty/List. List cursor20 max100 trong org; create201; update200; identity change tăng revision và stale assessments liên quan.
+
+
+POST /cases; GET /cases; GET /cases/{id}; PATCH /cases/{id}/exposure
+
+CaseCreate→201 Case; cursor list theo ACL; detail gồm active source/jobs/findings/waivers/readiness/latest assessment. Exposure update200 tăng revision và stale.
+
+
+POST /cases/{id}/documents
+
+UploadInput multipart→202 document/job/revision. New/replace/response phân biệt; không coi loan_request bắt buộc mọi case.
+
+
+GET /documents/{id}/source; GET /documents/{id}/extraction
+
+Đúng immutable version PDF200; extraction200 hoặc409 chưa sẵn. Không fallback latest.
+
+
+POST /documents/{id}/classification; POST /documents/{id}/corrections
+
+DecisionInput+revision→200 result/revision; reason/source required, raw bất biến.
+
+
+GET /jobs/{id}; POST /jobs/{id}/retry
+
+Job200; retry202 nếu retryable/finite và specialist có ACL; không bịa progress%.
+
+
+POST /cases/{id}/review-runs; GET /review-runs/{id}
+
+Revision→202 job/run, rồi200 ReviewRun; review được chạy khi score blocked, nhưng chưa hết job/classification cần thiết→422.
+
+
+GET /evidence/{id}
+
+Evidence200 có document/version/page/quote; ACL xuyên qua case.
+
+
+POST /cases/{id}/requests; PATCH /requests/{id}; POST /requests/{id}/approve
+
+Draft/Revision→201 hoặc200 Request. Approve cần current run/binding; freeze payload/export/audit, không gửi email.
+
+
+GET /requests/{id}/export; POST /requests/{id}/cancel
+
+Approved TXT bytes200; cancel với reason+revision→200, giữ history.
+
+
+POST /issues/{id}/decisions
+
+Action resolve/dismiss/reopen + reason/evidence/revision→200 issue/revision. Resolve cần current evidence; không resolve từ waiver/partial/stale.
+
+
+POST /cases/{id}/waivers; POST /waivers/{id}/revoke
+
+Requirement/issue/reason/revision→201 waiver hoặc200 revoked; policy guard; giữ finding+flag, tăng revision/stale. BCTC minimum không waiver được.
+
+
+GET /cases/{id}/readiness
+
+200 ReadinessOutput: document_review_allowed, numeric_assessment_allowed, blockers, waivable/missing, method_status; đọc không tạo score.
+
+
+POST /cases/{id}/assessments; GET /assessments/{id}; POST /assessments/{id}/acknowledge
+
+Create202 chỉ khi financial/method/policy đủ; không đủ→422 Error có blockers. GET200 Assessment; acknowledge200 có reason+revision, không phê duyệt giao dịch/cho vay và không sửa điểm.
+
+
+GET /cases/{id}/history
+
+HistoryPage200 cursor/limit, audit theo ACL, không token/secrets.
+
+
+POST /cases/{id}/questionnaires; GET /questionnaires/{id}
+
+Question definitions/version→201; GET200 nội bộ. Required/skip policy server quyết định.
+
+
+POST /questionnaires/{id}/staff-responses; POST /responses/{id}/verification
+
+Staff entry201 giữ SME source + specialist actor; verification201 append-only với reason/evidence. Không tự verified khi nhập thay.
+
+
+POST /questionnaires/{id}/invitations; POST /invitations/{id}/revoke
+
+Scoped invite201, one-time share link chỉ trả lúc tạo; revoke200. Không tự gửi bên ngoài.
+
+
+GET /respondent/form; POST /respondent/responses
+
+Capability token header theo policy, không session specialist; chỉ questions scope; GET200/POST201; expired/revoked/outscope→404; không điểm/notes nội bộ.
+
+
+POST /internal/v2/inspect; /extract; /analyze
+
+Private service key+storage/hash guards; snapshot AIC mới→inspection/extraction/rules/calculations; không role người dùng/DB write. Cần adapter riêng, không silently gửi DTO2 vào service1.
+3. Ví dụ tạo giao dịch
+IDs dưới đây là ký hiệu minh họa; thay bằng UUID server thực, không coi đã có record.
+{
+  "counterparty_id": "11111111-1111-4111-8111-111111111111",
+  "exposure_kind": "RECEIVABLE",
+  "lifecycle_stage": "proposed",
+  "exposure": {
+    "amount_vnd": "500000000",
+    "term_days": 30,
+    "organization_role": "seller",
+    "counterparty_role": "buyer",
+    "contract_ref": null,
+    "conditions": [],
+    "source_origin": "staff_entered"
+  }
+}
+
+​
+PREPAYMENT đổi exposure_kind, organization_role=buyer, counterparty_role=seller; số ứng và milestones rõ. LOAN là lender/borrower; DEBT_INVESTMENT investor/issuer.
+4. Ví dụ readiness khi chưa method
+{
+  "case_revision": 4,
+  "document_review_allowed": true,
+  "numeric_assessment_allowed": false,
+  "method_status": "unconfigured",
+  "blockers": [{"code": "METHOD_UNCONFIGURED", "message": "Chưa cấu hình phương pháp tính điểm"}],
+  "limitations": [],
+  "waivable_requirements": []
+}
+
+​
+Case detail có assessment=null trước run; UI không fabricate score. POST assessments trong trạng thái này trả422 Error, không tạo numeric job.
+5. Ví dụ waiver
+{
+  "expected_revision": 4,
+  "requirement_key": "transaction.acceptance_record",
+  "issue_id": "22222222-2222-4222-8222-222222222222",
+  "reason": "Doanh nghiệp chấp nhận đánh giá tạm theo chính sách demo cho mục này"
+}
+
+​
+Server tra policy/actual case, không tin tên requirement đủ để cho waiver. Response201 waiver + revision5; issue finding còn open, handling_state=waived, flag/limitations visible. Đây không phải xác nhận nghiệm thu.
+6. Error và phục hồi
+Error={code,message,request_id,details}; details chỉ dữ liệu được phép. 401 đăng nhập,403 hành động không được phép,404 ngoài scope,409 REVISION_CONFLICT/IDEMPOTENCY_CONFLICT/STALE_SOURCE,413 limits,415 nonPDF,422 INVALID_INPUT/FINANCIAL_INPUT_REQUIRED/METHOD_UNCONFIGURED/WAIVER_NOT_ALLOWED/IDENTITY_UNRESOLVED,429 limit,503 provider.
+409 giữ draft, đọc latest và người dùng chủ động retry; không replay mutation tự động sau401. Retry429/503 hữu hạn; lỗi model không là kết quả tốt.
+7. Trạng thái release
+Catalogue và ví dụ ở đây là thiết kế AIC mới, chưa có OpenAPI/JSON Schema/SDK chạy validate. Đức phát hành cùng DTO/DB/fixtures sau domain review; không dùng26operation1.0.x làm contract AIC hiện hành.
+Lịch sử trước CR-AIC-01
+Nội dung dưới đây đã bị thay thế cho triển khai mới. Chỉ giữ để truy vết kỹ thuật, bằng chứng và task cũ. Các câu “hiện hành”, “bất biến”, “không thay đổi P0”, quyền reviewer/contributor, borrower, gate và phiên bản trong mục lịch sử không có ưu tiên hơn đặc tả AIC ở trên. Không nhập bundle 1.0.x rồi coi đã có AIC 2.0.0.
+Lịch sử trước 16/10/2026 — không dùng làm đặc tả AIC hiện hành

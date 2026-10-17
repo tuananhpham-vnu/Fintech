@@ -1,0 +1,32 @@
+Bản hiện hành: AIC Rating 2.0.0 — CR-AIC-01, ngày 16/10/2026. Định vị được chủ dự án xác nhận: SME đánh giá nhà cung cấp/khách hàng cho trả trước và khoản phải thu; cho vay/đầu tư công cụ nợ là phạm vi phụ. Một role nội bộ Chuyên viên. Demo Việt Nam; giao diện en mặc định, zh-CN và vi. Đây là cập nhật thiết kế, không xác nhận code/runtime hoặc phương pháp tính điểm đã hoàn thành.
+1. Quyết định sản phẩm của chủ dự án — 16/10/2026
+AIC Rating phục vụ SME đánh giá đối tác nhà cung cấp/khách hàng trước prepaid asset và receivable asset. Cho vay trực tiếp/đầu tư công cụ nợ là nghiệp vụ đầu tư phụ, giữ nếu reuse được, không core marketplace.
+Một role specialist (Chuyên viên) nội bộ SME. SME vận hành app khác đối tác đang bị đánh giá; đối tác có thể cũng là SME nhưng không tự suy mọi counterparty phải SME hoặc chủ thể ngân hàng.
+2. Use cases và hai lớp đánh giá
+RECEIVABLE: doanh nghiệp sử dụng là seller/service provider, đối tác buyer/customer; kiểm rủi ro thanh toán của khoản bán chịu. Nếu A mua trả sau từ B, hệ thống của B đánh giá A.
+PREPAYMENT: doanh nghiệp sử dụng buyer/service purchaser, đối tác seller/supplier; kiểm rủi ro giao hàng/dịch vụ/hoàn tiền sau ứng trước.
+LOAN/DEBT_INVESTMENT phụ: debtor/issuer và nghĩa vụ gốc/lãi; không giải ngân/khớp lệnh.
+Sức khỏe đối tác có thể dùng chung dữ liệu nền; rủi ro giao dịch khác theo amount/term/conditions/exposure. Không một điểm doanh nghiệp thay kết luận cho mọi giao dịch.
+3. Đầu ra đã chốt
+Tổng điểm/hạng khi có method hợp lệ; điểm nhóm; nhận xét điểm mạnh/yếu; red flags; phân tích có nguồn; dữ liệu thiếu/bypass/tự khai; lịch sử thay đổi. Sáu nhóm BA: pháp lý, quan hệ tín dụng, ngành nghề, lịch sử tín dụng/thanh toán, tài chính, bảo đảm. Categories này là tổ chức nghiệp vụ, không phải scorecard Moody’s đã xác nhận.
+Cùng70điểm nhưng một hồ sơ yếu ở kinh doanh phải có nhận xét khác hồ sơ đồng đều. Không tự thêm một mức penalty/veto khi chưa có method. Nhận xét dễ hiểu, không bắt cite điều luật cho mọi câu nhưng fact/source vẫn phải truy được.
+4. Readiness, bypass và bổ sung
+Document review chạy độc lập với numeric rating. Thiếu/unreadable/conflicting hiển thị đúng, không kết luận đủ từ số file.
+Financial minimum: BCTC hoặc báo cáo thuế phù hợp đủ dữ liệu cho phương pháp; thiếu thì score không chạy. Không ngầm bắt buộc đủ3năm cho mọi case; method quyết định kỳ cần, dữ liệu ít ghi limitation.
+Checklist từng nghiệp vụ: always/conditional/optional. Mục policy cho waiver: specialist ghi reason; vẫn red flag/limitation, không xác minh giả. Không mặc định chặn mọi thiếu hồ sơ như baseline cũ.
+Thiếu → yêu cầu bổ sung hoặc waiver → phân tích có giới hạn. Method cho tính thì provisional; method chưa có/critical thiếu thì không số thật.
+Sai → giữ flag và nêu sai gì; đúng → recheck, specialist xác nhận gỡ flag liên quan, lịch sử giữ. Bypass không cùng nghĩa đúng.
+5. Thu thập thông tin và nguồn Internet
+Hai kênh dùng chung questionnaire: đối tác trả lời qua link không tài khoản hoặc specialist nhập lời khai thay. Lưu reported_by/entered_by/origin/time/version; verification tách độc lập. Link chỉ câu hỏi được yêu cầu, không internal score/notes.
+AI đề xuất Internet, specialist kiểm nguồn/tìm thêm; URL/publisher/time/entity match/verification. Không mặc định đã có provider/API hoặc quyền CIC. PDF/source nội bộ không đưa lên search công khai.
+6. UX hiện hành
+Login → Counterparties/Cases → workspace: Overview & Transaction; Files; Document Review; Non-Financial Information; Risk Assessment; Requests & History. Có form Respondent riêng.
+Risk Assessment đầu trang: score/grade có điều kiện, method/version/status, strengths/weaknesses/red flags. Các category → detail/metrics/rationale → Evidence & Sources. Source cards, chỉ mở PDF khi click; không bắt luôn mở PDF.
+Tab luôn hiện khi blocked; giải thích blockers, waivable items và method status. Không hiện “Approve loan”; “Ghi nhận đánh giá” khác quyết định doanh nghiệp. Một role vẫn phải isolation.
+en default/zh-CN/vi, locale persistence và giữ route/draft. Light desktop-first, mobile dùng được; giữ nguồn/quote/approved text gốc.
+7. Phạm vi triển khai và phương pháp
+Cả trả trước và khoản phải thu được giữ; luồng nợ phụ reuse. Nghiên cứu Moody’s trang13, không tự bịa hệ số; đầu ra số unconfigured không là lý do bỏ yêu cầu rating khỏi sản phẩm.
+Được đồng bộ toàn bộ tài liệu theo ủy quyền hiện tại; không cần hỏi lại định vị/phạm vi/role. Chưa duyệt phương pháp số không ngăn chuẩn bị contract/review/UI; thiết kế giao diện vẫn theo quy trình duyệt đã chọn trước production UI.
+Lịch sử trước CR-AIC-01
+Nội dung dưới đây đã bị thay thế cho triển khai mới. Chỉ giữ để truy vết kỹ thuật, bằng chứng và task cũ. Các câu “hiện hành”, “bất biến”, “không thay đổi P0”, quyền reviewer/contributor, borrower, gate và phiên bản trong mục lịch sử không có ưu tiên hơn đặc tả AIC ở trên. Không nhập bundle 1.0.x rồi coi đã có AIC 2.0.0.
+Lịch sử trước 16/10/2026 — không dùng làm đặc tả AIC hiện hành

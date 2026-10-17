@@ -1,0 +1,4 @@
+@import 'tailwindcss' source('../');
+@import './base.css';
+@import './workspace.css';
+@import './theme.css';
