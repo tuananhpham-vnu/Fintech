@@ -19,7 +19,8 @@ from fastapi.responses import FileResponse, JSONResponse
 from .backends import Backend, GoldFixtures, LiveBackend, MockBackend
 from .config import MODE_MOCK, Settings
 from .contracts import SCHEMA_VERSION, Contracts, Violation
-from .errors import FORBIDDEN, INVALID_MODEL_OUTPUT, INVALID_REQUEST, ServiceError, error_body, error_response
+from .errors import (FORBIDDEN, INVALID_MODEL_OUTPUT, INVALID_REQUEST, PAYLOAD_TOO_LARGE, ServiceError, error_body,
+                     error_response)
 from .guards import evaluation_output_violations, extraction_output_violations, inspection_output_violations
 from .provider_diagnostics import emit_failure
 
@@ -62,6 +63,10 @@ def create_app(settings: Settings | None = None, backend: Backend | None = None,
     # Internal service: spec chuẩn là packages/contracts/internal-openapi.json, không tự sinh docs.
     app = FastAPI(title="Fintech AI internal", version=SCHEMA_VERSION, docs_url=None, redoc_url=None, openapi_url=None)
     app.state.settings, app.state.contracts, app.state.backend = settings, contracts, backend
+    # Kiểm toàn vẹn input sau schema, trước backend (chỉ evaluate nhận snapshot nhiều tham chiếu chéo).
+    from extraction.grounding import Registry
+    registry = Registry.from_json(contracts.load("field-registry.json"))
+    app.state.input_guards = {"evaluate": lambda payload: evaluation_input_violations(payload, registry)}
 
     @app.exception_handler(ServiceError)
     async def _service_error(request: Request, exc: ServiceError) -> JSONResponse:
@@ -110,9 +115,17 @@ def _authorize(settings: Settings, provided: str | None) -> None:
         raise ServiceError(403, FORBIDDEN, "Missing or invalid X-Internal-Key.")
 
 
-async def _read_json(request: Request) -> object:
+async def _read_json(request: Request, limit: int) -> object:
+    declared = request.headers.get("content-length", "")
+    if declared.isdigit() and int(declared) > limit:   # từ chối trước khi đọc body vào bộ nhớ
+        raise ServiceError(413, PAYLOAD_TOO_LARGE, f"Body exceeds {limit} bytes.")
+    body = bytearray()
+    async for chunk in request.stream():   # không tin Content-Length (có thể thiếu hoặc khai sai)
+        body += chunk
+        if len(body) > limit:
+            raise ServiceError(413, PAYLOAD_TOO_LARGE, f"Body exceeds {limit} bytes.")
     try:
-        return json.loads(await request.body())
+        return json.loads(bytes(body))
     except (json.JSONDecodeError, UnicodeDecodeError):
         raise ServiceError(422, INVALID_REQUEST, "Body must be JSON.")
 
@@ -121,10 +134,13 @@ def _make_handler(operation: str, input_schema: str, output_schema: str, guard: 
     async def handler(request: Request) -> JSONResponse:
         app = request.app
         _authorize(app.state.settings, request.headers.get("X-Internal-Key"))
-        payload = await _read_json(request)
+        payload = await _read_json(request, app.state.settings.max_request_bytes)
         violations = app.state.contracts.violations(input_schema, payload)
         if violations:
             raise ServiceError(422, INVALID_REQUEST, f"Request does not match {input_schema} 1.0.2.", violations)
+        violations = app.state.input_guards.get(operation, lambda _: [])(payload)
+        if violations:
+            raise ServiceError(422, INVALID_REQUEST, f"{input_schema} is not internally consistent.", violations)
 
         request.state.ai_operation = operation
         request.state.ai_document_id = payload.get("document_id")

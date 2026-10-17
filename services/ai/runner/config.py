@@ -42,6 +42,7 @@ class Settings:
     fixtures_dir: Path
     gemini_key_configured: bool
     test_console: bool = False
+    max_request_bytes: int = 10_000_000
 
     @classmethod
     def from_env(cls, env: dict[str, str] | None = None) -> "Settings":
@@ -60,4 +61,5 @@ class Settings:
             fixtures_dir=Path(env.get("AI_FIXTURES_DIR", DEFAULT_FIXTURES_DIR)),
             gemini_key_configured=bool(env.get("GEMINI_API_KEY")),
             test_console=env.get("ENABLE_TEST_CONSOLE", "").strip().lower() in ("1", "true", "yes"),
+            max_request_bytes=int(env.get("AI_MAX_REQUEST_BYTES", 10_000_000)),
         )
