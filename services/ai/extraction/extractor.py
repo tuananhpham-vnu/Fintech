@@ -21,6 +21,7 @@ from runner.contracts import SCHEMA_VERSION, Contracts, Violation
 from runner.errors import INVALID_MODEL_OUTPUT, PROVIDER_UNAVAILABLE, ServiceError
 
 from . import conditions, grounding, pdf, trace as live_trace
+from . import doctype
 from .grounding import Registry, Span
 from .llm import Deadline, MalformedOutput, call_json
 from .ocr import OcrEngine
