@@ -1,0 +1,232 @@
+.assessment-next-actions {
+  border-left: 4px solid var(--amber);
+}
+.readiness-task-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+}
+.readiness-task-list li {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+}
+.readiness-task-list li > span {
+  flex: 1;
+}
+.readiness-task-list button,
+.readiness-task-list a {
+  flex-shrink: 0;
+  max-width: 45%;
+  text-align: left;
+}
+.historical-observations {
+  color: var(--muted);
+  border-left: 3px solid var(--amber);
+}
+.modal.financial-workbench {
+  width: min(1180px, calc(100vw - 48px));
+  max-width: none;
+  max-height: calc(100dvh - 40px);
+}
+.financial-workbench .modal-header {
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  z-index: 3;
+}
+.financial-workbench .dialog-actions {
+  position: sticky;
+  bottom: -24px;
+  padding: 16px 0;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  z-index: 2;
+}
+.financial-workbench fieldset {
+  min-width: 0;
+}
+.financial-workbench fieldset > .panel {
+  padding: 20px;
+  margin: 16px 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 24px;
+}
+.financial-workbench fieldset > .panel > strong,
+.financial-workbench fieldset > .panel > details,
+.financial-workbench fieldset > .panel > div {
+  grid-column: 1 / -1;
+}
+.verification-context {
+  background: var(--primary-soft);
+  padding: 16px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+.verification-context p {
+  margin: 6px 0;
+}
+.verification-fact {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 12px 0;
+}
+.verification-fact > p {
+  margin: 6px 0;
+}
+.target-fact {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.financial-table small {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-weight: normal;
+}
+.financial-insights .financial-table {
+  margin-bottom: 24px;
+}
+.financial-table caption {
+  text-align: left;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 16px 0;
+  color: var(--foreground);
+}
+.financial-insights .financial-table th,
+.financial-insights .financial-table td {
+  vertical-align: top;
+}
+.health-report {
+  max-width: 1100px;
+  margin: auto;
+}
+.health-report h3 {
+  margin-top: 28px;
+}
+.health-report code,
+.health-report blockquote {
+  overflow-wrap: anywhere;
+}
+.report-fact {
+  border-bottom: 1px solid var(--border);
+  padding: 12px 0;
+  break-inside: avoid;
+}
+.report-fact p {
+  margin: 6px 0;
+}
+.report-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+@media (max-width: 760px) {
+  .readiness-task-list li {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .readiness-task-list button,
+  .readiness-task-list a {
+    max-width: 100%;
+  }
+  .modal.financial-workbench {
+    width: calc(100vw - 16px);
+    max-height: calc(100dvh - 16px);
+  }
+  .financial-workbench fieldset > .panel {
+    grid-template-columns: 1fr;
+  }
+}
+@media print {
+  .health-report h1,
+  .health-report h2,
+  .health-report h3,
+  .health-report caption {
+    break-after: avoid;
+  }
+  body:has(.health-report) *:not(:has(.health-report)):not(.health-report):not(.health-report *) {
+    display: none !important;
+  }
+  body:has(.health-report) *:has(.health-report) {
+    display: block !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: static !important;
+    width: auto !important;
+  }
+  @page {
+    size: A4 landscape;
+    margin: 14mm;
+  }
+  body:has(.health-report) {
+    background: white;
+    color: #111;
+  }
+  body:has(.health-report) * {
+    visibility: hidden;
+  }
+  body:has(.health-report) .health-report,
+  body:has(.health-report) .health-report * {
+    visibility: visible;
+  }
+  body:has(.health-report) .modal:has(.health-report) {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    width: 100%;
+    max-width: none;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    border: none;
+    box-shadow: none;
+  }
+  body:has(.health-report) .modal-content {
+    padding: 0;
+    overflow: visible;
+  }
+  body:has(.health-report) .health-report {
+    width: 100%;
+  }
+  body:has(.health-report) .modal-header,
+  body:has(.health-report) .report-toolbar,
+  body:has(.health-report) .report-toolbar *,
+  body:has(.health-report) .technical-details {
+    display: none !important;
+  }
+  body:has(.health-report) .financial-table-wrap {
+    overflow: visible;
+  }
+  body:has(.health-report) .financial-table {
+    min-width: 0;
+    width: 100%;
+    font-size: 9pt;
+    table-layout: fixed;
+  }
+  body:has(.health-report) .financial-table th,
+  body:has(.health-report) .financial-table td {
+    padding: 6px;
+    overflow-wrap: anywhere;
+  }
+  body:has(.health-report) tr {
+    break-inside: avoid;
+  }
+  body:has(.health-report) thead {
+    display: table-header-group;
+    break-after: avoid;
+  }
+  body:has(.health-report) dialog::backdrop {
+    background: none;
+  }
+}

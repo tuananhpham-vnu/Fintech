@@ -13,14 +13,17 @@ import { SourceViewer } from '@/features/evidence/components/source-viewer'
 import { type SourceTarget } from '@/features/evidence/types'
 import { NonFinancialInformation } from '@/features/questionnaires/components/non-financial-information'
 import { RequestsHistory } from '@/features/requests/components/requests-history'
+import { CaseHistory } from '@/features/history/components/case-history'
+import { companyHealthText } from '@/lib/i18n/company-health-copy'
 import { DocumentReview } from '@/features/review/components/document-review'
 import { useLocale } from '@/lib/i18n/locale-provider'
 import type { MessageKey } from '@/lib/i18n/messages'
 import { localizeBlocker, localizeLimitation } from '@/lib/i18n/review-i18n'
+import { productText, isSyntheticText } from '@/lib/i18n/product-copy'
+import { financialLabel } from '@/features/financial/labels'
+import { specialistText } from '@/lib/i18n/specialist-copy'
 import { formatMoney } from '@/lib/utils/money'
 import {
-  Building2,
-  ChevronRight,
   ClipboardList,
   FileCheck,
   FileText,
@@ -81,19 +84,22 @@ export function Workspace({ caseId }: { caseId: string }) {
         )}
       </>
     )
+  const company = detail.purpose === 'company_health'
+  const activeTabs: readonly Tab[] = company ? ['overview', 'files', 'assessment', 'history'] : tabs
+  const selectedTab = activeTabs.includes(tab) ? tab : 'overview'
   return (
     <>
       <BackLink />
       <div className="aic-page-title">
         <div>
-          <p className="eyebrow">{t(detail.exposure_kind)}</p>
-          <h1>{party.data?.name ?? detail.counterparty_id}</h1>
-          <p className="mono">
-            {party.data?.tax_id ?? '—'} · {detail.id}
+          <p className="eyebrow">
+            {detail.exposure_kind ? t(detail.exposure_kind) : companyHealthText(locale, 'title')}
           </p>
+          <h1>{party.data?.name ?? t('counterparty')}</h1>
+          <p className="mono">{party.data?.tax_id ?? '—'}</p>
         </div>
         <div className="wrap-actions">
-          <Status value={detail.lifecycle_stage} />
+          {detail.lifecycle_stage && <Status value={detail.lifecycle_stage} />}
           <span>
             {t('revision')} {detail.revision}
           </span>
@@ -109,42 +115,39 @@ export function Workspace({ caseId }: { caseId: string }) {
       </div>
       <ErrorNotice error={resource.error} retry={reload} />
       <ErrorNotice error={party.error} retry={party.reload} />
-      <div className="panel aic-parties">
-        <Building2 size={24} />
-        <div>
-          <strong>{t('organization')}</strong>
-          <span>{t(detail.exposure.organization_role as MessageKey)}</span>
-        </div>
-        <ChevronRight size={20} />
-        <strong>{t(detail.exposure_kind)}</strong>
-        <ChevronRight size={20} />
-        <div>
-          <strong>{party.data?.name ?? detail.counterparty_id}</strong>
-          <span>{t(detail.exposure.counterparty_role as MessageKey)}</span>
-        </div>
-      </div>
-      <div className="aic-transaction-strip">
-        <div>
-          <span>{t('amount')}</span>
-          <strong>{formatMoney(detail.exposure.amount_vnd, locale)}</strong>
-        </div>
-        <div>
-          <span>{t('term')}</span>
-          <strong>{detail.exposure.term_days ?? '—'}</strong>
-        </div>
-        <div>
-          <span>{t('reference')}</span>
-          <strong>{detail.exposure.contract_ref ?? '—'}</strong>
-        </div>
-        <div>
-          <span>{t('policy')}</span>
-          <strong>{detail.policy_version}</strong>
-        </div>
-      </div>
+      {(isSyntheticText(detail.exposure?.contract_ref) || isSyntheticText(party.data?.name)) &&
+        selectedTab !== 'assessment' && (
+          <p className="warning-banner">{productText(locale, 'synthetic')}</p>
+        )}
+      {detail.exposure && (
+        <details className="case-context">
+          <summary>
+            {t(detail.exposure_kind!)} · {t('reference')}: {detail.exposure.contract_ref ?? '—'}
+          </summary>
+          <div className="aic-transaction-strip">
+            <div>
+              <span>{t('amount')}</span>
+              <strong>{formatMoney(detail.exposure.amount_vnd, locale)}</strong>
+            </div>
+            <div>
+              <span>{t('term')}</span>
+              <strong>{detail.exposure.term_days ?? '—'}</strong>
+            </div>
+            <div>
+              <span>{t('organization')}</span>
+              <strong>{t(detail.exposure.organization_role as MessageKey)}</strong>
+            </div>
+            <div>
+              <span>{t('counterparty')}</span>
+              <strong>{t(detail.exposure.counterparty_role as MessageKey)}</strong>
+            </div>
+          </div>
+        </details>
+      )}
       <div className="workspace-tabs" role="tablist" aria-label={t('desk')}>
-        {tabs.map((key) => {
+        {activeTabs.map((key) => {
           const Icon = tabIcons[key]
-          const isSelected = tab === key
+          const isSelected = selectedTab === key
           return (
             <button
               key={key}
@@ -156,40 +159,95 @@ export function Workspace({ caseId }: { caseId: string }) {
               className={isSelected ? 'active selected' : ''}
               onClick={() => selectTab(key)}
               onKeyDown={(e) => {
-                let index = tabs.indexOf(tab)
-                if (e.key === 'ArrowRight') index = (index + 1) % tabs.length
-                else if (e.key === 'ArrowLeft') index = (index + tabs.length - 1) % tabs.length
+                if (e.ctrlKey || e.metaKey || e.altKey) return
+                let index = activeTabs.indexOf(selectedTab)
+                if (e.key === 'ArrowRight') index = (index + 1) % activeTabs.length
+                else if (e.key === 'ArrowLeft')
+                  index = (index + activeTabs.length - 1) % activeTabs.length
                 else if (e.key === 'Home') index = 0
-                else if (e.key === 'End') index = tabs.length - 1
+                else if (e.key === 'End') index = activeTabs.length - 1
                 else return
                 e.preventDefault()
-                selectTab(tabs[index])
-                document.getElementById(`tab-${tabs[index]}`)?.focus()
+                selectTab(activeTabs[index])
+                document.getElementById(`tab-${activeTabs[index]}`)?.focus()
               }}
             >
               <Icon size={16} />
-              <span>{t(key)}</span>
+              <span>
+                {company && key === 'history' ? companyHealthText(locale, 'history') : t(key)}
+              </span>
             </button>
           )
         })}
       </div>
-      {tabs.map((key) => (
+      {activeTabs.map((key) => (
         <div
           key={key}
           id={`panel-${key}`}
           role="tabpanel"
           aria-labelledby={`tab-${key}`}
-          hidden={tab !== key}
+          hidden={selectedTab !== key}
         >
           {key === 'overview' && (
             <>
               <SectionHeading title={t('overview')}>
-                <button className="secondary-button" onClick={() => setEditing(true)}>
-                  {t('edit')}
-                </button>
+                {!company && (
+                  <button className="secondary-button" onClick={() => setEditing(true)}>
+                    {t('edit')}
+                  </button>
+                )}
               </SectionHeading>
-              <Overview detail={detail} />
+              <div className="overview-summary">
+                <article className="panel aic-section">
+                  <p>{t('files')}</p>
+                  <strong className="overview-count">{detail.documents?.length ?? '—'}</strong>
+                  <p>{t('source')}</p>
+                  <button className="text-button" onClick={() => selectTab('files')}>
+                    {t('files')}
+                  </button>
+                </article>
+                {!company && (
+                  <article className="panel aic-section">
+                    <p>{t('review')}</p>
+                    <p className="tag">
+                      {detail.latest_review_run_id
+                        ? specialistText(locale, 'reviewSaved')
+                        : t('missing')}
+                    </p>
+                    <p>{t('reviewFirst')}</p>
+                    <button className="text-button" onClick={() => selectTab('review')}>
+                      {t('review')}
+                    </button>
+                  </article>
+                )}
+                {company && (
+                  <article className="panel aic-section">
+                    <h3>{companyHealthText(locale, 'verify')}</h3>
+                    <p>{companyHealthText(locale, 'verifyHelp')}</p>
+                    <button className="text-button" onClick={() => selectTab('assessment')}>
+                      {t('assessment')}
+                    </button>
+                  </article>
+                )}
+                <article className="panel aic-section">
+                  <p>{productText(locale, 'result')}</p>
+                  <p className="tag amber">
+                    {specialistText(locale, detail.latest_assessment_id ? 'saved' : 'noResult')}
+                  </p>
+                  <p>{productText(locale, 'selectPeriod')}</p>
+                  <button className="primary-button" onClick={() => selectTab('assessment')}>
+                    {t('assessment')}
+                  </button>
+                </article>
+              </div>
+              {detail.exposure && (
+                <details className="case-context">
+                  <summary>{t('conditions')}</summary>
+                  <Overview detail={detail} />
+                </details>
+              )}
               <section className="panel aic-section">
+                <p className="eyebrow">{productText(locale, 'next')}</p>
                 <h3>{t('readiness')}</h3>
                 <ErrorNotice error={readiness.error} retry={readiness.reload} />
                 {readiness.loading && !currentReadiness ? (
@@ -198,7 +256,11 @@ export function Workspace({ caseId }: { caseId: string }) {
                   <>
                     <Status value={currentReadiness?.method_status ?? 'missing'} />
                     {currentReadiness?.blockers.map((b) => (
-                      <p key={b.code}>{localizeBlocker(b, locale)}</p>
+                      <p key={b.code}>
+                        {financialLabel(locale, 'blocker', b.code).known
+                          ? financialLabel(locale, 'blocker', b.code).label
+                          : localizeBlocker(b, locale)}
+                      </p>
                     ))}
                     {currentReadiness?.limitations.map((l, i) => (
                       <p key={i}>{localizeLimitation(l, locale)}</p>
@@ -209,14 +271,23 @@ export function Workspace({ caseId }: { caseId: string }) {
                   <button className="primary-button" onClick={() => selectTab('files')}>
                     {t('files')}
                   </button>
-                  <button className="secondary-button" onClick={() => selectTab('review')}>
-                    {t('review')}
-                  </button>
+                  {!company && (
+                    <button className="secondary-button" onClick={() => selectTab('review')}>
+                      {t('review')}
+                    </button>
+                  )}
                 </div>
               </section>
             </>
           )}
-          {key === 'files' && <Documents detail={detail} reload={reload} openSource={setSource} />}{' '}
+          {key === 'files' && (
+            <Documents
+              detail={detail}
+              reload={reload}
+              openSource={setSource}
+              openFinancial={() => selectTab('assessment')}
+            />
+          )}{' '}
           {key === 'review' && (
             <DocumentReview
               detail={detail}
@@ -229,16 +300,21 @@ export function Workspace({ caseId }: { caseId: string }) {
           {key === 'assessment' && (
             <RiskAssessment
               detail={detail}
+              party={party.data}
               readiness={currentReadiness}
               reload={reload}
               openSource={setSource}
             />
           )}{' '}
-          {key === 'assistant' && <CaseAssistant detail={detail} openSource={setSource} />}{' '}
-          {key === 'history' && <RequestsHistory detail={detail} reload={reload} />}
+          {key === 'history' &&
+            (company ? (
+              <CaseHistory detail={detail} />
+            ) : (
+              <RequestsHistory detail={detail} reload={reload} />
+            ))}
         </div>
       ))}
-      {editing && (
+      {editing && detail.exposure && (
         <TransactionDialog initial={detail} onClose={() => setEditing(false)} onSaved={reload} />
       )}{' '}
       {source && (

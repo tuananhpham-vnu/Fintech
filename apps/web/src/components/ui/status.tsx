@@ -17,20 +17,27 @@ function resolveTone(value: string): string {
     return 'green'
   if (['failed', 'conflicting', 'blocker', 'BLOCKED', 'critical'].includes(value)) return 'red'
   if (
-    ['missing', 'partial', 'waived', 'open', 'warning', 'FOLLOW_UP', 'review_required'].includes(
-      value,
-    )
+    [
+      'missing',
+      'partial',
+      'waived',
+      'open',
+      'warning',
+      'FOLLOW_UP',
+      'review_required',
+      'blocked',
+    ].includes(value)
   )
     return 'amber'
   return 'neutral'
 }
 
-export function Status({ value, tone }: { value: string; tone?: string }) {
+export function Status({ value, tone, label }: { value: string; tone?: string; label?: string }) {
   const { t } = useLocale()
   return (
     <span className={`tag ${tone ?? resolveTone(value)}`}>
       <span className="status-dot" />
-      {Object.hasOwn(messages, value) ? t(value as MessageKey) : value.replaceAll('_', ' ')}
+      {label ?? (Object.hasOwn(messages, value) ? t(value as MessageKey) : t('needs_review'))}
     </span>
   )
 }

@@ -1,4 +1,6 @@
 'use client'
+import { productText } from '@/lib/i18n/product-copy'
+import { TechnicalDetails } from '@/components/ui/technical-details'
 import { Empty } from '@/components/feedback/empty'
 import { ErrorNotice } from '@/components/feedback/error-notice'
 import { Loading } from '@/components/feedback/loading'
@@ -14,7 +16,7 @@ import { type CaseDetail, type Document, type ExtractedField } from '@/lib/api/c
 import { useLocale } from '@/lib/i18n/locale-provider'
 import { messages, type MessageKey } from '@/lib/i18n/messages'
 import { displayValue } from '@/lib/utils/format'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AlertCircle, AlertTriangle, Cpu, Eye } from 'lucide-react'
 export function ExtractionDialog({
   document,
@@ -51,6 +53,20 @@ export function ExtractionDialog({
   )
   const summaryResource = useResource(loadSummary, !isSyntheticMember)
   const summary = summaryResource.data
+  const pollingStarted = useRef(Date.now())
+  const refreshSummary = summaryResource.reload
+  useEffect(() => {
+    if (summary?.outcome !== 'processing' || Date.now() - pollingStarted.current > 5 * 60 * 1000)
+      return
+    const timer = setTimeout(() => {
+      if (window.document.visibilityState === 'visible' && navigator.onLine) refreshSummary()
+    }, 2500)
+    return () => clearTimeout(timer)
+  }, [summary, refreshSummary])
+  const isProcessing = summary?.outcome === 'processing'
+  const isFailed = summary?.outcome === 'failed'
+  const resultsAvailable =
+    summary?.outcome === 'ready_for_review' || summary?.outcome === 'zero_usable_fields'
 
   const load = useCallback(
     (signal: AbortSignal) => {
@@ -59,12 +75,11 @@ export function ExtractionDialog({
     },
     [document.id, isSyntheticMember],
   )
-  const resource = useResource(load, !document.extraction && !isSyntheticMember)
+  const resource = useResource(load, !document.extraction && !isSyntheticMember && resultsAvailable)
   const fields = document.extraction ?? resource.data
 
   const isZeroUsable =
-    summary?.outcome === 'zero_usable_fields' ||
-    (document.status === 'completed' && (!fields || fields.length === 0))
+    summary?.outcome === 'zero_usable_fields' || (resultsAvailable && fields?.length === 0)
 
   return (
     <>
@@ -82,7 +97,7 @@ export function ExtractionDialog({
             margin: '8px 0 16px',
           }}
         >
-          <Status value={document.status} />
+          <Status value={summary?.job_state ?? document.status} />
           {summary?.outcome === 'ready_for_review' && (
             <span className="tag green">
               <span className="status-dot" />
@@ -96,8 +111,23 @@ export function ExtractionDialog({
               {t('zero_usable_fields')}
             </span>
           )}
-          {summary?.ai_mode && <span className="tag neutral">AI: {summary.ai_mode}</span>}
+          {summary?.ai_mode === 'mock' && (
+            <p className="warning-banner">{productText(locale, 'synthetic')}</p>
+          )}
         </div>
+
+        <ErrorNotice error={summaryResource.error} retry={refreshSummary} />
+        {(isProcessing || isFailed) && (
+          <div
+            className={isFailed ? 'aic-error' : 'aic-recovery'}
+            role={isFailed ? 'alert' : 'status'}
+          >
+            <p>{t(isFailed ? 'extractionFailed' : 'extractionPending')}</p>
+            <button className="secondary-button" onClick={refreshSummary}>
+              {t('refresh')}
+            </button>
+          </div>
+        )}
 
         {/* Retained member notice */}
         {isRetainedReview && (
@@ -163,7 +193,7 @@ export function ExtractionDialog({
               </strong>
             </div>
             <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#4a5568' }}>
-              {String(raw.dossier_error_code ?? 'ARCHIVE_UNSUPPORTED_FORMAT')}
+              {t('invalidFile')}
             </p>
           </div>
         )}
@@ -175,32 +205,34 @@ export function ExtractionDialog({
         )}
 
         {summary?.diagnostics && summary.diagnostics.length > 0 && (
-          <div
-            style={{
-              margin: '12px 0',
-              padding: '10px 14px',
-              background: 'var(--bg-subtle, #f8f9fa)',
-              borderRadius: 'var(--radius-sm)',
-              border: '1px solid var(--border)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-              <Cpu size={14} style={{ color: 'var(--primary)' }} />
-              <strong style={{ fontSize: '12px' }}>{t('diagnostics')}</strong>
+          <TechnicalDetails>
+            <div
+              style={{
+                margin: '12px 0',
+                padding: '10px 14px',
+                background: 'var(--bg-subtle, #f8f9fa)',
+                borderRadius: 'var(--radius-sm)',
+                border: '1px solid var(--border)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                <Cpu size={14} style={{ color: 'var(--primary)' }} />
+                <strong style={{ fontSize: '12px' }}>{t('diagnostics')}</strong>
+              </div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {summary.diagnostics.map((d, i) => (
+                  <span
+                    key={i}
+                    className="tag neutral"
+                    style={{ fontSize: '11px' }}
+                    title={d.field_key ?? undefined}
+                  >
+                    {d.code}
+                  </span>
+                ))}
+              </div>
             </div>
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              {summary.diagnostics.map((d, i) => (
-                <span
-                  key={i}
-                  className="tag neutral"
-                  style={{ fontSize: '11px' }}
-                  title={d.field_key ?? undefined}
-                >
-                  {d.code}
-                </span>
-              ))}
-            </div>
-          </div>
+          </TechnicalDetails>
         )}
 
         {isZeroUsable && (
@@ -251,16 +283,9 @@ export function ExtractionDialog({
           fields.map((f) => (
             <article className="field-card" key={f.field_key}>
               <h3>{documentFieldLabel(f.field_key, locale).label}</h3>
-              <details>
-                <summary>
-                  {locale === 'en'
-                    ? 'Technical details'
-                    : locale === 'vi'
-                      ? 'Chi tiết kỹ thuật'
-                      : '技术详情'}
-                </summary>
+              <TechnicalDetails>
                 <code>{f.field_key}</code>
-              </details>
+              </TechnicalDetails>
               <div className="metadata-grid">
                 <div>
                   <span>{t('raw')}</span>
@@ -276,11 +301,11 @@ export function ExtractionDialog({
                 <p>
                   {Object.hasOwn(messages, f.missing_reason)
                     ? t(f.missing_reason as MessageKey)
-                    : f.missing_reason}
+                    : t('needs_review')}
                 </p>
               )}
               <p>
-                {f.party_role} · {f.period} · {f.currency}
+                {f.period} {f.currency}
               </p>
               <div className="wrap-actions">
                 {f.evidence_refs.map((id) => (
@@ -345,15 +370,6 @@ export function ExtractionDialog({
                   <strong style={{ fontSize: '13px' }}>
                     {documentFieldLabel(f.field_key, locale).label}
                   </strong>
-                  <div
-                    style={{
-                      fontSize: '11px',
-                      color: 'var(--muted)',
-                      fontFamily: 'var(--font-mono)',
-                    }}
-                  >
-                    {f.field_key}
-                  </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span
@@ -371,7 +387,7 @@ export function ExtractionDialog({
                     <span className="tag amber" style={{ fontSize: '11px' }}>
                       {Object.hasOwn(messages, f.missing_reason)
                         ? t(f.missing_reason as MessageKey)
-                        : f.missing_reason}
+                        : t('needs_review')}
                     </span>
                   )}
                 </div>
@@ -379,11 +395,18 @@ export function ExtractionDialog({
             ))}
           </section>
         ) : (
-          !resource.loading && !summaryResource.loading && !isZeroUsable && <Empty />
+          !resource.loading &&
+          !summaryResource.loading &&
+          !resource.error &&
+          !summaryResource.error &&
+          !isProcessing &&
+          !isFailed &&
+          !isZeroUsable && <Empty />
         )}
       </Modal>
       {field && (
         <FieldCorrection
+          openSource={openSource}
           field={field}
           verificationOnly={verificationOnly}
           documentId={document.id}
@@ -394,6 +417,7 @@ export function ExtractionDialog({
       )}{' '}
       {classify && (
         <DocumentClassification
+          openSource={openSource}
           document={document}
           detail={detail}
           onClose={() => setClassify(false)}

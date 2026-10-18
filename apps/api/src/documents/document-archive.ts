@@ -30,7 +30,9 @@ export interface ArchiveInput {
 
 /** Filename suggestion only: no party, period, financial or payment inference. */
 export function suggestDocumentGroup(name: string): { group: DocumentGroup; suggested_type: DocumentType } {
-  const text = name.normalize('NFD').replace(/\p{M}/gu, '').replace(/[đĐ]/g, 'd').toLowerCase().replace(/[_-]+/g, ' ')
+  // Classify the file, not an enclosing "BCTC" folder. Suggestions remain unverified.
+  const basename = name.replace(/\\/g, '/').split('/').at(-1) || name
+  const text = basename.normalize('NFD').replace(/\p{M}/gu, '').replace(/[đĐ]/g, 'd').toLowerCase().replace(/[_-]+/g, ' ')
   if (/\b(bctc|financial[ _-]?statements?|balance[ _-]?sheet)\b|bao[ _-]?cao[ _-]?tai[ _-]?chinh/.test(text))
     return { group: 'financial_statements', suggested_type: 'financial_statement' }
   if (/\b(contract|hop[ _-]?dong)\b/.test(text)) return { group: 'contracts', suggested_type: 'contract' }

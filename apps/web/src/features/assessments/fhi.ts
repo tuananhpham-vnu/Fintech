@@ -36,7 +36,9 @@ export function hasCompleteFhi(result: Assessment | null | undefined) {
       return (
         matches.length === 1 &&
         part.points !== null &&
-        part.raw_value !== null &&
+        (part.raw_value !== null ||
+          (part.verification_state === 'verified_zero_debt_exception' &&
+            part.flags?.includes('VERIFIED_ZERO_INTEREST_ZERO_DEBT'))) &&
         part.max_points === metric.max &&
         part.source_facts.length > 0 &&
         !part.blockers?.length

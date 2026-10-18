@@ -19,6 +19,16 @@ export const factKeys = [
 export type FinancialSource =
   | { kind: 'manual_entry'; statement: string }
   | {
+      kind: 'financial_import'
+      receipt_id: string
+      fact_key: string
+      source_kind: 'document' | 'dossier_member' | 'financial_file'
+      source_id: string
+      source_hash: string
+      page: number
+      quote: string
+    }
+  | {
       kind: 'document'
       document_id: string
       document_version: number
@@ -35,6 +45,7 @@ export type FactInput = {
   source: FinancialSource
 }
 export type FinancialInput = {
+  import_review?: { receipt_id: string; confirmed: true }
   expected_revision: number
   reason: string
   period: { kind: string; start_date: string; end_date: string }
@@ -68,7 +79,13 @@ export type FinancialSet = {
     id: string
     revision: number
     normalized_decimal: string | null
-    verification: { status: string }
+    verification: {
+      status: string
+      verified_by?: string | null
+      verified_at?: string | null
+      verified_revision?: number | null
+    }
+    verification_reason?: string
     current_source: boolean
   })[]
   verification_stale: boolean
@@ -76,7 +93,12 @@ export type FinancialSet = {
 export type Registry = {
   sets: FinancialSet[]
   selected_set_id: string | null
-  method_status: 'unconfigured'
+  method_status:
+    | 'unconfigured'
+    | 'configured_pilot'
+    | 'validation_pending'
+    | 'validated_for_limited_use'
+    | 'retired'
   score: null
   band: null
   grade: null
@@ -86,6 +108,7 @@ export type Registry = {
     group: string
     formula: string
     status: string
+    flags?: string[]
     raw_ratio: { numerator: string; denominator: string; decimal: string | null } | null
     points: null
     blockers: { code: string }[]
@@ -146,6 +169,19 @@ function financialSet(value: unknown): FinancialSet {
         typeof f.source.evidence_ref !== 'string'
       )
         throw Error('Invalid financial source')
+    } else if (f.source?.kind === 'financial_import') {
+      if (
+        !f.source.receipt_id ||
+        !f.source.fact_key ||
+        !f.source.source_id ||
+        !['document', 'dossier_member', 'financial_file'].includes(f.source.source_kind) ||
+        !/^[a-f0-9]{64}$/.test(f.source.source_hash) ||
+        !Number.isInteger(f.source.page) ||
+        f.source.page < 1 ||
+        f.source.page > 600 ||
+        typeof f.source.quote !== 'string'
+      )
+        throw Error('Invalid financial import source')
     } else if (f.source?.kind !== 'manual_entry' || typeof f.source.statement !== 'string')
       throw Error('Invalid manual entry')
   }
@@ -161,7 +197,13 @@ function registry(value: unknown): Registry {
   const v = value as Registry
   if (
     !v ||
-    v.method_status !== 'unconfigured' ||
+    ![
+      'unconfigured',
+      'configured_pilot',
+      'validation_pending',
+      'validated_for_limited_use',
+      'retired',
+    ].includes(v.method_status) ||
     ['score', 'band', 'grade', 'pd'].some((k) => v[k as keyof Registry] !== null) ||
     !Array.isArray(v.sets) ||
     !Array.isArray(v.metrics) ||
@@ -189,6 +231,45 @@ function registry(value: unknown): Registry {
   return v
 }
 export const financialApi = {
+  trends: (caseId: string, signal?: AbortSignal, baseline?: string) =>
+    request(
+      apiPath('cases', caseId, '/financial-trends') +
+        (baseline ? '?baseline_set_id=' + encodeURIComponent(baseline) : ''),
+      (value: unknown): FinancialTrends => {
+        const v = value as FinancialTrends
+        if (
+          v?.contract_version !== 'AIC-FINANCIAL-TRENDS-1' ||
+          !Number.isSafeInteger(v.case_revision) ||
+          !Array.isArray(v.rows) ||
+          !Array.isArray(v.baseline_metrics) ||
+          !Number.isFinite(Date.parse(v.captured_at))
+        )
+          throw Error('Invalid financial comparison')
+        for (const row of v.rows) {
+          financialSet(row.set)
+          if (
+            !Array.isArray(row.comparison_issues) ||
+            !Array.isArray(row.facts) ||
+            !Array.isArray(row.metrics) ||
+            typeof row.gap_before !== 'boolean'
+          )
+            throw Error('Invalid comparison row')
+          if (row.comparison_issues.length && (row.facts.length || row.metrics.length))
+            throw Error('Incompatible comparison values')
+          for (const f of row.facts)
+            if (
+              (f.value !== null && (typeof f.value !== 'string' || f.status !== 'verified')) ||
+              !factKeys.includes(f.key as (typeof factKeys)[number])
+            )
+              throw Error('Invalid trend fact')
+          for (const m of row.metrics)
+            if (m.points !== null || !Array.isArray(m.blockers) || typeof m.metric_id !== 'string')
+              throw Error('Invalid trend metric')
+        }
+        return v
+      },
+      { signal },
+    ),
   get: (caseId: string, signal?: AbortSignal, setId?: string) =>
     request(
       apiPath('cases', caseId, '/financial-sets') +
@@ -199,6 +280,7 @@ export const financialApi = {
   save: (caseId: string, id: string | undefined, input: FinancialInput, keys: MutationKey) => {
     const path = id ? apiPath('financial-sets', id) : apiPath('cases', caseId, '/financial-sets')
     const body = {
+      ...(input.import_review ? { import_review: input.import_review } : {}),
       expected_revision: input.expected_revision,
       reason: input.reason,
       period: {
@@ -222,15 +304,17 @@ export const financialApi = {
         source:
           f.source.kind === 'manual_entry'
             ? { kind: f.source.kind, statement: f.source.statement }
-            : {
-                kind: f.source.kind,
-                document_id: f.source.document_id,
-                document_version: f.source.document_version,
-                source_hash: f.source.source_hash,
-                page: f.source.page,
-                quote: f.source.quote,
-                evidence_ref: f.source.evidence_ref,
-              },
+            : f.source.kind === 'financial_import'
+              ? { ...f.source }
+              : {
+                  kind: f.source.kind,
+                  document_id: f.source.document_id,
+                  document_version: f.source.document_version,
+                  source_hash: f.source.source_hash,
+                  page: f.source.page,
+                  quote: f.source.quote,
+                  evidence_ref: f.source.evidence_ref,
+                },
       })),
     }
     return request(path, mutation, {
@@ -258,5 +342,27 @@ export const financialApi = {
     const path = apiPath('financial-sets', id, '/verification')
     return request(path, mutation, { method: 'POST', body, idempotencyKey: keys.for(path, body) })
   },
-  evidence: (id: string) => request(apiPath('evidence', id), evidence),
+  evidence: (id: string, signal?: AbortSignal) =>
+    request(apiPath('evidence', id), evidence, { signal }),
+}
+
+export type FinancialTrends = {
+  contract_version: 'AIC-FINANCIAL-TRENDS-1'
+  case_revision: number
+  captured_at: string
+  baseline_set_id: string | null
+  baseline_metrics: Registry['metrics']
+  rows: {
+    set: FinancialSet
+    comparison_issues: string[]
+    gap_before: boolean
+    facts: {
+      key: string
+      value: string | null
+      fact_id: string | null
+      fact_revision: number | null
+      status: 'verified' | 'missing' | 'unverified' | 'stale' | 'rejected'
+    }[]
+    metrics: Registry['metrics']
+  }[]
 }

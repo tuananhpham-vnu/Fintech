@@ -1,0 +1,562 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "contract_version": "AIC-FINANCIAL-IMPORT-1",
+  "definitions": {
+    "FinancialImportRequest": {
+      "type": "object",
+      "properties": {
+        "expected_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "source_kind": {
+          "enum": [
+            "document",
+            "dossier_member",
+            "financial_file"
+          ]
+        },
+        "source_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "operation": {
+          "enum": [
+            "index",
+            "extract"
+          ]
+        },
+        "pages": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 16,
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 600
+          }
+        },
+        "requested_scope": {
+          "type": "object",
+          "properties": {
+            "country": {
+              "enum": [
+                "VN",
+                "US",
+                "CN"
+              ]
+            },
+            "basis": {
+              "enum": [
+                "standalone",
+                "consolidated"
+              ]
+            },
+            "end_date": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          "required": [
+            "country",
+            "basis",
+            "end_date"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "expected_revision",
+        "source_kind",
+        "source_id",
+        "operation",
+        "pages"
+      ],
+      "additionalProperties": false
+    },
+    "FinancialImportSource": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "financial_import"
+        },
+        "receipt_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "fact_key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "source_kind": {
+          "enum": [
+            "document",
+            "dossier_member",
+            "financial_file"
+          ]
+        },
+        "source_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "source_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "page": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 600
+        },
+        "quote": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        }
+      },
+      "required": [
+        "kind",
+        "receipt_id",
+        "fact_key",
+        "source_kind",
+        "source_id",
+        "source_hash",
+        "page",
+        "quote"
+      ],
+      "additionalProperties": false
+    },
+    "FinancialImportAiIndex": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "AIC-FINANCIAL-IMPORT-1"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "page_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 600
+        },
+        "suggested_pages": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 600
+          },
+          "uniqueItems": true,
+          "maxItems": 16
+        },
+        "pages": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 600,
+          "items": {
+            "type": "object",
+            "properties": {
+              "page": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 600
+              },
+              "preview": {
+                "type": "string",
+                "maxLength": 220
+              },
+              "needs_ocr": {
+                "type": "boolean"
+              },
+              "statement_title": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "page",
+              "preview",
+              "needs_ocr",
+              "statement_title"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "contract_version",
+        "sha256",
+        "page_count",
+        "suggested_pages",
+        "pages"
+      ],
+      "additionalProperties": false
+    },
+    "FinancialImportAiCandidates": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "AIC-FINANCIAL-IMPORT-1"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "page_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 600
+        },
+        "suggested_pages": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 600
+          },
+          "uniqueItems": true,
+          "maxItems": 16
+        },
+        "document_type": {
+          "enum": [
+            "financial_statement",
+            "other"
+          ]
+        },
+        "scope": {
+          "type": "object",
+          "properties": {
+            "entity_name": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "country": {
+              "enum": [
+                "VN",
+                "US",
+                "CN"
+              ]
+            },
+            "period_kind": {
+              "enum": [
+                "FY",
+                "INTERIM",
+                "TTM"
+              ]
+            },
+            "start_date": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "end_date": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "basis": {
+              "enum": [
+                "standalone",
+                "consolidated"
+              ]
+            },
+            "accounting_regime": {
+              "enum": [
+                "VN_TT133",
+                "VN_TT200",
+                "VN_TT99",
+                "VN_TT58",
+                "US_GAAP",
+                "CN_ASBE",
+                "IFRS",
+                "OTHER",
+                "UNKNOWN"
+              ]
+            },
+            "currency": {
+              "enum": [
+                "VND",
+                "USD",
+                "CNY",
+                "HKD",
+                "EUR",
+                "GBP",
+                "JPY"
+              ]
+            },
+            "unit_multiplier": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,11}$"
+            }
+          },
+          "required": [
+            "entity_name",
+            "country",
+            "period_kind",
+            "start_date",
+            "end_date",
+            "basis",
+            "accounting_regime",
+            "currency",
+            "unit_multiplier"
+          ],
+          "additionalProperties": false
+        },
+        "scope_evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "page": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 600
+              },
+              "quote": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              }
+            },
+            "required": [
+              "page",
+              "quote"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 12
+        },
+        "facts": {
+          "type": "array",
+          "maxItems": 14,
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "enum": [
+                  "current_assets",
+                  "current_liabilities",
+                  "cash",
+                  "unrestricted_short_term_equivalents",
+                  "trade_receivables",
+                  "total_equity",
+                  "total_assets",
+                  "total_liabilities",
+                  "interest_bearing_debt",
+                  "operating_profit",
+                  "depreciation_amortization",
+                  "interest_expense",
+                  "net_revenue",
+                  "cash_from_operations"
+                ]
+              },
+              "value": {
+                "type": "string",
+                "pattern": "^-?[0-9]{1,30}(\\.[0-9]{1,12})?$"
+              },
+              "raw_token": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "label": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 600
+              },
+              "quote": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "period_end": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              "basis": {
+                "enum": [
+                  "standalone",
+                  "consolidated"
+                ]
+              },
+              "method": {
+                "enum": [
+                  "native",
+                  "ocr"
+                ]
+              },
+              "verification": {
+                "const": "unverified"
+              }
+            },
+            "required": [
+              "key",
+              "value",
+              "raw_token",
+              "label",
+              "page",
+              "quote",
+              "period_end",
+              "basis",
+              "method",
+              "verification"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "selected_pages": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 600
+          },
+          "uniqueItems": true,
+          "minItems": 1,
+          "maxItems": 16
+        },
+        "missing_keys": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "current_assets",
+              "current_liabilities",
+              "cash",
+              "unrestricted_short_term_equivalents",
+              "trade_receivables",
+              "total_equity",
+              "total_assets",
+              "total_liabilities",
+              "interest_bearing_debt",
+              "operating_profit",
+              "depreciation_amortization",
+              "interest_expense",
+              "net_revenue",
+              "cash_from_operations"
+            ]
+          },
+          "uniqueItems": true,
+          "maxItems": 14
+        },
+        "rejected": {
+          "type": "array",
+          "maxItems": 14,
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "enum": [
+                  "current_assets",
+                  "current_liabilities",
+                  "cash",
+                  "unrestricted_short_term_equivalents",
+                  "trade_receivables",
+                  "total_equity",
+                  "total_assets",
+                  "total_liabilities",
+                  "interest_bearing_debt",
+                  "operating_profit",
+                  "depreciation_amortization",
+                  "interest_expense",
+                  "net_revenue",
+                  "cash_from_operations"
+                ]
+              },
+              "code": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              }
+            },
+            "required": [
+              "key",
+              "code"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "ocr_failures": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "properties": {
+              "page": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 600
+              },
+              "code": {
+                "enum": [
+                  "INVALID_MODEL_OUTPUT",
+                  "PROVIDER_UNAVAILABLE"
+                ]
+              }
+            },
+            "required": [
+              "page",
+              "code"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "model_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 250
+            },
+            "prompt_version": {
+              "const": "financial-import-v1"
+            },
+            "ocr_version": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 250
+            }
+          },
+          "required": [
+            "model_id",
+            "prompt_version",
+            "ocr_version"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "contract_version",
+        "sha256",
+        "page_count",
+        "suggested_pages",
+        "document_type",
+        "scope",
+        "scope_evidence",
+        "facts",
+        "selected_pages",
+        "missing_keys",
+        "rejected",
+        "warnings",
+        "ocr_failures",
+        "provenance"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

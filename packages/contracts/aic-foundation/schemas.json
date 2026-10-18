@@ -3220,6 +3220,59 @@
             "statement"
           ],
           "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "financial_import"
+            },
+            "receipt_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "fact_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "source_kind": {
+              "enum": [
+                "document",
+                "dossier_member",
+                "financial_file"
+              ]
+            },
+            "source_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "source_hash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 600
+            },
+            "quote": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            }
+          },
+          "required": [
+            "kind",
+            "receipt_id",
+            "fact_key",
+            "source_kind",
+            "source_id",
+            "source_hash",
+            "page",
+            "quote"
+          ],
+          "additionalProperties": false
         }
       ]
     },
@@ -3276,7 +3329,10 @@
             "VN_TT58",
             "IFRS",
             "OTHER",
-            "UNKNOWN"
+            "UNKNOWN",
+            "US_GAAP",
+            "CN_ASBE",
+            "VN_TT200"
           ]
         },
         "currency": {
@@ -3372,6 +3428,23 @@
             ],
             "additionalProperties": false
           }
+        },
+        "import_review": {
+          "type": "object",
+          "properties": {
+            "receipt_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "confirmed": {
+              "const": true
+            }
+          },
+          "required": [
+            "receipt_id",
+            "confirmed"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [

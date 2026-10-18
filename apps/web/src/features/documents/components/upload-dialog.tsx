@@ -6,14 +6,14 @@ import { documentsApi } from '@/features/documents/api'
 import { useMutation } from '@/hooks/use-mutation'
 import { ApiError } from '@/lib/api/client'
 import {
-  documentTypes,
+  supportedDocumentTypes,
   type CaseDetail,
   type DocumentType,
   type DossierAccepted,
 } from '@/lib/api/contracts'
 import { useLocale } from '@/lib/i18n/locale-provider'
 import { Upload, X } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { buildUploadForm, type UploadMode } from '../schemas'
 
 import { type ArchiveReceipt } from '../api'
@@ -42,11 +42,13 @@ export function UploadDialog({
     [formatNotice, setFormatNotice] = useState<string | null>(null)
   const [revision, setRevision] = useState(detail.revision),
     [latest, setLatest] = useState<CaseDetail | null>(null)
+  const fileInput = useRef<HTMLInputElement>(null)
 
   function handleFile(selected: File | null) {
     if (!selected) {
       setFile(null)
       setFormatNotice(null)
+      if (fileInput.current) fileInput.current.value = ''
       return
     }
     const nameLower = selected.name.toLowerCase()
@@ -83,10 +85,10 @@ export function UploadDialog({
       setFile(selected)
       setFormatNotice(
         locale === 'vi'
-          ? 'Đã chọn tệp ZIP hồ sơ đa năm (tối đa 32 MiB, 64 tệp PDF). Khi tải lên, hệ thống sẽ tiếp nhận bất đồng bộ theo hợp đồng hồ sơ AIC.'
+          ? 'Đã chọn tệp ZIP hồ sơ đa năm (tối đa 32 MiB, 64 tệp PDF). Hệ thống sẽ tiếp nhận và xử lý; theo dõi kết quả từng tệp trong Tài liệu.'
           : locale === 'en'
-            ? 'Multi-year dossier ZIP selected (max 32 MiB, 64 PDFs). System will process intake asynchronously per AIC dossier contract.'
-            : '已选择多年卷宗 ZIP 压缩包（最大 32 MiB，64 个 PDF）。上传后系统将按 AIC 卷宗规范进行异步摄入。',
+            ? 'Multi-year dossier ZIP selected (max 32 MiB, 64 PDFs). Track intake and processing for each file in Documents.'
+            : '已选择多年卷宗 ZIP 压缩包（最大 32 MiB，64 个 PDF）。上传后请在文件中查看各文件处理结果。',
       )
       return
     }
@@ -212,14 +214,19 @@ export function UploadDialog({
                       ?.filter((d) => !['superseded', 'retired'].includes(d.status))
                       .map((d) => (
                         <option key={d.id} value={d.id}>
-                          {d.name ?? d.id} · v{d.version}
+                          {d.name ?? t('files')} · v{d.version} ·{' '}
+                          {d.status === 'failed'
+                            ? t('failed')
+                            : d.status === 'completed'
+                              ? t('completed')
+                              : d.status}{' '}
                         </option>
                       ))
                   : detail.requests
                       ?.filter((r) => r.status === 'approved')
                       .map((r) => (
                         <option key={r.id} value={r.id}>
-                          {r.id} · {r.purpose}
+                          {r.purpose}
                         </option>
                       ))}
               </select>
@@ -228,26 +235,53 @@ export function UploadDialog({
           <label className="field-label">
             {t('documentType')}
             <select value={type} onChange={(e) => setType(e.target.value as DocumentType)}>
-              {documentTypes.map((k) => (
+              {supportedDocumentTypes.map((k) => (
                 <option key={k} value={k}>
                   {t(k)}
                 </option>
               ))}
             </select>
           </label>
+          <p className="help-text">{t('supportedDocumentTypesHint')}</p>
           <label className="field-label">
             {t('sourceClass')} *
-            <input
-              required
-              maxLength={80}
-              value={sourceClass}
-              onChange={(e) => setSourceClass(e.target.value)}
-            />
+            <select required value={sourceClass} onChange={(e) => setSourceClass(e.target.value)}>
+              <option value="">
+                {locale === 'vi'
+                  ? 'Chọn nguồn tài liệu…'
+                  : locale === 'en'
+                    ? 'Select the document source…'
+                    : '选择材料来源…'}
+              </option>
+              <option value="user_upload">
+                {locale === 'vi'
+                  ? 'Tài liệu do người dùng tải lên'
+                  : locale === 'en'
+                    ? 'Uploaded by the user'
+                    : '用户上传的材料'}
+              </option>
+              <option value="counterparty_provided">
+                {locale === 'vi'
+                  ? 'Tài liệu do đối tác cung cấp'
+                  : locale === 'en'
+                    ? 'Provided by the counterparty'
+                    : '交易对手提供的材料'}
+              </option>
+              <option value="organization_provided">
+                {locale === 'vi'
+                  ? 'Tài liệu do doanh nghiệp sử dụng cung cấp'
+                  : locale === 'en'
+                    ? 'Provided by the user organization'
+                    : '使用机构提供的材料'}
+              </option>
+              <option value="other">{t('other')}</option>
+            </select>
           </label>
           <label className="field-label">
             {t('chooseFile')} *
             <input
               id="aic-upload-file-input"
+              ref={fileInput}
               required
               type="file"
               accept="application/pdf,.pdf,.zip"
@@ -267,8 +301,8 @@ export function UploadDialog({
               <button
                 type="button"
                 className="icon-button"
-                aria-label="Remove file"
-                onClick={() => setFile(null)}
+                aria-label={t('removeSelectedFile')}
+                onClick={() => handleFile(null)}
               >
                 <X size={16} />
               </button>
@@ -286,15 +320,17 @@ export function UploadDialog({
               {action.error.status === 429 && <p>{t('rateLimit429')}</p>}
               {action.error.status === 413 && <p>{t('quotaExceeded413')}</p>}
               {action.error.status === 415 && <p>{t('invalidFormat415')}</p>}
-              {action.error.status === 422 && <p>{t('corruptedFile422')}</p>}
+              {action.error.status === 422 && action.error.code === 'INVALID_PDF' && (
+                <p>{t('corruptedFile422')}</p>
+              )}
               {action.error.status === 503 && <p>{t('serviceUnavailable503')}</p>}
               {action.error.status === 404 && file?.name.toLowerCase().endsWith('.zip') && (
                 <p>
                   {locale === 'vi'
-                    ? 'Máy chủ chưa kích hoạt endpoint nhận ZIP (/cases/:id/dossier-archives). Vui lòng nạp trực tiếp các tệp PDF.'
+                    ? 'Tính năng nhận hồ sơ ZIP chưa khả dụng. Vui lòng tải từng PDF phù hợp giới hạn.'
                     : locale === 'en'
-                      ? 'ZIP endpoint is not yet active on the server. Please upload PDF files directly.'
-                      : '服务器尚未激活 ZIP 接口，请直接上传 PDF 文件。'}
+                      ? 'ZIP intake is unavailable. Please upload individual PDFs within the limits.'
+                      : 'ZIP卷宗上传暂不可用，请按限制逐个上传PDF。'}
                 </p>
               )}
               {action.error.status === 409 &&
@@ -343,7 +379,7 @@ export function UploadDialog({
             </div>
           )}
           <div className="dialog-actions">
-            <button className="primary-button" type="submit">
+            <button className="primary-button" type="submit" disabled={!file}>
               {t(action.busy ? 'working' : 'upload')}
             </button>
           </div>

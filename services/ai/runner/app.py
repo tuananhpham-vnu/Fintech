@@ -24,7 +24,7 @@ from .errors import (FORBIDDEN, INVALID_MODEL_OUTPUT, INVALID_REQUEST, PAYLOAD_T
                      error_response)
 from .guards import evaluation_output_violations, extraction_output_violations, inspection_output_violations
 from .input_guards import evaluation_input_violations
-from .responses import UTF8JSONResponse as JSONResponse
+from .provider_diagnostics import emit_failure, emit_unexpected
 
 logger = logging.getLogger("runner")
 
@@ -101,9 +101,12 @@ def create_app(settings: Settings | None = None, backend: Backend | None = None,
         return response
 
     @app.exception_handler(Exception)
-    async def _unexpected(_: Request, exc: Exception) -> JSONResponse:
+    async def _unexpected(request: Request, exc: Exception) -> JSONResponse:
         logger.error("unexpected %s", type(exc).__name__)  # không log payload hồ sơ
-        return JSONResponse(status_code=500, content=error_body("INTERNAL_ERROR", "Unexpected internal error."))
+        body = error_body("INTERNAL_ERROR", "Unexpected internal error.")
+        emit_unexpected(exc, getattr(request.state, "ai_operation", None),
+                        getattr(request.state, "ai_document_id", None), body["error"]["request_id"])
+        return JSONResponse(status_code=500, content=body)
 
     @app.get("/healthz")
     def healthz() -> dict:
@@ -112,7 +115,16 @@ def create_app(settings: Settings | None = None, backend: Backend | None = None,
     for operation, spec in OPERATIONS.items():
         app.add_api_route(f"/internal/v1/{operation}", _make_handler(operation, *spec), methods=["POST"],
                           name=f"post_{operation}")
-    app.add_api_route("/internal/v1/chat", _chat_handler, methods=["POST"], name="post_chat")
+    @app.post("/internal/v2/financial-import")
+    async def financial_import(request: Request) -> JSONResponse:
+        _authorize(settings, request.headers.get("X-Internal-Key"))
+        if backend.name != "live":
+            raise ServiceError(503, "PROVIDER_UNAVAILABLE", "International financial import requires live mode.")
+        from financial_import.service import execute
+        request.state.ai_operation = "financial-import"
+        payload = await _read_json(request, 34_000_000)
+        result = await run_in_threadpool(execute, payload)
+        return JSONResponse(result, headers={"X-AI-Mode": "live"})
     if settings.test_console:
         _mount_console(app)
     return app

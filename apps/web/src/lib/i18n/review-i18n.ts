@@ -1,3 +1,4 @@
+import { productText } from './product-copy'
 import type { Locale } from '@/lib/api/contracts'
 
 type Triplet = readonly [en: string, vi: string, zhCN: string]
@@ -210,6 +211,16 @@ const absenceBasisMap: Record<string, Triplet> = {
 }
 
 const limitationMap: Record<string, Triplet> = {
+  'Assessment is decision support; acknowledgement is not transaction approval.': [
+    'Assessment is decision support; acknowledgement is not transaction approval.',
+    'Đánh giá hỗ trợ quyết định; ghi nhận đã xem không phải phê duyệt giao dịch.',
+    '评估仅辅助决策；确认已阅不代表批准交易。',
+  ],
+  'AIC experimental financial index — NOT VALIDATED. No default calibration; PD remains null.': [
+    'AIC experimental financial index — NOT VALIDATED. No default calibration; PD remains null.',
+    'Chỉ số tài chính thử nghiệm AIC — CHƯA KIỂM ĐỊNH. Chưa hiệu chỉnh xác suất vỡ nợ; PD được giữ trống.',
+    'AIC实验性财务指数 — 尚未验证。未进行违约概率校准；PD保持为空。',
+  ],
   'Absence of a document does not establish absence of the underlying fact.': [
     'Absence of a document does not establish absence of the underlying fact.',
     'Việc thiếu chứng từ không đồng nghĩa với việc giao dịch hoặc dữ kiện thực tế không tồn tại.',
@@ -217,9 +228,9 @@ const limitationMap: Record<string, Triplet> = {
   ],
   'Numeric FHI blocked; document review, supported ratios and Transaction Review remain available independently. Method approval is a separate gate.':
     [
-      'Numeric FHI blocked; document review, supported ratios and Transaction Review remain available independently. Method approval is a separate gate.',
-      'Chỉ số tài chính FHI bị tạm khóa; rà soát hồ sơ, các chỉ số có chứng từ và Rà soát giao dịch vẫn hoạt động độc lập. Phê duyệt phương pháp là cổng kiểm soát riêng.',
-      '数值型 FHI 已被阻止；文件审查、有支持的比率及交易审查仍可独立进行。方法审批为独立门禁。',
+      'FHI publication depends on verified financial inputs and the method gate. See current assessment readiness. Document and transaction reviews remain separate.',
+      'Phát điểm FHI phụ thuộc dữ kiện tài chính đã xác minh và cổng phương pháp. Xem điều kiện đánh giá hiện hành. Rà soát tài liệu và giao dịch vẫn tách riêng.',
+      'FHI 分值发布取决于已核实的财务输入及方法门禁。请查看当前评估条件。文件与交易审查仍独立进行。',
     ],
   'limitation only; no automatic score penalty': [
     'Limitation only; no automatic score penalty.',
@@ -329,6 +340,36 @@ const limitationMap: Record<string, Triplet> = {
 }
 
 const blockerMap: Record<string, Triplet> = {
+  STALE_DOCUMENT_SNAPSHOT: [
+    'The case changed during extraction. This result was withheld. Review the current source and submit a new source version explicitly if processing is still needed.',
+    'Hồ sơ đã thay đổi trong khi trích xuất; kết quả này được giữ lại. Kiểm tra nguồn hiện hành và chủ động nộp phiên bản nguồn mới nếu vẫn cần xử lý.',
+    '提取期间案件发生变化，结果已保留不发布。请核对当前来源，仍需处理时明确提交新的来源版本。',
+  ],
+  DOCUMENT_SUPERSEDED: [
+    'This source or its counterparty snapshot has been replaced. Review the current source version.',
+    'Nguồn hoặc phiên bản thông tin đối tác này đã được thay thế. Hãy kiểm tra phiên bản nguồn hiện hành.',
+    '此来源或交易对手快照已被替换，请检查当前来源版本。',
+  ],
+  FINANCIAL_INPUTS_REQUIRED: [
+    'Financial facts must be entered and verified before publishing a numeric index.',
+    'Cần nhập và xác minh dữ kiện tài chính trước khi phát hành chỉ số dạng số.',
+    '发布数值指数前需录入并核实财务事实。',
+  ],
+  REVIEW_REQUIRED: [
+    'Run document review before assessing this case.',
+    'Chạy rà soát tài liệu trước khi đánh giá hồ sơ.',
+    '评估案件前请先运行文件审查。',
+  ],
+  STALE_REVIEW: [
+    'Inputs changed. Run document review again.',
+    'Dữ liệu đã thay đổi. Hãy chạy lại rà soát tài liệu.',
+    '输入已改变，请重新运行文件审查。',
+  ],
+  SOURCE_PROCESSING: [
+    'Wait for source processing to finish.',
+    'Chờ xử lý tài liệu nguồn hoàn tất.',
+    '请等待来源文件处理完成。',
+  ],
   FHI_METHOD_UNCONFIGURED: [
     'Separate financial method approval is required.',
     'Cần có phê duyệt phương pháp tài chính riêng biệt.',
@@ -354,7 +395,7 @@ export function localizeRuleId(ruleId: string | null | undefined, locale: Locale
       return pick(item.label, locale)
     }
   }
-  return ruleId
+  return productText(locale, 'unknown')
 }
 
 export function localizeCategory(category: string | null | undefined, locale: Locale): string {
@@ -372,19 +413,19 @@ export function localizeSeverity(severity: string | null | undefined, locale: Lo
 export function localizeConditionKind(kind: string | null | undefined, locale: Locale): string {
   if (!kind) return ''
   if (Object.hasOwn(conditionKindMap, kind)) return pick(conditionKindMap[kind], locale)
-  return kind
+  return productText(locale, 'unknown')
 }
 
 export function localizeClaimState(state: string | null | undefined, locale: Locale): string {
   if (!state) return ''
   if (Object.hasOwn(claimStateMap, state)) return pick(claimStateMap[state], locale)
-  return state
+  return productText(locale, 'unknown')
 }
 
 export function localizeClaimKind(kind: string | null | undefined, locale: Locale): string {
   if (!kind) return ''
   if (Object.hasOwn(claimKindMap, kind)) return pick(claimKindMap[kind], locale)
-  return kind
+  return productText(locale, 'unknown')
 }
 
 export function localizeRequirementKey(key: string | null | undefined, locale: Locale): string {
@@ -398,7 +439,7 @@ export function localizeAbsenceBasis(
 ): string | undefined {
   if (!basis) return undefined
   if (Object.hasOwn(absenceBasisMap, basis)) return pick(absenceBasisMap[basis], locale)
-  return basis
+  return productText(locale, 'unknown')
 }
 
 export function localizeLimitation(text: string | null | undefined, locale: Locale): string {
@@ -416,7 +457,7 @@ export function localizeBlocker(
     return pick(blockerMap[blocker.code], locale)
   if (blocker.message && Object.hasOwn(blockerMap, blocker.message))
     return pick(blockerMap[blocker.message], locale)
-  return blocker.message ?? blocker.code ?? ''
+  return productText(locale, 'unknown')
 }
 
 export function localizeFindingSummary(
@@ -437,33 +478,31 @@ export function localizeFindingSummary(
     if (Object.hasOwn(structuredRuleSummaries, key)) {
       return pick(structuredRuleSummaries[key], locale)
     }
-    return summary
+    return productText(locale, 'unknown')
   }
 
   // 2. Document <id> is declared, not verified.
   const declaredMatch = /^Document (.+) is declared, not verified\.$/.exec(summary)
   if (declaredMatch) {
-    const docId = declaredMatch[1]
     if (locale === 'vi') {
-      return `Tài liệu ${docId} mới ở trạng thái khai báo, chưa qua xác minh chuyên viên.`
+      return `Tài liệu nguồn mới ở trạng thái khai báo, chưa qua xác minh chuyên viên.`
     }
     if (locale === 'zh-CN') {
-      return `文件 ${docId} 仅为申报状态，尚未经人工核实。`
+      return `来源文件 仅为申报状态，尚未经人工核实。`
     }
-    return `Document ${docId} is declared, not verified.`
+    return `The source document is declared, not verified.`
   }
 
   // 3. Document <id> has missing or uncertain extraction.
   const uncertainMatch = /^Document (.+) has missing or uncertain extraction\.$/.exec(summary)
   if (uncertainMatch) {
-    const docId = uncertainMatch[1]
     if (locale === 'vi') {
-      return `Tài liệu ${docId} có trường dữ liệu trích xuất còn thiếu hoặc chưa chắc chắn.`
+      return `Tài liệu nguồn có trường dữ liệu trích xuất còn thiếu hoặc chưa chắc chắn.`
     }
     if (locale === 'zh-CN') {
-      return `文件 ${docId} 存在缺失或存疑的提取字段。`
+      return `来源文件 存在缺失或存疑的提取字段。`
     }
-    return `Document ${docId} has missing or uncertain extraction.`
+    return `The source document has missing or uncertain extraction.`
   }
 
   // 4. Specialist identified a subject mismatch in document <id>.
@@ -471,14 +510,13 @@ export function localizeFindingSummary(
     summary,
   )
   if (mismatchMatch) {
-    const docId = mismatchMatch[1]
     if (locale === 'vi') {
-      return `Chuyên viên ghi nhận tài liệu ${docId} không đúng chủ thể hồ sơ.`
+      return `Chuyên viên ghi nhận tài liệu nguồn không đúng chủ thể hồ sơ.`
     }
     if (locale === 'zh-CN') {
-      return `专员指出文件 ${docId} 的主体与本案不符。`
+      return `专员指出来源文件 的主体与本案不符。`
     }
-    return `Specialist identified a subject mismatch in document ${docId}.`
+    return `Specialist identified a subject mismatch in the source document.`
   }
 
   // 5. Reported <kind> condition remains unverified.
@@ -508,7 +546,7 @@ export function localizeFindingSummary(
     return `${state} ${kind} claim remains unverified.`
   }
 
-  return summary
+  return productText(locale, 'unknown')
 }
 
 /** Only server-generated limitation slots may be localized. The second condition

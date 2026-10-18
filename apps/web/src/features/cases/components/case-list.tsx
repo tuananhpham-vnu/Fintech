@@ -5,9 +5,12 @@ import { Loading } from '@/components/feedback/loading'
 import { Pagination } from '@/components/ui/pagination'
 import { Status } from '@/components/ui/status'
 import { TransactionDialog } from '@/features/cases/components/transaction-dialog'
+import { CompanyHealthDialog } from './company-health-dialog'
+import { companyHealthText } from '@/lib/i18n/company-health-copy'
 import { type ExposureKind } from '@/lib/api/contracts'
 import { rolePairs } from '@/lib/domain/cases'
 import { useLocale } from '@/lib/i18n/locale-provider'
+import { isSyntheticText, productText } from '@/lib/i18n/product-copy'
 import { formatMoney } from '@/lib/utils/money'
 import { ArrowUpRight, Building2, Plus, RefreshCw, Search } from 'lucide-react'
 import Link from 'next/link'
@@ -16,6 +19,7 @@ import { useCaseList } from '../hooks/use-case-list'
 export function CaseList() {
   const { t, locale } = useLocale()
   const [open, setOpen] = useState(false)
+  const [companyOpen, setCompanyOpen] = useState(false)
   const { rows, names, visible, cursors, setCursors, query, setQuery, kind, setKind } =
     useCaseList()
   return (
@@ -23,13 +27,18 @@ export function CaseList() {
       <div className="aic-page-title">
         <div>
           <p className="eyebrow">AIC RATING</p>
-          <h1>{t('hero')}</h1>
-          <p>{t('heroText')}</p>
+          <h1>{companyHealthText(locale, 'title')}</h1>
+          <p>{companyHealthText(locale, 'intro')}</p>
         </div>
-        <button className="primary-button" onClick={() => setOpen(true)}>
-          <Plus size={17} />
-          {t('newCase')}
-        </button>
+        <div className="wrap-actions">
+          <button className="primary-button" onClick={() => setCompanyOpen(true)}>
+            <Plus size={17} />
+            {companyHealthText(locale, 'create')}
+          </button>
+          <button className="secondary-button" onClick={() => setOpen(true)}>
+            {t('newCase')}
+          </button>
+        </div>
       </div>
       <section className="panel">
         <div className="aic-list-heading">
@@ -55,11 +64,12 @@ export function CaseList() {
           </label>
           <select
             className="filter-select"
-            aria-label={t('type')}
+            aria-label={companyHealthText(locale, 'filter')}
             value={kind}
             onChange={(e) => setKind(e.target.value)}
           >
             <option value="">{t('all')}</option>
+            <option value="company_health">{companyHealthText(locale, 'title')}</option>
             {Object.keys(rolePairs).map((k) => (
               <option key={k} value={k}>
                 {t(k as ExposureKind)}
@@ -87,21 +97,39 @@ export function CaseList() {
                       <Building2 size={20} />
                     </div>
                     <div>
-                      <strong>{names.data?.[c.counterparty_id]?.name ?? c.counterparty_id}</strong>
-                      <small>{names.data?.[c.counterparty_id]?.tax_id ?? c.id}</small>
+                      <strong>{names.data?.[c.counterparty_id]?.name ?? t('counterparty')}</strong>
+                      <small>{names.data?.[c.counterparty_id]?.tax_id ?? '—'}</small>
                     </div>
                   </div>
                   <div>
-                    <strong>{t(c.exposure_kind)}</strong>
-                    <small>{c.exposure.contract_ref ?? '—'}</small>
-                  </div>
-                  <div>
-                    <strong>{formatMoney(c.exposure.amount_vnd, locale)}</strong>
+                    <strong>
+                      {c.exposure_kind ? t(c.exposure_kind) : companyHealthText(locale, 'title')}
+                    </strong>
                     <small>
-                      {c.exposure.term_days ?? '—'} {t('days')}
+                      {c.purpose === 'company_health'
+                        ? companyHealthText(locale, 'noExposure')
+                        : isSyntheticText(c.exposure.contract_ref)
+                          ? productText(locale, 'synthetic')
+                          : (c.exposure.contract_ref ?? '—')}
                     </small>
                   </div>
-                  <Status value={c.lifecycle_stage} />
+                  {c.exposure ? (
+                    <div>
+                      <strong>{formatMoney(c.exposure.amount_vnd, locale)}</strong>
+                      <small>
+                        {c.exposure.term_days ?? '—'} {t('days')}
+                      </small>
+                    </div>
+                  ) : (
+                    <div>
+                      <small>{companyHealthText(locale, 'assess')}</small>
+                    </div>
+                  )}
+                  {c.lifecycle_stage ? (
+                    <Status value={c.lifecycle_stage} />
+                  ) : (
+                    <span className="tag">{companyHealthText(locale, 'saved')}</span>
+                  )}
                   <ArrowUpRight size={18} />
                 </Link>
               ))}
@@ -120,6 +148,9 @@ export function CaseList() {
         />
       </section>
       {open && <TransactionDialog onClose={() => setOpen(false)} onSaved={rows.reload} />}
+      {companyOpen && (
+        <CompanyHealthDialog onClose={() => setCompanyOpen(false)} onSaved={rows.reload} />
+      )}
     </>
   )
 }

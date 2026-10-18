@@ -19,9 +19,9 @@ const beVietnamPro = Be_Vietnam_Pro({
 })
 
 export const metadata: Metadata = {
-  title: 'AIC Rating · Đánh giá rủi ro đối tác',
+  title: 'AIC Rating · Sức khỏe tài chính đối tác',
   description:
-    'Đánh giá rủi ro đối tác và giao dịch trả trước, bán chịu dựa trên hồ sơ và bằng chứng.',
+    'Kiểm tra dữ kiện và sức khỏe tài chính doanh nghiệp dựa trên hồ sơ, nguồn số liệu và bằng chứng.',
   robots: { index: false, follow: false },
   referrer: 'no-referrer',
   icons: {

@@ -57,7 +57,8 @@ class Config:
     @classmethod
     def from_env(cls) -> "Config":
         from runner.config import load_dotenv
-        load_dotenv()
+        if os.environ.get('AI_LOAD_DOTENV', '1') != '0':
+            load_dotenv()
         env = os.environ
         storage = env.get("AI_STORAGE_DIR", "").strip()
         return cls(storage_dir=Path(storage) if storage else None,

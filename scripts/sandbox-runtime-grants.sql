@@ -10,6 +10,8 @@ GRANT SELECT ON aic.schema_migrations,aic.cases,aic.counterparties,aic.mvp_docum
 GRANT INSERT,UPDATE ON aic.sessions,aic.login_attempts TO :"api_role";
 GRANT INSERT ON aic.counterparties,aic.mvp_counterparty_versions,aic.mvp_invitations,aic.mvp_invitation_revocations,
   aic.mvp_questionnaire_events,aic.mvp_respondent_submissions,aic.mvp_financial_sets,aic.mvp_financial_facts,aic.mvp_financial_verifications,aic.mvp_financial_source_bindings TO :"api_role";
+GRANT SELECT,INSERT ON aic.assessments,aic.assessment_acknowledgements TO :"api_role";
+GRANT SELECT,INSERT ON aic.financial_import_sources TO :"api_role";
 GRANT INSERT,UPDATE ON aic.mvp_capability_limits TO :"api_role";
 GRANT UPDATE(name,country,tax_id,industry_code,source_refs,identity_status,revision,updated_at) ON aic.counterparties TO :"api_role";
 GRANT UPDATE(state,retryable,error_code,updated_at) ON aic.mvp_document_jobs TO :"api_role";

@@ -57,9 +57,9 @@ const words = {
     '历史来源保持原样，无法在此重新绑定。',
   ],
   unsupported: [
-    'This historical record is read-only. It cannot be submitted under the released schema; explicitly remove it to continue.',
-    'Bản ghi lịch sử chỉ đọc, không phù hợp schema hiện hành. Cần xóa rõ ràng để tiếp tục lưu.',
-    '此历史记录只读，无法按当前架构提交；请明确移除后再保存。',
+    'This historical record is read-only. Check its source before explicitly replacing or removing it to save changes.',
+    'Bản ghi lịch sử chỉ đọc. Kiểm tra nguồn trước khi chủ động thay thế hoặc loại bỏ mục này để lưu chỉnh sửa.',
+    '此历史记录只读。保存更改前，请核查来源后再明确替换或移除此项。',
   ],
   rebase: [
     'Use this revision and keep my inputs',
@@ -67,8 +67,8 @@ const words = {
     '使用此版本并保留我的输入',
   ],
   rebaseHelp: [
-    'Review the latest Exposure below. Saving after rebase replaces it with your current editor input, including claims, conditions and exact sources.',
-    'Xem Exposure mới nhất bên dưới. Sau khi cập nhật phiên bản, lưu sẽ thay bằng nội dung đang nhập, gồm khai báo, điều kiện và nguồn chính xác.',
+    'Review the latest transaction information below. Saving after rebase replaces it with your current editor input, including claims, conditions and exact sources.',
+    'Đối chiếu thông tin giao dịch mới nhất. Sau khi cập nhật phiên bản, lưu sẽ thay bằng nội dung đang nhập, gồm khai báo, điều kiện và nguồn chính xác.',
     '请查看下方最新敞口。更新版本后保存，将以当前输入替换它，包括申报、条件及精确来源。',
   ],
   invalid: [

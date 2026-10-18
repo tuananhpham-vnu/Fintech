@@ -5,7 +5,7 @@ import { casesApi } from '@/features/cases/api'
 import { useCounterpartyOptions } from '@/features/counterparties/hooks/use-counterparty-options'
 import { useMutation } from '@/hooks/use-mutation'
 import { ApiError } from '@/lib/api/client'
-import { type CaseDetail, type ExposureKind } from '@/lib/api/contracts'
+import { type TransactionCaseDetail as CaseDetail, type ExposureKind } from '@/lib/api/contracts'
 import { rolePairs } from '@/lib/domain/cases'
 import { useLocale } from '@/lib/i18n/locale-provider'
 import { ArrowUpRight } from 'lucide-react'
@@ -272,7 +272,7 @@ export function TransactionDialog({
             conditions={draft.conditions ?? []}
             sources={[
               ...documentSourceOptions(documents),
-              ...questionnaireSourceOptions(questionnaires),
+              ...questionnaireSourceOptions(questionnaires, locale),
             ]}
             onClaims={(claims) => update({ claims })}
             onConditions={(conditions) => update({ conditions })}
@@ -292,7 +292,13 @@ export function TransactionDialog({
                 type="button"
                 className="secondary-button"
                 onClick={() =>
-                  void casesApi.detail(initial.id).then(setLatest).catch(action.setError)
+                  void casesApi
+                    .detail(initial.id)
+                    .then((v) => {
+                      if (!v.exposure) throw new Error('INVALID_API_RESPONSE')
+                      setLatest(v)
+                    })
+                    .catch(action.setError)
                 }
               >
                 {t('refresh')}
@@ -302,7 +308,7 @@ export function TransactionDialog({
                   <p>
                     {t('revision')} {latest.revision} · {copy('rebaseHelp')}
                   </p>
-                  <pre className="request-preview">{JSON.stringify(latest.exposure, null, 2)}</pre>
+                  <pre className="request-preview">{t('conflict')}</pre>
                   <button
                     type="button"
                     className="secondary-button"

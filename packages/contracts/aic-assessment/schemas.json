@@ -1,0 +1,1746 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "aic-assessment/1.0.0",
+  "definitions": {
+    "Readiness": {
+      "type": "object",
+      "properties": {
+        "case_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "document_review_allowed": {
+          "type": "boolean"
+        },
+        "numeric_assessment_allowed": {
+          "type": "boolean"
+        },
+        "method_status": {
+          "enum": [
+            "unconfigured",
+            "configured_pilot",
+            "validation_pending",
+            "validated_for_limited_use",
+            "retired"
+          ]
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "waivable_requirements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "requirement_key": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "issue_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "requirement_key"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "assessment_allowed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "case_revision",
+        "document_review_allowed",
+        "numeric_assessment_allowed",
+        "method_status",
+        "blockers",
+        "limitations",
+        "waivable_requirements"
+      ],
+      "additionalProperties": false
+    },
+    "FinancialRegistry": {
+      "type": "object",
+      "properties": {
+        "sets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FinancialSetRead"
+          }
+        },
+        "selected_set_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "method_status": {
+          "enum": [
+            "unconfigured",
+            "configured_pilot",
+            "validation_pending",
+            "validated_for_limited_use",
+            "retired"
+          ]
+        },
+        "score": {
+          "type": "null"
+        },
+        "band": {
+          "type": "null"
+        },
+        "grade": {
+          "type": "null"
+        },
+        "pd": {
+          "type": "null"
+        },
+        "metrics": {
+          "type": "array",
+          "maxItems": 7,
+          "items": {
+            "type": "object",
+            "required": [
+              "metric_id",
+              "group",
+              "formula_id",
+              "formula",
+              "status",
+              "raw_ratio",
+              "source_facts",
+              "max_points",
+              "anchors",
+              "points",
+              "flags",
+              "blockers"
+            ],
+            "properties": {
+              "points": {
+                "type": "null"
+              },
+              "status": {
+                "enum": [
+                  "available",
+                  "unavailable"
+                ]
+              }
+            }
+          }
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "strengths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "weaknesses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "sets",
+        "selected_set_id",
+        "method_status",
+        "score",
+        "band",
+        "grade",
+        "pd",
+        "metrics",
+        "blockers",
+        "strengths",
+        "weaknesses",
+        "limitations"
+      ],
+      "additionalProperties": false
+    },
+    "Case": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "organization_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "counterparty_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "exposure_kind": {
+          "enum": [
+            "RECEIVABLE",
+            "PREPAYMENT",
+            "LOAN",
+            "DEBT_INVESTMENT"
+          ]
+        },
+        "lifecycle_stage": {
+          "enum": [
+            "proposed",
+            "active"
+          ]
+        },
+        "exposure": {
+          "$ref": "#/definitions/ExposureRead"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "policy_version": {
+          "type": "string"
+        },
+        "method_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Document"
+          }
+        },
+        "jobs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Job"
+          }
+        },
+        "questionnaires": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Questionnaire"
+          }
+        },
+        "issue_history": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Finding"
+          }
+        },
+        "review_stale": {
+          "type": "boolean"
+        },
+        "counterparty_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "latest_review_run_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Finding"
+          }
+        },
+        "readiness": {
+          "$ref": "#/definitions/Readiness"
+        },
+        "requests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DocumentRequest"
+          }
+        },
+        "waivers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Waiver"
+          }
+        },
+        "transaction_review": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TransactionReview"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "policy_artifact_hash": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "latest_assessment_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "assessment": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Assessment"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "organization_id",
+        "counterparty_id",
+        "exposure_kind",
+        "lifecycle_stage",
+        "exposure",
+        "revision",
+        "policy_version",
+        "method_version",
+        "created_at",
+        "updated_at"
+      ],
+      "additionalProperties": false
+    },
+    "Assessment": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/TransactionAssessment"
+        },
+        {
+          "$ref": "#/definitions/CompanyHealthAssessmentV1"
+        }
+      ]
+    },
+    "AssessmentInput": {
+      "type": "object",
+      "properties": {
+        "expected_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "financial_set_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "required": [
+        "expected_revision"
+      ],
+      "additionalProperties": false
+    },
+    "AssessmentAcknowledgementInput": {
+      "type": "object",
+      "properties": {
+        "expected_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000,
+          "pattern": ".*[^ ].*"
+        }
+      },
+      "required": [
+        "expected_revision",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "ReviewRun": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "case_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "case_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "rules_version": {
+          "type": "string"
+        },
+        "policy_version": {
+          "type": "string"
+        },
+        "snapshot_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "source_snapshot_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "state": {
+          "const": "completed"
+        },
+        "stale": {
+          "type": "boolean"
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Finding"
+          }
+        },
+        "issue_history": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Finding"
+          }
+        },
+        "transaction_review": {
+          "$ref": "#/definitions/TransactionReview"
+        },
+        "financial_health": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "const": "unconfigured"
+            },
+            "score": {
+              "type": "null"
+            },
+            "band": {
+              "type": "null"
+            },
+            "grade": {
+              "type": "null"
+            },
+            "pd": {
+              "type": "null"
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "status",
+            "score",
+            "band",
+            "grade",
+            "pd",
+            "blockers"
+          ],
+          "additionalProperties": false
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "counterparty_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "checked_case_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id",
+        "case_id",
+        "case_revision",
+        "rules_version",
+        "policy_version",
+        "snapshot_hash",
+        "state",
+        "stale",
+        "findings",
+        "transaction_review",
+        "financial_health",
+        "created_at"
+      ],
+      "additionalProperties": false
+    },
+    "AssessmentPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "next_cursor"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "case_revision",
+              "created_at",
+              "method_version",
+              "state"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "case_revision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "method_version": {
+                "type": "string"
+              },
+              "state": {
+                "const": "completed"
+              }
+            }
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[1-9][0-9]*$"
+        }
+      }
+    },
+    "FinancialTrendsV1": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "AIC-FINANCIAL-TRENDS-1"
+        },
+        "case_revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "captured_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "baseline_set_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "set": {
+                "$ref": "#/definitions/FinancialSetRead"
+              },
+              "comparison_issues": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "gap_before": {
+                "type": "boolean"
+              },
+              "facts": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "fact_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
+                    },
+                    "fact_revision": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "status": {
+                      "enum": [
+                        "verified",
+                        "missing",
+                        "stale",
+                        "unverified",
+                        "rejected"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "value",
+                    "fact_id",
+                    "fact_revision",
+                    "status"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "metrics": {
+                "type": "array",
+                "maxItems": 7,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "metric_id",
+                    "group",
+                    "formula_id",
+                    "formula",
+                    "status",
+                    "raw_ratio",
+                    "source_facts",
+                    "max_points",
+                    "anchors",
+                    "points",
+                    "flags",
+                    "blockers"
+                  ],
+                  "properties": {
+                    "points": {
+                      "type": "null"
+                    },
+                    "status": {
+                      "enum": [
+                        "available",
+                        "unavailable"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "required": [
+              "set",
+              "comparison_issues",
+              "gap_before",
+              "facts",
+              "metrics"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "baseline_metrics": {
+          "type": "array",
+          "maxItems": 7,
+          "items": {
+            "type": "object",
+            "required": [
+              "metric_id",
+              "group",
+              "formula_id",
+              "formula",
+              "status",
+              "raw_ratio",
+              "source_facts",
+              "max_points",
+              "anchors",
+              "points",
+              "flags",
+              "blockers"
+            ],
+            "properties": {
+              "points": {
+                "type": "null"
+              },
+              "status": {
+                "enum": [
+                  "available",
+                  "unavailable"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "contract_version",
+        "case_revision",
+        "captured_at",
+        "baseline_set_id",
+        "rows",
+        "baseline_metrics"
+      ],
+      "additionalProperties": false
+    },
+    "CompanyHealthCaseV1": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "organization_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "counterparty_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "exposure_kind": {
+          "type": "null"
+        },
+        "lifecycle_stage": {
+          "type": "null"
+        },
+        "exposure": {
+          "type": "null"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "policy_version": {
+          "type": "null"
+        },
+        "method_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Document"
+          }
+        },
+        "jobs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Job"
+          }
+        },
+        "questionnaires": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Questionnaire"
+          }
+        },
+        "issue_history": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Finding"
+          }
+        },
+        "review_stale": {
+          "type": "boolean"
+        },
+        "counterparty_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "latest_review_run_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Finding"
+          }
+        },
+        "readiness": {
+          "$ref": "#/definitions/Readiness"
+        },
+        "requests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DocumentRequest"
+          }
+        },
+        "waivers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Waiver"
+          }
+        },
+        "transaction_review": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TransactionReview"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "policy_artifact_hash": {
+          "type": "null"
+        },
+        "latest_assessment_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "assessment": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Assessment"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "purpose": {
+          "const": "company_health"
+        }
+      },
+      "required": [
+        "id",
+        "organization_id",
+        "counterparty_id",
+        "exposure_kind",
+        "lifecycle_stage",
+        "exposure",
+        "revision",
+        "policy_version",
+        "method_version",
+        "created_at",
+        "updated_at",
+        "purpose",
+        "policy_artifact_hash"
+      ],
+      "additionalProperties": false
+    },
+    "Workspace": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/Case"
+        },
+        {
+          "$ref": "#/definitions/CompanyHealthCaseV1"
+        }
+      ]
+    },
+    "WorkspacePage": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Workspace"
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ],
+      "additionalProperties": false
+    },
+    "CompanyHealthCreateV1": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "AIC-COMPANY-HEALTH-1"
+        },
+        "counterparty_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "pattern": "\\S"
+        }
+      },
+      "required": [
+        "schema_version",
+        "counterparty_id",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "CompanyHealthCapabilitiesV1": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "AIC-COMPANY-HEALTH-1"
+        },
+        "available": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "schema_version",
+        "available"
+      ],
+      "additionalProperties": false
+    },
+    "TransactionAssessment": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "case_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "case_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "checked_case_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "method_version": {
+          "type": "string"
+        },
+        "method_status": {
+          "enum": [
+            "unconfigured",
+            "configured_pilot",
+            "validation_pending",
+            "validated_for_limited_use",
+            "retired"
+          ]
+        },
+        "method_policy_hash": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "policy_version": {
+          "type": "string"
+        },
+        "snapshot_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "state": {
+          "const": "completed"
+        },
+        "stale": {
+          "type": "boolean"
+        },
+        "overall_score": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^-?[0-9]+([.][0-9]+)?$"
+        },
+        "grade": {
+          "type": "null"
+        },
+        "pd": {
+          "type": "null"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "financial_set_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "factors": {
+          "type": "array",
+          "maxItems": 7,
+          "items": {
+            "type": "object",
+            "properties": {
+              "factor_id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "available",
+                  "missing",
+                  "waived",
+                  "conflicting",
+                  "not_applicable"
+                ]
+              },
+              "score": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^-?[0-9]+([.][0-9]+)?$"
+              },
+              "value": {},
+              "rationale": {
+                "type": "string"
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "verification_state": {
+                "type": "string"
+              },
+              "limitations": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "factor_id",
+              "label",
+              "status",
+              "score",
+              "value",
+              "rationale",
+              "evidence_refs",
+              "verification_state",
+              "limitations"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "strengths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "weaknesses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "red_flags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "financial_health": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "enum": [
+                "PREVIEW_ELIGIBLE",
+                "blocked"
+              ]
+            },
+            "score": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^-?[0-9]+([.][0-9]+)?$"
+            },
+            "band": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^AIC-F[1-5]$"
+            },
+            "score_quality": {
+              "enum": [
+                "experimental_not_validated",
+                "unavailable"
+              ]
+            },
+            "pd": {
+              "type": "null"
+            },
+            "components": {
+              "type": "array",
+              "maxItems": 7,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "metric_id": {
+                    "enum": [
+                      "AIC-M01",
+                      "AIC-M02",
+                      "AIC-M03",
+                      "AIC-M04",
+                      "AIC-M05",
+                      "AIC-M06",
+                      "AIC-M07"
+                    ]
+                  },
+                  "formula_id": {
+                    "type": "string"
+                  },
+                  "raw_value": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "pattern": "^-?[0-9]+([.][0-9]+)?$"
+                  },
+                  "points": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "pattern": "^-?[0-9]+([.][0-9]+)?$"
+                  },
+                  "max_points": {
+                    "type": "string",
+                    "pattern": "^[0-9]+$"
+                  },
+                  "source_facts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "verification_state": {
+                    "type": "string"
+                  },
+                  "blockers": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "flags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "metric_id",
+                  "formula_id",
+                  "raw_value",
+                  "points",
+                  "max_points",
+                  "source_facts",
+                  "verification_state",
+                  "blockers",
+                  "flags"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "status",
+            "score",
+            "band",
+            "score_quality",
+            "pd",
+            "components",
+            "blockers"
+          ],
+          "additionalProperties": false
+        },
+        "transaction_review": {
+          "type": "object",
+          "properties": {
+            "exposure_kind": {
+              "enum": [
+                "RECEIVABLE",
+                "PREPAYMENT"
+              ]
+            },
+            "status": {
+              "enum": [
+                "BLOCKED",
+                "FOLLOW_UP",
+                "CLEAR_FOR_REVIEW",
+                "UNKNOWN"
+              ]
+            },
+            "findings": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "severity": {
+                    "type": "string"
+                  },
+                  "evidence_refs": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "verification_state": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "code",
+                  "severity",
+                  "evidence_refs",
+                  "verification_state"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "limitations": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "exposure_kind",
+            "status",
+            "findings",
+            "limitations"
+          ],
+          "additionalProperties": false
+        },
+        "calculation_trace": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "acknowledged_by": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "acknowledged_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "acknowledgement_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "case_id",
+        "case_revision",
+        "checked_case_revision",
+        "method_version",
+        "method_status",
+        "method_policy_hash",
+        "policy_version",
+        "snapshot_hash",
+        "state",
+        "stale",
+        "overall_score",
+        "grade",
+        "pd",
+        "created_at",
+        "financial_set_id",
+        "factors",
+        "strengths",
+        "weaknesses",
+        "red_flags",
+        "limitations",
+        "financial_health",
+        "transaction_review",
+        "calculation_trace",
+        "acknowledged_by",
+        "acknowledged_at",
+        "acknowledgement_reason"
+      ],
+      "additionalProperties": false
+    },
+    "CompanyHealthAssessmentV1": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "case_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "case_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "checked_case_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "method_version": {
+          "type": "string"
+        },
+        "method_status": {
+          "enum": [
+            "unconfigured",
+            "configured_pilot",
+            "validation_pending",
+            "validated_for_limited_use",
+            "retired"
+          ]
+        },
+        "method_policy_hash": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "policy_version": {
+          "type": "null"
+        },
+        "snapshot_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "state": {
+          "const": "completed"
+        },
+        "stale": {
+          "type": "boolean"
+        },
+        "overall_score": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^-?[0-9]+([.][0-9]+)?$"
+        },
+        "grade": {
+          "type": "null"
+        },
+        "pd": {
+          "type": "null"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "financial_set_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "factors": {
+          "type": "array",
+          "maxItems": 7,
+          "items": {
+            "type": "object",
+            "properties": {
+              "factor_id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "available",
+                  "missing",
+                  "waived",
+                  "conflicting",
+                  "not_applicable"
+                ]
+              },
+              "score": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^-?[0-9]+([.][0-9]+)?$"
+              },
+              "value": {},
+              "rationale": {
+                "type": "string"
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "verification_state": {
+                "type": "string"
+              },
+              "limitations": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "factor_id",
+              "label",
+              "status",
+              "score",
+              "value",
+              "rationale",
+              "evidence_refs",
+              "verification_state",
+              "limitations"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "strengths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "weaknesses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "red_flags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "financial_health": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "enum": [
+                "PREVIEW_ELIGIBLE",
+                "blocked"
+              ]
+            },
+            "score": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^-?[0-9]+([.][0-9]+)?$"
+            },
+            "band": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^AIC-F[1-5]$"
+            },
+            "score_quality": {
+              "enum": [
+                "experimental_not_validated",
+                "unavailable"
+              ]
+            },
+            "pd": {
+              "type": "null"
+            },
+            "components": {
+              "type": "array",
+              "maxItems": 7,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "metric_id": {
+                    "enum": [
+                      "AIC-M01",
+                      "AIC-M02",
+                      "AIC-M03",
+                      "AIC-M04",
+                      "AIC-M05",
+                      "AIC-M06",
+                      "AIC-M07"
+                    ]
+                  },
+                  "formula_id": {
+                    "type": "string"
+                  },
+                  "raw_value": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "pattern": "^-?[0-9]+([.][0-9]+)?$"
+                  },
+                  "points": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "pattern": "^-?[0-9]+([.][0-9]+)?$"
+                  },
+                  "max_points": {
+                    "type": "string",
+                    "pattern": "^[0-9]+$"
+                  },
+                  "source_facts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "verification_state": {
+                    "type": "string"
+                  },
+                  "blockers": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "flags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "metric_id",
+                  "formula_id",
+                  "raw_value",
+                  "points",
+                  "max_points",
+                  "source_facts",
+                  "verification_state",
+                  "blockers",
+                  "flags"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "status",
+            "score",
+            "band",
+            "score_quality",
+            "pd",
+            "components",
+            "blockers"
+          ],
+          "additionalProperties": false
+        },
+        "transaction_review": {
+          "type": "null"
+        },
+        "calculation_trace": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "acknowledged_by": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "acknowledged_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "acknowledgement_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "purpose": {
+          "const": "company_health"
+        }
+      },
+      "required": [
+        "id",
+        "case_id",
+        "case_revision",
+        "checked_case_revision",
+        "method_version",
+        "method_status",
+        "method_policy_hash",
+        "policy_version",
+        "snapshot_hash",
+        "state",
+        "stale",
+        "overall_score",
+        "grade",
+        "pd",
+        "created_at",
+        "financial_set_id",
+        "factors",
+        "strengths",
+        "weaknesses",
+        "red_flags",
+        "limitations",
+        "financial_health",
+        "transaction_review",
+        "calculation_trace",
+        "acknowledged_by",
+        "acknowledged_at",
+        "acknowledgement_reason",
+        "purpose"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

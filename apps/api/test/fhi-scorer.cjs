@@ -100,6 +100,15 @@ test('Notion §4.3 exact manual example:73.736111...,73.7,F2; runtime publicatio
   assert.equal(result.runtime.pilot_authorized, false)
   assert.deepEqual(scoreFhi(input), result)
 })
+test('Synthetic UI reference remains 82.5 / AIC-F2 without runtime publication', () => {
+  const input=sample(); const values={current_assets:'200',current_liabilities:'100',cash:'30',unrestricted_short_term_equivalents:'20',trade_receivables:'50',total_assets:'500',total_liabilities:'300',total_equity:'200',interest_bearing_debt:'100',operating_profit:'80',depreciation_amortization:'20',interest_expense:'20',net_revenue:'400',cash_from_operations:'32'};
+  for(const fact of input.facts) fact.value=values[fact.key];
+  const result=scoreFhi(input);
+  assert.equal(result.calculation.display_total,'82.5');
+  assert.equal(result.calculation.candidate_band,'AIC-F2');
+  assert.equal(result.score,null);assert.equal(result.pd,null);
+  assert.deepEqual(result.metrics.map(m=>m.max_points),['15','10','20','10','15','10','20']);
+})
 test('Every canonical anchor, segment interpolation and endpoint clamp uses exact Decimal', () => {
   for (const metric of FHI_METRICS) {
     for (const anchor of metric.anchors)

@@ -11,6 +11,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<unknown>(null)
   const [generation, setGeneration] = useState(0)
   const epoch = useRef(0)
+  const sessionChannel = useRef<BroadcastChannel | null>(null)
   const accept = useCallback((next: Session) => {
     setCsrfToken(next.csrf_token)
     setSession(next)
@@ -45,7 +46,19 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       setStatus((current) => (current === 'anonymous' ? current : 'expired'))
     }
     window.addEventListener('aic:session-expired', expire)
-    return () => window.removeEventListener('aic:session-expired', expire)
+    const channel =
+      typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel('aic:session-events')
+    sessionChannel.current = channel
+    if (channel)
+      channel.onmessage = (event: MessageEvent<unknown>) => {
+        // No credentials or identity are sent. Every tab shares the same auth cookie.
+        if (event.data === 'logout') expire()
+      }
+    return () => {
+      window.removeEventListener('aic:session-expired', expire)
+      channel?.close()
+      if (sessionChannel.current === channel) sessionChannel.current = null
+    }
   }, [])
   useEffect(() => {
     if (!session || status !== 'ready') return
@@ -71,6 +84,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }
   async function logout() {
     await authApi.logout()
+    sessionChannel.current?.postMessage('logout')
     epoch.current++
     setCsrfToken(null)
     setSession(null)

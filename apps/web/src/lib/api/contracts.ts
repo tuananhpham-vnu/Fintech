@@ -44,17 +44,28 @@ export type CaseCreate = {
   lifecycle_stage: 'proposed' | 'active'
   exposure: Exposure
 }
-export type Case = CaseCreate & {
+type CaseRecord = {
   id: string
   organization_id: string
   revision: number
-  policy_version: string
   method_version?: string | null
   latest_review_run_id?: string | null
   latest_assessment_id?: string | null
   created_at: string
   updated_at: string
 }
+export type Case = CaseRecord &
+  (
+    | (CaseCreate & { purpose?: 'transaction'; policy_version: string })
+    | {
+        purpose: 'company_health'
+        counterparty_id: string
+        exposure_kind: null
+        lifecycle_stage: null
+        exposure: null
+        policy_version: null
+      }
+  )
 export type DocumentType =
   | 'registration'
   | 'financial_statement'
@@ -82,6 +93,17 @@ export const documentTypes: DocumentType[] = [
   'debt_instrument',
   'other',
 ]
+/** Types accepted by the current document upload and classification API. */
+export const supportedDocumentTypes = [
+  'registration',
+  'loan_request',
+  'financial_statement',
+  'contract',
+  'acceptance_record',
+  'payment_record',
+  'invoice',
+  'other',
+] as const satisfies readonly DocumentType[]
 export type ExtractedField = {
   field_key: string
   value: unknown
@@ -145,6 +167,7 @@ export type Finding = {
   absence_basis?: string
 }
 export type ReviewRun = {
+  checked_case_revision?: number
   id: string
   case_id: string
   case_revision: number
@@ -169,6 +192,7 @@ export type Waiver = {
   revoked_at?: string | null
 }
 export type Readiness = {
+  assessment_allowed?: boolean
   case_revision: number
   document_review_allowed: boolean
   numeric_assessment_allowed: boolean
@@ -194,11 +218,18 @@ export type Factor = {
   limitations: string[]
 }
 export type Assessment = {
+  purpose?: 'company_health'
+  checked_case_revision?: number
+  financial_set_id?: string | null
+  method_status?: Readiness['method_status']
+  acknowledged_by?: string | null
+  acknowledged_at?: string | null
+  acknowledgement_reason?: string | null
   id: string
   case_id: string
   case_revision: number
   method_version: string
-  policy_version: string
+  policy_version: string | null
   snapshot_hash: string
   state: string
   stale: boolean
@@ -233,9 +264,10 @@ export type Assessment = {
     }[]
     evidence_refs?: string[]
     limitations?: string[]
-  }
+  } | null
 }
 export type FhiComponent = {
+  flags?: string[]
   metric_id: string
   formula_id?: string
   raw_value: string | null
@@ -282,6 +314,7 @@ export type ResponseRecord = {
   question_id: string
   answer_state: string
   answer_json?: unknown
+  reason?: string
   origin: 'SME_direct' | 'staff_transcribed'
   source_refs: string[]
   revision: number
@@ -346,6 +379,7 @@ export type CaseDetail = Case & {
   } | null
 }
 export type RevisionInput = { expected_revision: number }
+export type TransactionCaseDetail = Extract<CaseDetail, { exposure: Exposure }>
 export type WaiverInput = RevisionInput & {
   requirement_key: string
   issue_id?: string

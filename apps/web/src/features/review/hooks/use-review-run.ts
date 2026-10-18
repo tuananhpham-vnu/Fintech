@@ -20,7 +20,9 @@ export function useReviewRun(detail: CaseDetail) {
     stale =
       detail.review_stale ||
       run.data?.stale ||
-      (run.data && (run.data.case_revision !== detail.revision || run.data.case_id !== detail.id)),
+      (run.data &&
+        ((run.data.checked_case_revision ?? run.data.case_revision) !== detail.revision ||
+          run.data.case_id !== detail.id)),
     running = detail.jobs?.some((j) => ['queued', 'running'].includes(j.state))
 
   return { run, findings, stale, running }

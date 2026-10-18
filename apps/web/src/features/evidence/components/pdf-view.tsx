@@ -3,7 +3,15 @@ import { Loading } from '@/components/feedback/loading'
 import { useLocale } from '@/lib/i18n/locale-provider'
 import type { PDFDocumentLoadingTask, RenderTask } from 'pdfjs-dist'
 import { useEffect, useRef, useState } from 'react'
-export function PdfView({ url, initialPage }: { url: string; initialPage: number }) {
+export function PdfView({
+  url,
+  initialPage,
+  onPageChange,
+}: {
+  url: string
+  initialPage: number
+  onPageChange: (page: number) => void
+}) {
   const { t } = useLocale(),
     canvas = useRef<HTMLCanvasElement>(null),
     [page, setPage] = useState(initialPage),
@@ -11,6 +19,9 @@ export function PdfView({ url, initialPage }: { url: string; initialPage: number
     [busy, setBusy] = useState(true),
     [error, setError] = useState(false),
     [zoom, setZoom] = useState(100)
+  useEffect(() => {
+    onPageChange(page)
+  }, [page, onPageChange])
   useEffect(() => {
     let cancelled = false,
       task: PDFDocumentLoadingTask | undefined,
@@ -75,7 +86,11 @@ export function PdfView({ url, initialPage }: { url: string; initialPage: number
         >
           {t('next')}
         </button>
-        <select aria-label="Zoom" value={zoom} onChange={(e) => setZoom(Number(e.target.value))}>
+        <select
+          aria-label={t('zoom')}
+          value={zoom}
+          onChange={(e) => setZoom(Number(e.target.value))}
+        >
           {[75, 100, 125, 150, 200].map((n) => (
             <option key={n} value={n}>
               {n}%

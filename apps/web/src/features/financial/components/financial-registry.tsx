@@ -7,7 +7,7 @@ import type { SourceTarget } from '@/features/evidence/types'
 import { useResource } from '@/hooks/use-resource'
 import type { CaseDetail, Locale } from '@/lib/api/contracts'
 import { useLocale } from '@/lib/i18n/locale-provider'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   factKeys,
   financialApi,
@@ -15,22 +15,25 @@ import {
   type FinancialSet,
   type FinancialSource,
 } from '../api'
-import { financialLabel } from '../labels'
+import { financialLabel, metricExplanation } from '../labels'
+import { FinancialImport } from './financial-import'
+import { FinancialDiagnostics } from './financial-diagnostics'
+import { importSourceUrl } from '../import-api'
+import { TechnicalDetails as DeveloperDetails } from '@/components/ui/technical-details'
+import { productText, presentNote, isSyntheticText } from '@/lib/i18n/product-copy'
+import { displayDecimal, formatTime } from '@/lib/utils/format'
+import { specialistText } from '@/lib/i18n/specialist-copy'
+import { formatExactRatio, zeroDebtException, type FinancialAction } from '../presentation'
 
 type LabelKind = Parameters<typeof financialLabel>[1]
 
-function TechnicalDetails({ locale, values }: { locale: Locale; values: string[] }) {
+function TechnicalDetails({ values }: { locale: Locale; values: string[] }) {
   return (
-    <details>
-      <summary>
-        {locale === 'en' ? 'Technical details' : locale === 'vi' ? 'Chi tiết kỹ thuật' : '技术详情'}
-      </summary>
+    <DeveloperDetails>
       {values.map((value, i) => (
-        <p key={i}>
-          <code>{value}</code>
-        </p>
+        <p key={i}>{value}</p>
       ))}
-    </details>
+    </DeveloperDetails>
   )
 }
 
@@ -56,15 +59,23 @@ export function FinancialInformation({
   detail,
   reload,
   openSource,
+  selectedSetId,
+  onSelectSet,
+  actionRequest,
 }: {
   detail: CaseDetail
   reload: () => void
   openSource: (target: SourceTarget) => void
+  selectedSetId?: string
+  onSelectSet?: (id: string) => void
+  actionRequest?: FinancialAction
 }) {
   const { locale, t } = useLocale(),
     word = (en: string, vi: string, zh: string) =>
       locale === 'en' ? en : locale === 'vi' ? vi : zh
-  const [selected, setSelected] = useState('')
+  const [localSelected, setLocalSelected] = useState('')
+  const selected = selectedSetId ?? localSelected
+  const setSelected = onSelectSet ?? setLocalSelected
   const load = useCallback(
       (signal: AbortSignal) => financialApi.get(detail.id, signal, selected || undefined),
       [detail.id, detail.revision, selected],
@@ -72,12 +83,31 @@ export function FinancialInformation({
     resource = useResource(load, true)
   const [edit, setEdit] = useState<FinancialSet | 'new' | null>(null),
     [verify, setVerify] = useState<FinancialSet | null>(null)
+  const [importing, setImporting] = useState(false)
+  const handledAction = useRef<number>(0)
+  useEffect(() => {
+    if (
+      !actionRequest ||
+      handledAction.current === actionRequest.nonce ||
+      resource.loading ||
+      !resource.data
+    )
+      return
+    const set = resource.data.sets.find(
+      (s) => s.id === (selected || resource.data?.selected_set_id),
+    )
+    if (actionRequest.kind !== 'create' && !set) return
+    handledAction.current = actionRequest.nonce
+    if (actionRequest.kind === 'create') setEdit('new')
+    else if (actionRequest.kind === 'verify') setVerify(set!)
+    else setEdit(set!)
+  }, [actionRequest, resource.data, resource.loading, selected])
   const saved = () => {
     resource.reload()
     reload()
   }
   return (
-    <section className="panel aic-section">
+    <section className="panel aic-section" id="financial-data">
       <div className="section-title">
         <h3>
           {word(
@@ -86,15 +116,24 @@ export function FinancialInformation({
             '财务报表集与事实',
           )}
         </h3>
-        <button className="secondary-button" onClick={() => setEdit('new')}>
-          {t('create')}
-        </button>
+        <div className="wrap-actions">
+          <button className="primary-button" onClick={() => setImporting(true)}>
+            {word(
+              'Read PDF · VN / US / CN',
+              'Đọc PDF · Việt / Mỹ / Trung',
+              '读取 PDF · 越 / 美 / 中',
+            )}
+          </button>
+          <button className="secondary-button" onClick={() => setEdit('new')}>
+            {t('create')}
+          </button>
+        </div>
       </div>
       <p className="help-text">
         {word(
-          'The method remains unconfigured. Save and verify source facts without publishing a score or band.',
-          'Phương pháp chưa được kích hoạt. Có thể lưu và xác minh dữ kiện nguồn; không phát điểm hoặc phân hạng.',
-          '方法尚未配置。可保存并核实来源事实，不发布分数或分档。',
+          'Save and verify financial facts. Run an assessment to publish a result when the method and source requirements are satisfied.',
+          'Lưu và xác minh dữ kiện tài chính. Chạy đánh giá để phát hành kết quả khi phương pháp và nguồn đáp ứng đủ điều kiện.',
+          '保存并核实财务事实。满足方法和来源要求后运行评估并发布结果。',
         )}
       </p>
       <ErrorNotice error={resource.error} retry={resource.reload} />
@@ -124,160 +163,194 @@ export function FinancialInformation({
           </select>
         </label>
       )}
-      {resource.data?.sets.map((s) => (
-        <article className="panel aic-section" key={s.id}>
-          <strong>
-            {financialLabel(locale, 'period', s.scope.period.kind).label}{' '}
-            {s.scope.period.start_date}–{s.scope.period.end_date}
-          </strong>
-          <p>
-            {financialLabel(locale, 'basis', s.scope.basis).label} ·{' '}
-            {financialLabel(locale, 'regime', s.scope.accounting_regime).label} · {s.scope.currency}{' '}
-            ×{s.scope.unit_multiplier} · v{s.revision} ·{' '}
-            {financialLabel(locale, 'observation', s.metadata.observation_kind).label}
-          </p>
-          <TechnicalDetails
-            locale={locale}
-            values={[
-              s.id,
-              s.scope.entity_id,
-              s.scope.period.kind,
-              s.scope.basis,
-              s.scope.accounting_regime,
-              s.scope.pilot_scope,
-              s.metadata.observation_kind,
-            ]}
-          />
-          {s.verification_stale && (
-            <span className="tag amber">
-              {financialLabel(locale, 'verification', 'stale').label}
-            </span>
-          )}
-          <div className="wrap-actions">
-            <button className="secondary-button" onClick={() => setEdit(s)}>
-              {t('edit')}
-            </button>
-            <button
-              className="secondary-button"
-              disabled={!s.facts.length}
-              onClick={() => setVerify(s)}
-            >
-              {t('verify')}
-            </button>
-          </div>
-          {s.facts.map((f) => (
-            <div key={f.id} className="aic-checklist-row">
+      {resource.data?.sets
+        .filter((s) => s.id === (selected || resource.data?.selected_set_id))
+        .map((s) => (
+          <article className="financial-set" key={s.id}>
+            <div className="section-title">
               <div>
-                <strong>{f.raw_label}</strong>
-                <p>
-                  {f.raw_value ?? '—'} → {f.normalized_decimal ?? '—'} ·{' '}
-                  {financialLabel(locale, 'verification', f.verification.status).label}
+                <strong>
+                  {financialLabel(locale, 'period', s.scope.period.kind).label}{' '}
+                  {s.scope.period.start_date}–{s.scope.period.end_date}
+                </strong>
+                <p className="help-text">
+                  {financialLabel(locale, 'basis', s.scope.basis).label} · {s.scope.currency} ×
+                  {s.scope.unit_multiplier} ·{' '}
+                  {financialLabel(locale, 'regime', s.scope.accounting_regime).label}
                 </p>
-                <p>{f.missing_reason}</p>
-                <TechnicalDetails locale={locale} values={[f.key, f.verification.status]} />
-                {f.source.kind === 'manual_entry' ? (
-                  <blockquote>{f.source.statement}</blockquote>
-                ) : (
-                  <button
-                    className="text-button"
-                    onClick={() => {
-                      if (f.source.kind === 'document')
-                        openSource({ evidenceId: f.source.evidence_ref })
-                    }}
-                  >
-                    {t('source')} · v{f.source.document_version} · {f.source.page}
-                  </button>
-                )}
+              </div>
+              <div className="wrap-actions">
+                <button className="secondary-button" onClick={() => setEdit(s)}>
+                  {t('edit')}
+                </button>
+                <button
+                  className="primary-button"
+                  disabled={!s.facts.length}
+                  onClick={() => setVerify(s)}
+                >
+                  {t('verify')}
+                </button>
               </div>
             </div>
-          ))}
-        </article>
-      ))}
-      {!resource.loading &&
-        resource.data?.metrics.map((m) => (
-          <article key={m.metric_id} className="aic-section">
-            <strong>
-              {financialLabel(locale, 'metric', m.metric_id).label} ·{' '}
-              {financialLabel(locale, 'group', m.group).label} ·{' '}
-              {financialLabel(locale, 'status', m.status).label}
-            </strong>
-            <p>
-              {m.raw_ratio
-                ? (m.raw_ratio.decimal ?? `${m.raw_ratio.numerator}/${m.raw_ratio.denominator}`)
-                : '—'}
-            </p>
-            <p>
-              {word(
-                'Points unavailable pending method approval',
-                'Điểm chưa khả dụng, chờ duyệt phương pháp',
-                '分值待方法批准',
-              )}{' '}
-              · {m.max_points}
-            </p>
-            <details>
-              <summary>
-                {word(
-                  'Formula inputs and method anchors',
-                  'Đầu vào công thức và các mốc phương pháp',
-                  '公式输入与方法锚点',
-                )}
-              </summary>
-              <p>
-                <code>
-                  {m.metric_id} · {m.group} · {m.status}
-                </code>
+            {s.facts.some(
+              (f) => f.source.kind === 'manual_entry' && isSyntheticText(f.source.statement),
+            ) && <p className="warning-banner">{productText(locale, 'synthetic')}</p>}
+            {s.verification_stale && (
+              <p className="warning-banner">
+                {financialLabel(locale, 'verification', 'stale').label}
               </p>
-              <p>
-                <code>{m.formula}</code>
-              </p>
-              {m.source_facts.map((f) => (
-                <p key={f.id}>
-                  {f.key} · {f.value ?? '—'} · v{f.revision}
-                </p>
-              ))}
-              <table>
+            )}
+            <div className="financial-table-wrap">
+              <table className="financial-table">
+                <caption className="sr-only">
+                  {productText(locale, 'facts')} · {s.scope.period.end_date}
+                </caption>
                 <thead>
                   <tr>
-                    <th>{word('Ratio', 'Tỷ số', '比率')}</th>
-                    <th>{word('Credit anchor', 'Tỷ lệ điểm tại mốc', '得分比例锚点')}</th>
+                    <th scope="col">{productText(locale, 'fact')}</th>
+                    <th scope="col">{productText(locale, 'original')}</th>
+                    <th scope="col">{productText(locale, 'normalized')}</th>
+                    <th scope="col">{productText(locale, 'verification')}</th>
+                    <th scope="col">{productText(locale, 'sources')}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {m.anchors.map((a) => (
-                    <tr key={a.value}>
-                      <td>{a.value}</td>
-                      <td>{a.credit}</td>
+                  {s.facts.map((f) => (
+                    <tr key={f.id}>
+                      <th scope="row">{financialLabel(locale, 'fact', f.key).label}</th>
+                      <td className="numeric">{displayDecimal(f.raw_value)}</td>
+                      <td className="numeric">{displayDecimal(f.normalized_decimal)}</td>
+                      <td>
+                        <span
+                          className={`tag ${f.verification.status === 'verified' ? 'green' : 'amber'}`}
+                        >
+                          {financialLabel(locale, 'verification', f.verification.status).label}
+                        </span>
+                      </td>
+                      <td>
+                        {f.source.kind === 'document' ? (
+                          <button
+                            className="text-button"
+                            onClick={() => {
+                              if (f.source.kind === 'document')
+                                openSource({ evidenceId: f.source.evidence_ref })
+                            }}
+                          >
+                            {productText(locale, 'viewSource')} · {t('page')} {f.source.page}
+                          </button>
+                        ) : f.source.kind === 'financial_import' ? (
+                          <details>
+                            <summary>
+                              {productText(locale, 'viewSource')} · {t('page')} {f.source.page}
+                            </summary>
+                            <a
+                              href={importSourceUrl(
+                                { kind: f.source.source_kind, id: f.source.source_id },
+                                f.source.page,
+                              )}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {productText(locale, 'viewSource')}
+                            </a>
+                            <pre style={{ whiteSpace: 'pre-wrap' }}>{f.source.quote}</pre>
+                          </details>
+                        ) : (
+                          <details>
+                            <summary>{productText(locale, 'provenance')}</summary>
+                            <p>
+                              {isSyntheticText(f.source.statement)
+                                ? productText(locale, 'synthetic')
+                                : f.source.statement}
+                            </p>
+                            <small>{productText(locale, 'manual')}</small>
+                          </details>
+                        )}
+                        {f.missing_reason && (
+                          <p className="help-text">{presentNote(f.missing_reason, locale)}</p>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </details>
-            {m.blockers.map((b, i) => (
-              <div key={i}>
-                <p>{financialLabel(locale, 'blocker', b.code).label}</p>
-                <TechnicalDetails locale={locale} values={[b.code]} />
-              </div>
-            ))}
+            </div>
           </article>
         ))}
-      {resource.data?.limitations.map((l) => (
-        <div key={l} className="help-text">
-          <p>{financialLabel(locale, 'limitation', l).label}</p>
-          <TechnicalDetails locale={locale} values={[l]} />
-        </div>
-      ))}
+      {!resource.loading && resource.data && !resource.data.sets.length && (
+        <p className="empty-guidance">{productText(locale, 'noFacts')}</p>
+      )}
+      {!!resource.data?.sets.length && !selected && !resource.data.selected_set_id && (
+        <p className="empty-guidance">{productText(locale, 'selectPeriod')}</p>
+      )}
+      {!!resource.data?.metrics.length && (
+        <details className="ratio-details">
+          <summary>{productText(locale, 'calculation')} · 7</summary>
+          <p className="help-text">{productText(locale, 'ratioHelp')}</p>
+          <div className="ratio-grid">
+            {resource.data.metrics.map((m) => (
+              <article key={m.metric_id}>
+                <strong>{financialLabel(locale, 'metric', m.metric_id).label}</strong>
+                <p className="ratio-value">
+                  {zeroDebtException(m)
+                    ? specialistText(locale, 'noDebt')
+                    : formatExactRatio(m.raw_ratio, m.metric_id, locale)}
+                </p>
+                <span className="tag">
+                  {zeroDebtException(m)
+                    ? specialistText(locale, 'noDebt')
+                    : financialLabel(locale, 'status', m.status).label}
+                </span>
+                <p>{metricExplanation(locale, m.metric_id)}</p>
+                {m.blockers.map((b, i) => (
+                  <p className="aic-blocker" key={i}>
+                    {financialLabel(locale, 'blocker', b.code).label}
+                  </p>
+                ))}
+              </article>
+            ))}
+          </div>
+        </details>
+      )}
+      {(selected || resource.data?.selected_set_id) && (
+        <FinancialDiagnostics
+          caseId={detail.id}
+          setId={selected || resource.data!.selected_set_id!}
+          revision={detail.revision}
+        />
+      )}
       {resource.data?.blockers.map((b) => (
-        <div className="help-text" key={b}>
-          <p>{financialLabel(locale, 'blocker', b).label}</p>
-          <TechnicalDetails locale={locale} values={[b]} />
-        </div>
+        <p className="aic-blocker" key={b}>
+          {financialLabel(locale, 'blocker', b).label}
+        </p>
       ))}
+      {!!resource.data?.limitations.length && (
+        <details className="case-context">
+          <summary>{t('limitations')}</summary>
+          {resource.data.limitations.map((limitation, i) => (
+            <p key={i}>{financialLabel(locale, 'limitation', limitation).label}</p>
+          ))}
+          <TechnicalDetails locale={locale} values={resource.data.limitations} />
+        </details>
+      )}
+      {importing && (
+        <FinancialImport
+          detail={detail}
+          onSaved={saved}
+          onClose={() => {
+            setImporting(false)
+            saved()
+          }}
+        />
+      )}
       {edit && (
         <FinancialEditor
           detail={detail}
           initial={edit === 'new' ? undefined : edit}
           reload={saved}
           onClose={() => setEdit(null)}
+          openSource={openSource}
+          focusFactKey={actionRequest?.factKey}
         />
       )}
       {verify && (
@@ -286,6 +359,8 @@ export function FinancialInformation({
           set={verify}
           reload={saved}
           onClose={() => setVerify(null)}
+          openSource={openSource}
+          focusFactKey={actionRequest?.factKey}
         />
       )}
     </section>
@@ -296,11 +371,15 @@ function FinancialEditor({
   initial,
   reload,
   onClose,
+  openSource,
+  focusFactKey,
 }: {
   detail: CaseDetail
   initial?: FinancialSet
   reload: () => void
   onClose: () => void
+  openSource: (target: SourceTarget) => void
+  focusFactKey?: string
 }) {
   const { locale, t } = useLocale(),
     word = (en: string, vi: string, zh: string) =>
@@ -325,10 +404,15 @@ function FinancialEditor({
           key,
           {
             raw: old?.raw_value ?? '',
-            label: old?.raw_label ?? key,
+            label: old?.raw_label ?? financialLabel(locale, 'fact', key).label,
             missing: old?.missing_reason ?? '',
             source: old?.source as FinancialSource | undefined,
-            choice: old?.source.kind === 'document' ? old.source.evidence_ref : 'manual',
+            choice:
+              old?.source.kind === 'document'
+                ? old.source.evidence_ref
+                : old?.source.kind === 'financial_import'
+                  ? 'imported'
+                  : 'manual',
           },
         ]
       }),
@@ -338,13 +422,15 @@ function FinancialEditor({
     [...new Set(d.extraction?.flatMap((f) => f.evidence_refs) ?? [])].map((ref) => ({
       id: ref,
       doc: d,
+      quote: d.extraction?.find((field) => field.evidence_refs.includes(ref))?.raw_value,
     })),
   )
   const set = (key: string, patch: Partial<(typeof values)[string]>) =>
     setValues((old) => ({ ...old, [key]: { ...old[key], ...patch } }))
   return (
     <ActionDialog
-      title={word('Financial facts', 'Dữ kiện tài chính', '财务事实')}
+      title={`${word('Financial facts', 'Dữ kiện tài chính', '财务事实')} · ${period.start_date || '—'}–${period.end_date || '—'} · ${currency} ×${unit}`}
+      wide
       revision={detail.revision}
       loadLatest={() => casesApi.detail(detail.id)}
       onClose={onClose}
@@ -360,6 +446,8 @@ function FinancialEditor({
               f.source?.kind === 'manual_entry' && statement === ''
                 ? f.source
                 : { kind: 'manual_entry', statement }
+          else if (f.choice === 'imported' && f.source?.kind === 'financial_import')
+            source = f.source
           else {
             const e = await financialApi.evidence(f.choice)
             source = {
@@ -399,8 +487,8 @@ function FinancialEditor({
     >
       <p>
         {word(
-          'Entity/country are resolved from this case. Enter original source units. No automatic FX, annualization or profit substitutions.',
-          'Pháp nhân/quốc gia do server lấy từ case. Nhập đơn vị gốc. Không tự đổi tiền, quy năm hoặc thay thế chỉ tiêu lợi nhuận.',
+          'Entity and country follow the current case. Enter original source units. No automatic FX, annualization or profit substitutions.',
+          'Pháp nhân và quốc gia được lấy từ hồ sơ đang xem. Nhập đơn vị gốc. Không tự đổi tiền, quy năm hoặc thay thế chỉ tiêu lợi nhuận.',
           '主体和国家由本案解析。输入原始单位，不自动换汇、年化或替代利润指标。',
         )}
       </p>
@@ -458,7 +546,17 @@ function FinancialEditor({
             locale={locale}
             kind="regime"
             current={regime}
-            values={['VN_TT133', 'VN_TT99', 'VN_TT58', 'IFRS', 'OTHER', 'UNKNOWN']}
+            values={[
+              'VN_TT133',
+              'VN_TT200',
+              'VN_TT99',
+              'VN_TT58',
+              'US_GAAP',
+              'CN_ASBE',
+              'IFRS',
+              'OTHER',
+              'UNKNOWN',
+            ]}
           />
         </select>
       </label>
@@ -557,14 +655,21 @@ function FinancialEditor({
         />
       </label>
       {factKeys.map((key) => (
-        <section className="panel aic-section" key={key}>
+        <section
+          className={`panel aic-section ${focusFactKey === key ? 'target-fact' : ''}`}
+          key={key}
+        >
           <strong>{financialLabel(locale, 'fact', key).label}</strong>
           <TechnicalDetails locale={locale} values={[key]} />
           <label className="field-label">
             {word('Original label', 'Nhãn gốc', '原始标签')}
             <input
               maxLength={500}
-              value={values[key].label}
+              value={
+                values[key].label === key
+                  ? financialLabel(locale, 'fact', key).label
+                  : values[key].label
+              }
               onChange={(e) => set(key, { label: e.target.value })}
             />
           </label>
@@ -579,6 +684,7 @@ function FinancialEditor({
               pattern="-?[0-9]+(\.[0-9]+)?"
               maxLength={43}
               value={values[key].raw}
+              autoFocus={focusFactKey === key}
               onChange={(e) => set(key, { raw: e.target.value })}
             />
           </label>
@@ -613,17 +719,69 @@ function FinancialEditor({
                     {word('Previously selected source', 'Nguồn đã chọn trước đó', '先前选定的来源')}
                   </option>
                 )}
-              {options.map((o, i) => (
+              {options.map((o) => (
                 <option key={o.id} value={o.id}>
-                  {o.doc.name} · v{o.doc.version} · {word('Source', 'Nguồn', '来源')} {i + 1}
+                  {o.doc.name} · v{o.doc.version} ·{' '}
+                  {typeof o.quote === 'string' ? o.quote.slice(0, 100) : t('source')}
                 </option>
               ))}
             </select>
           </label>
+          {values[key].choice === 'imported' && values[key].source?.kind === 'financial_import' && (
+            <p className="help-text">
+              {word(
+                'Imported source is preserved. To change a value, choose manual entry and state its source.',
+                'Giữ nguyên nguồn đã trích xuất. Nếu sửa số, hãy chọn nhập tay và ghi rõ căn cứ.',
+                '已保留提取来源。如需修改数值，请选择手工录入并注明依据。',
+              )}
+            </p>
+          )}
+          {!['manual', 'imported'].includes(values[key].choice) && (
+            <FinancialSourcePreview id={values[key].choice} openSource={openSource} />
+          )}
           <TechnicalDetails locale={locale} values={[values[key].choice]} />
         </section>
       ))}
     </ActionDialog>
+  )
+}
+function FinancialSourcePreview({
+  id,
+  openSource,
+}: {
+  id: string
+  openSource: (target: SourceTarget) => void
+}) {
+  const { t, locale } = useLocale()
+  const load = useCallback((signal: AbortSignal) => financialApi.evidence(id, signal), [id])
+  const source = useResource(load)
+  return (
+    <div>
+      <ErrorNotice error={source.error} retry={source.reload} />
+      {source.loading && <Loading />}
+      {source.data && (
+        <>
+          <p>
+            {t('page')} {source.data.page} · v{source.data.document_version}
+          </p>
+          <blockquote>{source.data.quote}</blockquote>
+          <button
+            type="button"
+            className="text-button"
+            onClick={() => openSource({ evidenceId: id })}
+          >
+            {t('source')}
+          </button>
+          <p className="help-text">
+            {locale === 'vi'
+              ? 'Đối chiếu đúng nhãn, cột kỳ báo cáo và đơn vị trước khi nhập. Chọn nguồn chưa xác minh không tự xác minh dữ kiện.'
+              : locale === 'en'
+                ? 'Match the label, reporting-period column and units before entering a value. Selecting an unverified source does not verify the fact.'
+                : '录入前请核对标签、报告期间列及单位。选择未核实来源不会核实该事实。'}
+          </p>
+        </>
+      )}
+    </div>
   )
 }
 function FinancialVerification({
@@ -631,11 +789,15 @@ function FinancialVerification({
   set,
   reload,
   onClose,
+  openSource,
+  focusFactKey,
 }: {
   detail: CaseDetail
   set: FinancialSet
   reload: () => void
   onClose: () => void
+  openSource: (target: SourceTarget) => void
+  focusFactKey?: string
 }) {
   const { t, locale } = useLocale(),
     word = (en: string, vi: string, zh: string) =>
@@ -647,7 +809,8 @@ function FinancialVerification({
     [da, setDa] = useState(false)
   return (
     <ActionDialog
-      title={t('verify')}
+      title={`${t('verify')} · ${set.scope.period.start_date}–${set.scope.period.end_date} · ${set.scope.currency} ×${set.scope.unit_multiplier}`}
+      wide
       revision={detail.revision}
       loadLatest={() => casesApi.detail(detail.id)}
       onClose={onClose}
@@ -671,6 +834,23 @@ function FinancialVerification({
         )
       }
     >
+      <section className="verification-context">
+        <h3>{specialistText(locale, 'verificationScope')}</h3>
+        <p>
+          <strong>
+            {set.scope.period.start_date}–{set.scope.period.end_date}
+          </strong>{' '}
+          · {financialLabel(locale, 'basis', set.scope.basis).label} · {set.scope.currency} ×
+          {set.scope.unit_multiplier}
+        </p>
+        <p>
+          {financialLabel(locale, 'regime', set.scope.accounting_regime).label} ·{' '}
+          {specialistText(locale, 'sourceVersion')}: {set.metadata.statement_version || '—'}
+        </p>
+        {set.verification_stale && (
+          <p className="warning-banner">{specialistText(locale, 'changed')}</p>
+        )}
+      </section>
       <p>
         {word(
           'Verify only facts personally checked against the original source/entry. This does not approve the FHI method or confirm identity.',
@@ -688,17 +868,91 @@ function FinancialVerification({
       </select>
       <TechnicalDetails locale={locale} values={[status]} />
       {set.facts.map((f) => (
-        <label className="check-label" key={f.id}>
-          <input
-            type="checkbox"
-            checked={ids.includes(f.id)}
-            onChange={(e) =>
-              setIds((old) => (e.target.checked ? [...old, f.id] : old.filter((id) => id !== f.id)))
-            }
-          />
-          {f.raw_label}: {f.raw_value ?? '—'} → {f.normalized_decimal ?? '—'}
-        </label>
+        <article
+          className={`verification-fact ${focusFactKey === f.key ? 'target-fact' : ''}`}
+          key={f.id}
+        >
+          <label className="check-label">
+            <input
+              type="checkbox"
+              checked={ids.includes(f.id)}
+              autoFocus={focusFactKey === f.key}
+              onChange={(e) =>
+                setIds((old) =>
+                  e.target.checked ? [...old, f.id] : old.filter((id) => id !== f.id),
+                )
+              }
+            />
+            {financialLabel(locale, 'fact', f.key).label}: {f.raw_value ?? '—'} →{' '}
+            {f.normalized_decimal ?? '—'}
+          </label>
+          <p>
+            {specialistText(locale, 'currentVerification')}:{' '}
+            <span
+              className={`tag ${f.verification.status === 'verified' && f.current_source ? 'green' : 'amber'}`}
+            >
+              {financialLabel(locale, 'verification', f.verification.status).label}
+            </span>
+          </p>
+          {f.verification.verified_at && (
+            <p className="help-text">
+              {specialistText(locale, 'verifiedAt')}:{' '}
+              {formatTime(f.verification.verified_at, locale)}
+            </p>
+          )}
+          {f.source.kind === 'document' ? (
+            <>
+              <p>
+                {specialistText(locale, 'sourceVersion')} {f.source.document_version} · {t('page')}{' '}
+                {f.source.page}
+              </p>
+              <blockquote>{f.source.quote}</blockquote>
+              <button
+                type="button"
+                className="text-button"
+                onClick={() =>
+                  f.source.kind === 'document' && openSource({ evidenceId: f.source.evidence_ref })
+                }
+              >
+                {productText(locale, 'viewSource')}
+              </button>
+            </>
+          ) : f.source.kind === 'financial_import' ? (
+            <>
+              <p>
+                {t('page')} {f.source.page}
+              </p>
+              <blockquote>{f.source.quote}</blockquote>
+              <a
+                href={importSourceUrl(
+                  { kind: f.source.source_kind, id: f.source.source_id },
+                  f.source.page,
+                )}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {productText(locale, 'viewSource')}
+              </a>
+            </>
+          ) : (
+            <>
+              <p>{productText(locale, 'manual')}</p>
+              <details>
+                <summary>{specialistText(locale, 'originalEntry')}</summary>
+                <p>{f.source.statement}</p>
+              </details>
+            </>
+          )}
+          {f.verification.verified_by && (
+            <details>
+              <summary>{specialistText(locale, 'verifier')}</summary>
+              <p>{f.verification.verified_by}</p>
+              {f.verification_reason && <p>{presentNote(f.verification_reason, locale)}</p>}
+            </details>
+          )}
+        </article>
       ))}
+      <p className="help-text">{specialistText(locale, 'bridgeHelp')}</p>
       {[
         [
           quick,

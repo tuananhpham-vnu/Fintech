@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "pnpm --filter @fintech/web dev",
     "dev:all": "node scripts/dev-all.cjs",
+    "local:serve": "node scripts/dev-all.cjs --built-web",
     "dev:windows": "powershell -NoProfile -File start-dev.ps1",
     "build": "pnpm --filter @fintech/web build",
     "start": "pnpm --filter @fintech/web start",

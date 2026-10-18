@@ -75,7 +75,8 @@ def start(sha256: str, model_id: str) -> Trace | None:
     return Trace(model_id) if enabled and sha256 == FIXTURE_SHA256 else None
 
 
-def value_roles(grounding_module, key: str, value: object, spans, texts: list[str]) -> list:
+def value_roles(grounding_module, key: str, value: object, spans, texts: list[str],
+                document_type: str | None = None) -> list:
     """Party role the role check sees at each occurrence of the tax ID inside the quoted spans (diagnostic only)."""
     tax_id = grounding_module.normalize.tax_id(value) if isinstance(value, str) else None
     if tax_id is None:
@@ -85,5 +86,6 @@ def value_roles(grounding_module, key: str, value: object, spans, texts: list[st
     for span in spans:
         text = texts[span.page - 1]
         for match in pattern.finditer(text, span.start, span.end):
-            roles.append({"page": span.page, "role": grounding_module.party_role(text, match.start())})
+            roles.append({"page": span.page, "role": grounding_module.party_role(
+                text, match.start(), document_type=document_type)})
     return roles

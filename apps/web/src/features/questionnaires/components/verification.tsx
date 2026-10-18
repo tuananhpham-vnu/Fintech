@@ -50,7 +50,10 @@ export function Verification({
         )
       }
     >
-      <blockquote>{displayValue(response.answer_json)}</blockquote>
+      {response.answer_state === 'skipped' && <p>{t('reason')}</p>}
+      <blockquote>
+        {response.answer_state === 'skipped' ? response.reason : displayValue(response.answer_json)}
+      </blockquote>
       <Status value={response.origin} />
       <label className="field-label">
         {t('status')}

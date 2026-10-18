@@ -32,7 +32,7 @@ export function ArchiveReceiptBanner({
           ? 'Exceeds 10 MiB file limit'
           : '超过 10 MiB 文件上限'
     }
-    return code
+    return t('invalidFile')
   }
 
   return (
@@ -92,7 +92,7 @@ export function ArchiveReceiptBanner({
                   {t('aiSuggested')}: {t(item.suggested_type)}
                 </span>
               ) : (
-                <span className="tag red" title={item.rejection?.code}>
+                <span className="tag red">
                   <AlertCircle size={12} />
                   {resolveRejectionMessage(item.rejection?.code)}
                 </span>

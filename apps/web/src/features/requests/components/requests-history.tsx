@@ -11,9 +11,20 @@ import { RequestDraft } from '@/features/requests/components/request-draft'
 import { useMutation } from '@/hooks/use-mutation'
 import { type CaseDetail, type DocumentRequest } from '@/lib/api/contracts'
 import { useLocale } from '@/lib/i18n/locale-provider'
-import { displayValue } from '@/lib/utils/format'
 import { Download } from 'lucide-react'
 import { useState } from 'react'
+import { ApiError } from '@/lib/api/client'
+function requestContent(request: DocumentRequest): string {
+  const approved = request.approved_payload
+  if (
+    approved &&
+    typeof approved === 'object' &&
+    'content' in approved &&
+    typeof approved.content === 'string'
+  )
+    return approved.content
+  return request.content ?? '—'
+}
 export function RequestsHistory({ detail, reload }: { detail: CaseDetail; reload: () => void }) {
   const { t } = useLocale(),
     action = useMutation(),
@@ -28,6 +39,34 @@ export function RequestsHistory({ detail, reload }: { detail: CaseDetail; reload
       link = document.createElement('a')
     link.href = url
     link.download = `request-${id}.txt`
+    link.click()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+  }
+  async function downloadContent(id: string) {
+    const original = await requestsApi.export(id)
+    let approved: unknown
+    try {
+      approved = JSON.parse(await original.text())
+    } catch {
+      throw new ApiError(502, 'INVALID_API_RESPONSE', '')
+    }
+    if (
+      !approved ||
+      typeof approved !== 'object' ||
+      !('purpose' in approved) ||
+      typeof approved.purpose !== 'string' ||
+      !('content' in approved) ||
+      typeof approved.content !== 'string'
+    )
+      throw new ApiError(502, 'INVALID_API_RESPONSE', '')
+    const url = URL.createObjectURL(
+      new Blob([`${approved.purpose}\n\n${approved.content}\n\n${t('noAutoApproval')}\n`], {
+        type: 'text/plain;charset=utf-8',
+      }),
+    )
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'aic-document-request.txt'
     link.click()
     setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
@@ -50,20 +89,16 @@ export function RequestsHistory({ detail, reload }: { detail: CaseDetail; reload
             detail.requests.map((r) => (
               <article key={r.id} className="request-card">
                 <div className="request-card-heading">
-                  <strong>{r.id}</strong>
+                  <strong>{r.purpose}</strong>
                   <Status value={r.status} />
                 </div>
                 <p>{r.purpose}</p>
-                <pre className="request-preview">
-                  {r.approved_payload !== undefined
-                    ? displayValue(r.approved_payload)
-                    : (r.content ?? '—')}
-                </pre>
+                <pre className="request-preview">{requestContent(r)}</pre>
                 <div className="binding-grid">
                   <span>{t('revision')}</span>
                   <strong>{r.revision}</strong>
                   <span>{t('review')}</span>
-                  <strong>{r.run_id ?? '—'}</strong>
+                  <strong>{t('review')}</strong>
                 </div>
                 <div className="request-actions">
                   {r.status === 'draft' && (
@@ -83,11 +118,24 @@ export function RequestsHistory({ detail, reload }: { detail: CaseDetail; reload
                     <button
                       className="secondary-button"
                       disabled={action.busy}
-                      onClick={() => void action.run(() => download(r.id))}
+                      onClick={() => void action.run(() => downloadContent(r.id))}
                     >
                       <Download size={15} />
                       {t('export')}
                     </button>
+                  )}
+                  {r.approved_payload !== undefined && (
+                    <details>
+                      <summary>{t('requestRecord')}</summary>
+                      <p className="help-text">{t('requestRecordHelp')}</p>
+                      <button
+                        className="text-button"
+                        disabled={action.busy}
+                        onClick={() => void action.run(() => download(r.id))}
+                      >
+                        {t('downloadRecord')}
+                      </button>
+                    </details>
                   )}
                   {['draft', 'approved'].includes(r.status) && (
                     <button
@@ -147,9 +195,7 @@ export function RequestsHistory({ detail, reload }: { detail: CaseDetail; reload
           }}
         >
           <p>{decision.request.purpose}</p>
-          <pre className="request-preview">
-            {displayValue(decision.request.approved_payload ?? decision.request.content)}
-          </pre>
+          <pre className="request-preview">{requestContent(decision.request)}</pre>
         </ActionDialog>
       )}
     </>

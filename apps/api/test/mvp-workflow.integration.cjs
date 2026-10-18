@@ -14,6 +14,9 @@ const { MvpQuestionnaireService } = require('../dist/foundation/mvp-questionnair
 const { MvpCapabilityService } = require('../dist/foundation/mvp-capability.service')
 const { MvpCounterpartyService } = require('../dist/foundation/mvp-counterparty.service')
 const { FinancialRegistry } = require('../dist/financial/financial-registry.service')
+const { AssessmentService } = require('../dist/financial/assessment.service')
+const { fhiMethodHash } = require('../dist/financial/fhi-policy')
+const { FHI_METHOD_ID, FHI_METHOD_VERSION } = require('../dist/financial/fhi-method')
 const { requestHash } = require('../dist/foundation/canonical')
 const { validateContract } = require('../dist/foundation/validation')
 const { PostgresDocumentRepository } = require('../dist/documents/postgres-document.repository')
@@ -210,10 +213,256 @@ test(
         })
         assert.equal(result.status, 201)
         assert.equal(result.body.policy_artifact_hash, requestHash(policy))
-        identities.push({ session, caseId: result.body.id, exposure, org, user })
+        identities.push({
+          session,
+          caseId: result.body.id,
+          exposure,
+          org,
+          user,
+        })
       }
       const [a, b] = identities
       const revision = async (item) => (await core.case(item.session.user, item.caseId)).revision
+      await t.test(
+        'company health: no exposure, real ACL/idempotency, existing FHI gates, immutable snapshots',
+        async () => {
+          const legacy = await core.case(a.session.user, a.caseId)
+          const input = {
+            schema_version: 'AIC-COMPANY-HEALTH-1',
+            counterparty_id: legacy.counterparty_id,
+            reason: 'SYNTHETIC technical company-health acceptance only',
+          }
+          assert.equal((await cases.companyCapabilities(a.session)).available, true)
+          for (const extra of [
+            { exposure_kind: 'RECEIVABLE' },
+            { exposure: {} },
+            { amount_vnd: '1' },
+            { term_days: 30 },
+          ])
+            await rejects(
+              cases.createCompany(a.session, randomUUID(), {
+                ...input,
+                ...extra,
+              }),
+              'INVALID_INPUT',
+            )
+          await rejects(cases.createCompany(b.session, randomUUID(), input), 'NOT_FOUND')
+          const key = randomUUID(),
+            pair = await Promise.all([
+              cases.createCompany(a.session, key, input),
+              cases.createCompany(a.session, key, input),
+            ])
+          assert.deepEqual(pair[0].body, pair[1].body)
+          assert.equal(pair.filter((x) => x.replayed).length, 1)
+          const company = pair[0].body,
+            item = { ...a, caseId: company.id }
+          validateContract('Workspace', company, true)
+          assert.equal(company.purpose, 'company_health')
+          for (const k of [
+            'exposure',
+            'exposure_kind',
+            'lifecycle_stage',
+            'policy_version',
+            'policy_artifact_hash',
+          ])
+            assert.equal(company[k], null)
+          assert.equal(
+            Number(
+              (
+                await owner.query(
+                  'SELECT count(*) AS n FROM aic.mvp_exposure_versions WHERE case_id=$1',
+                  [company.id],
+                )
+              ).rows[0].n,
+            ),
+            0,
+          )
+          await rejects(
+            cases.createCompany(a.session, key, {
+              ...input,
+              reason: 'Changed',
+            }),
+            'IDEMPOTENCY_CONFLICT',
+          )
+          await rejects(core.case(b.session.user, company.id), 'NOT_FOUND')
+          await rejects(
+            cases.update(a.session, company.id, randomUUID(), {
+              expected_revision: 1,
+              exposure: a.exposure,
+            }),
+            'TRANSACTION_WORKFLOW_REQUIRED',
+          )
+          await assert.rejects(
+            owner.query("UPDATE aic.cases SET purpose='transaction' WHERE id=$1", [company.id]),
+            (e) => e.constraint === 'cases_purpose_immutable',
+          )
+          await assert.rejects(
+            owner.query("UPDATE aic.cases SET exposure_json='{}'::jsonb WHERE id=$1", [company.id]),
+            (e) => e.constraint === 'cases_purpose_shape',
+          )
+          assert.deepEqual(await core.case(a.session.user, a.caseId), legacy)
+          assert.equal((await workflow.detail(a.session, company.id)).transaction_review, null)
+          const finance = new FinancialRegistry(db, config, core, mutations),
+            service = new AssessmentService(db, config, core, mutations, finance, workflow)
+          const blocked = (
+            await service.run(a.session, company.id, randomUUID(), {
+              expected_revision: await revision(item),
+            })
+          ).body
+          validateContract('Assessment', blocked, true)
+          assert.equal(blocked.transaction_review, null)
+          assert.equal(blocked.financial_health.score, null)
+          assert.ok(blocked.financial_health.blockers.includes('FINANCIAL_INPUTS_REQUIRED'))
+          assert.ok(!blocked.financial_health.blockers.includes('REVIEW_REQUIRED'))
+          const values = {
+            current_assets: '200',
+            current_liabilities: '100',
+            cash: '30',
+            unrestricted_short_term_equivalents: '20',
+            trade_receivables: '50',
+            total_assets: '500',
+            total_liabilities: '300',
+            total_equity: '200',
+            interest_bearing_debt: '100',
+            operating_profit: '80',
+            depreciation_amortization: '20',
+            interest_expense: '20',
+            net_revenue: '400',
+            cash_from_operations: '32',
+          }
+          const source =
+            'SYNTHETIC technical fixture only: cash 30 + distinct eligible equivalents 20 + receivables 50; EBIT 80 + D&A addback 20. Not real-company evidence or professional verification.'
+          const factInput = {
+            expected_revision: await revision(item),
+            reason: source,
+            period: {
+              kind: 'FY',
+              start_date: '2025-01-01',
+              end_date: '2025-12-31',
+            },
+            basis: 'standalone',
+            accounting_regime: 'VN_TT133',
+            currency: 'VND',
+            unit_multiplier: '1',
+            industry_scope: 'DISTRIBUTION_WHOLESALE_PILOT',
+            observation_kind: 'actual',
+            audit_status: 'unaudited',
+            statement_version: 'synthetic-company-v1',
+            facts: Object.entries(values).map(([key, raw_value]) => ({
+              key,
+              raw_value,
+              raw_label: key,
+              missing_reason: null,
+              source: { kind: 'manual_entry', statement: source },
+            })),
+          }
+          const set = (
+            await finance.save(a.session, company.id, undefined, randomUUID(), factInput)
+          ).body.set
+          const at = '2026-01-01T00:00:00Z'
+          const syntheticConfig = {
+            ...config,
+            fhiPolicy: {
+              policy_id: 'SYNTHETIC-TEST-ONLY',
+              method_id: FHI_METHOD_ID,
+              method_version: FHI_METHOD_VERSION,
+              method_hash: fhiMethodHash(),
+              status: 'configured_pilot',
+              industry_scope: 'DISTRIBUTION_WHOLESALE_PILOT',
+              organization_ids: [a.org],
+              approval: {
+                by: 'Synthetic test fixture',
+                recorded_at: at,
+                source: 'Automated technical test only',
+                scope: 'Disposable database only',
+              },
+              effective_from: at,
+              effective_until: null,
+            },
+          }
+          const configuredFinance = new FinancialRegistry(db, syntheticConfig, core, mutations),
+            configured = new AssessmentService(
+              db,
+              syntheticConfig,
+              core,
+              mutations,
+              configuredFinance,
+              workflow,
+            )
+          assert.equal(
+            (await configured.workspace(a.session, company.id, set.id)).readiness
+              .numeric_assessment_allowed,
+            false,
+          )
+          const verify = {
+            expected_revision: await revision(item),
+            set_revision: 1,
+            reason: source,
+            status: 'verified',
+            fact_ids: set.facts.map((f) => f.id),
+            bridge_assertions: {
+              quick_assets_non_overlapping: false,
+              quick_assets_eligible: false,
+              da_addback_to_operating_profit: false,
+            },
+          }
+          await finance.verify(a.session, set.id, randomUUID(), verify)
+          assert.equal(
+            (await configured.workspace(a.session, company.id, set.id)).readiness
+              .numeric_assessment_allowed,
+            false,
+            'Facts alone must not bypass independent bridge gates',
+          )
+          await finance.verify(a.session, set.id, randomUUID(), {
+            ...verify,
+            expected_revision: await revision(item),
+            bridge_assertions: {
+              quick_assets_non_overlapping: true,
+              quick_assets_eligible: true,
+              da_addback_to_operating_profit: true,
+            },
+          })
+          const ready = await configured.workspace(a.session, company.id, set.id)
+          assert.equal(ready.readiness.numeric_assessment_allowed, true)
+          const result = (
+            await configured.run(a.session, company.id, randomUUID(), {
+              expected_revision: await revision(item),
+              financial_set_id: set.id,
+            })
+          ).body
+          assert.equal(result.financial_health.score, '82.5')
+          assert.equal(result.financial_health.band, 'AIC-F2')
+          assert.equal(result.pd, null)
+          assert.equal(result.financial_health.components.length, 7)
+          assert.equal(result.policy_version, null)
+          await rejects(configured.get(b.session, result.id), 'NOT_FOUND')
+          assert.equal((await configured.get(a.session, result.id)).stale, false)
+          await finance.revise(a.session, set.id, randomUUID(), {
+            ...factInput,
+            expected_revision: await revision(item),
+            facts: factInput.facts.map((f) =>
+              f.key === 'operating_profit' ? { ...f, raw_value: '0' } : f,
+            ),
+          })
+          const historical = await configured.get(a.session, result.id)
+          assert.equal(historical.stale, true)
+          assert.equal(historical.financial_health.score, '82.5', 'Immutable history retained')
+          assert.equal(
+            (await configured.workspace(a.session, company.id, set.id)).readiness
+              .numeric_assessment_allowed,
+            false,
+          )
+          await rejects(
+            configured.acknowledge(a.session, result.id, randomUUID(), {
+              expected_revision: await revision(item),
+              reason: 'SYNTHETIC stale result',
+            }),
+            'STALE_ASSESSMENT',
+          )
+          const workspacePage = await core.cases(a.session.user, {})
+          validateContract('WorkspacePage', workspacePage, true)
+        },
+      )
       const run = async (item) =>
         (
           await workflow.run(item.session, item.caseId, randomUUID(), {
@@ -293,7 +542,11 @@ test(
         assert.equal(await worker.publish(attempt, validated.body, 'mock'), true)
         const read = await documents.read(item.session, attempt.documentId)
         assert.deepEqual(read.bytes, bytes)
-        return { ...read.document, bytes, acceptedRevision: result.body.revision }
+        return {
+          ...read.document,
+          bytes,
+          acceptedRevision: result.body.revision,
+        }
       }
 
       await t.test(
@@ -334,14 +587,18 @@ test(
           assert.equal(await revision(a), expected + 1)
           const review = results[0].body
           await rejects(
-            workflow.run(a.session, a.caseId, key, { expected_revision: expected + 1 }),
+            workflow.run(a.session, a.caseId, key, {
+              expected_revision: expected + 1,
+            }),
             'IDEMPOTENCY_CONFLICT',
           )
           await rejects(workflow.run(a.session, a.caseId, randomUUID(), input), 'REVISION_CONFLICT')
           await rejects(workflow.getRun(b.session, review.id), 'NOT_FOUND')
           await rejects(workflow.detail(b.session, a.caseId), 'NOT_FOUND')
           await rejects(
-            workflow.run(b.session, a.caseId, randomUUID(), { expected_revision: expected + 1 }),
+            workflow.run(b.session, a.caseId, randomUUID(), {
+              expected_revision: expected + 1,
+            }),
             'NOT_FOUND',
           )
           await sourceDocument(a, 'invoice', 'invoice-is-not-payment')
@@ -532,7 +789,9 @@ test(
               (await documents.read(item.session, response.id)).document.source_verification,
               undefined,
             )
-            const history = await core.history(item.session.user, item.caseId, { limit: '100' })
+            const history = await core.history(item.session.user, item.caseId, {
+              limit: '100',
+            })
             assert.ok(history.items.some((e) => e.action === 'request.ack'))
             assert.equal(
               (
@@ -950,7 +1209,10 @@ test(
           const same = await workflow.decideIssue(item.session, missing.id, key, input)
           assert.equal(same.replayed, true)
           await rejects(
-            workflow.decideIssue(item.session, missing.id, key, { ...input, reason: 'different' }),
+            workflow.decideIssue(item.session, missing.id, key, {
+              ...input,
+              reason: 'different',
+            }),
             'IDEMPOTENCY_CONFLICT',
           )
           const detail = await workflow.detail(item.session, item.caseId)
@@ -1174,7 +1436,10 @@ test(
             )
             await cases.update(item.session, item.caseId, randomUUID(), {
               expected_revision: await revision(item),
-              exposure: { ...item.exposure, contract_ref: 'changed after verification' },
+              exposure: {
+                ...item.exposure,
+                contract_ref: 'changed after verification',
+              },
             })
             const stale = (await questionnaires.get(item.session, form.id)).responses[0]
             assert.equal(stale.verification_status, 'unverified')
@@ -1553,7 +1818,11 @@ test(
           const input = {
             expected_revision: await revision(item),
             reason: 'Synthetic financial statement set',
-            period: { kind: 'FY', start_date: '2025-01-01', end_date: '2025-12-31' },
+            period: {
+              kind: 'FY',
+              start_date: '2025-01-01',
+              end_date: '2025-12-31',
+            },
             basis: 'standalone',
             accounting_regime: 'IFRS',
             currency: 'VND',
@@ -1576,7 +1845,10 @@ test(
           for (const bad of [
             { ...input, verified: true },
             { ...input, entity_id: randomUUID() },
-            { ...input, facts: [{ ...input.facts[0], normalized_decimal: '999' }] },
+            {
+              ...input,
+              facts: [{ ...input.facts[0], normalized_decimal: '999' }],
+            },
             { ...input, facts: [input.facts[0], input.facts[0]] },
             { ...input, facts: [{ ...input.facts[0], raw_value: null }] },
             { ...input, unit_multiplier: '1e6' },
@@ -1602,6 +1874,11 @@ test(
           assert.ok(set.facts.every((f) => f.verification.status === 'unverified'))
           await rejects(finance.get(b.session, item.caseId), 'NOT_FOUND')
           const before = await finance.get(item.session, item.caseId)
+          await rejects(finance.trends(b.session, item.caseId), 'NOT_FOUND')
+          const unverifiedTrend = await finance.trends(item.session, item.caseId, set.id)
+          assert.equal(unverifiedTrend.contract_version, 'AIC-FINANCIAL-TRENDS-1')
+          assert.ok(unverifiedTrend.rows[0].facts.every((f) => f.value === null))
+          assert.equal(unverifiedTrend.rows[0].set.id, set.id)
           assert.equal(before.score, null)
           assert.ok(before.metrics.every((m) => m.status === 'unavailable'))
           const verify = {
@@ -1629,6 +1906,12 @@ test(
           assert.equal(result.metrics.filter((m) => m.status === 'available').length, 7)
           assert.equal(result.metrics[0].raw_ratio.decimal, '1.5')
           assert.ok(result.metrics.every((m) => m.points === null))
+          const trend = await finance.trends(item.session, item.caseId, set.id)
+          assert.deepEqual(trend.rows[0].comparison_issues, [])
+          assert.equal(trend.rows[0].facts.find((f) => f.key === 'net_revenue').value, '150000')
+          assert.equal(trend.rows[0].metrics.filter((m) => m.status === 'available').length, 7)
+          assert.deepEqual(trend.baseline_metrics, result.metrics)
+          assert.equal(await revision(item), trend.case_revision)
           const fresh = new FinancialRegistry(db, config, core, mutations)
           assert.deepEqual(await fresh.get(item.session, item.caseId), result)
           const revised = await finance.revise(item.session, set.id, randomUUID(), {
@@ -1650,7 +1933,13 @@ test(
           const unknown = await finance.revise(item.session, set.id, randomUUID(), {
             ...input,
             expected_revision: await revision(item),
-            facts: [{ ...input.facts[0], raw_value: null, missing_reason: 'Source unavailable' }],
+            facts: [
+              {
+                ...input.facts[0],
+                raw_value: null,
+                missing_reason: 'Source unavailable',
+              },
+            ],
           })
           assert.equal(unknown.body.set.facts[0].normalized_decimal, null)
           const doc = await sourceDocument(item, 'financial_statement', 'financial-exact-quote', {
@@ -1681,7 +1970,10 @@ test(
               facts: [
                 {
                   ...sourcedInput.facts[0],
-                  source: { ...sourcedInput.facts[0].source, quote: 'fabricated quote' },
+                  source: {
+                    ...sourcedInput.facts[0].source,
+                    quote: 'fabricated quote',
+                  },
                 },
               ],
             }),
@@ -1716,7 +2008,10 @@ test(
           )
           await cases.update(item.session, item.caseId, randomUUID(), {
             expected_revision: await revision(item),
-            exposure: { ...item.exposure, contract_ref: 'changed dependent input' },
+            exposure: {
+              ...item.exposure,
+              contract_ref: 'changed dependent input',
+            },
           })
           assert.equal(
             (await finance.get(item.session, item.caseId)).sets[0].facts[0].verification.status,
@@ -1744,7 +2039,11 @@ test(
           const second = await finance.save(item.session, item.caseId, undefined, randomUUID(), {
             ...input,
             expected_revision: await revision(item),
-            period: { kind: 'FY', start_date: '2024-01-01', end_date: '2024-12-31' },
+            period: {
+              kind: 'FY',
+              start_date: '2024-01-01',
+              end_date: '2024-12-31',
+            },
           })
           const unselected = await finance.get(item.session, item.caseId)
           assert.equal(unselected.selected_set_id, null)

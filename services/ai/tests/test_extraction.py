@@ -286,7 +286,7 @@ def test_contract_extraction_grounded(contracts, storage):
     assert out["diagnostics"] == [] and out["classification_confident"] is True
     # 8b0b7ed deliberately versioned the documented party-role prompt as v2;
     # Contracts 1.0.2 keeps prompt_version a string, independent of schema_version.
-    assert out["provenance"] == {"model_id": "fake-model-1", "prompt_version": "extraction-v2", "ocr_version": "none",
+    assert out["provenance"] == {"model_id": "fake-model-1", "prompt_version": "extraction-v3", "ocr_version": "none",
                                  "schema_version": "1.0.2"}
     assert len(model.calls) == 1 and "<tai_lieu>" in model.calls[0]["user"]
     again = make_service(contracts, storage, model=FakeModel(answer(contract_fields()))).extract(request)
@@ -519,7 +519,7 @@ def test_gemini_ocr_sends_page_image(contracts, storage):
     ocr = GeminiOcr(model)
     assert ocr.page_text(b"\x89PNG...", 1, Deadline(60)) == "Hợp đồng số: HĐ01."
     assert model.calls[0]["media"] == [("image/png", b"\x89PNG...")]
-    assert ocr.version == "gemini-ocr-v1:fake-model-1"
+    assert ocr.version == "gemini-ocr-v2-multilingual:fake-model-1"
 
 
 @pytest.mark.parametrize("entry", SCAN_FIXTURES, ids=lambda f: f["filename"])

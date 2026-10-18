@@ -4,6 +4,7 @@ const fs = require('node:fs')
 const path = require('node:path')
 const Module = require('node:module')
 const { spawnSync } = require('node:child_process')
+const testArtifactRoot = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'aic-render-tests-'))
 
 const webRequire = Module.createRequire(path.resolve(__dirname, '../../package.json'))
 const ts = webRequire('typescript')
@@ -30,6 +31,7 @@ let currentLocale = 'vi'
 let mockResourceData = null
 const originalLoad = Module._load
 Module._load = function (name, ...args) {
+  if (name === '@/lib/auth/session-context') return { useSession: () => ({ status: 'ready' }) }
   if (name === '@/lib/i18n/locale-provider' || name.includes('locale-provider')) {
     return {
       useLocale: () => ({
@@ -540,10 +542,8 @@ test('Scenario 7: Full HTML preview generation and Chromium screenshot capture',
 </body>
 </html>`
 
-  const scratchDir =
-    'C:\\Users\\52duc\\.gemini\\antigravity\\brain\\ba1483dc-f97f-4cbd-8ed3-8c6a0cf3faf0\\scratch'
-  const artifactDir =
-    'C:\\Users\\52duc\\.gemini\\antigravity\\brain\\ba1483dc-f97f-4cbd-8ed3-8c6a0cf3faf0'
+  const scratchDir = testArtifactRoot
+  const artifactDir = testArtifactRoot
   const htmlPath = path.join(scratchDir, 'demo-scenarios-preview.html')
   const screenshotPath = path.join(artifactDir, 'demo-scenarios-capture.png')
 
@@ -553,7 +553,7 @@ test('Scenario 7: Full HTML preview generation and Chromium screenshot capture',
   // Find Chrome binary in playwright cache
   const chromePath =
     'C:\\Users\\52duc\\AppData\\Local\\ms-playwright\\chromium-1243\\chrome-win64\\chrome.exe'
-  if (fs.existsSync(chromePath)) {
+  if (process.env.AIC_RENDER_TEST_ARTIFACTS === 'true' && fs.existsSync(chromePath)) {
     // 1. Desktop 1280px
     spawnSync(
       chromePath,
@@ -658,10 +658,8 @@ test('Scenario 8: Upload Dialog visual preview with dropzone and format notice',
 </body>
 </html>`
 
-  const scratchDir =
-    'C:\\Users\\52duc\\.gemini\\antigravity\\brain\\ba1483dc-f97f-4cbd-8ed3-8c6a0cf3faf0\\scratch'
-  const artifactDir =
-    'C:\\Users\\52duc\\.gemini\\antigravity\\brain\\ba1483dc-f97f-4cbd-8ed3-8c6a0cf3faf0'
+  const scratchDir = testArtifactRoot
+  const artifactDir = testArtifactRoot
   const htmlPath = path.join(scratchDir, 'demo-upload-dialog.html')
   const screenshotPath = path.join(artifactDir, 'demo-upload-dialog.png')
 
@@ -670,7 +668,7 @@ test('Scenario 8: Upload Dialog visual preview with dropzone and format notice',
 
   const chromePath =
     'C:\\Users\\52duc\\AppData\\Local\\ms-playwright\\chromium-1243\\chrome-win64\\chrome.exe'
-  if (fs.existsSync(chromePath)) {
+  if (process.env.AIC_RENDER_TEST_ARTIFACTS === 'true' && fs.existsSync(chromePath)) {
     spawnSync(
       chromePath,
       [
@@ -753,16 +751,23 @@ test('Scenario 9: Extraction Dialog displays ExtractionSummary diagnostics and h
 
   // Assertions
   assert.ok(dialogMarkup.includes('0 trường khả dụng'), 'Shows 0 usable fields badge')
-  assert.ok(dialogMarkup.includes('TEXT_SEPARATOR_NORMALIZED'), 'Shows diagnostic 1')
-  assert.ok(dialogMarkup.includes('VECTOR_OCR_USED'), 'Shows diagnostic 2')
-  assert.ok(dialogMarkup.includes('GARBLED_TEXT_LAYER'), 'Shows diagnostic 3')
+  for (const code of ['TEXT_SEPARATOR_NORMALIZED', 'VECTOR_OCR_USED', 'GARBLED_TEXT_LAYER'])
+    assert.ok(!dialogMarkup.includes(code), 'Technical diagnostics stay out of the ordinary UI')
+  assert.equal(
+    mockResourceData.diagnostics.length,
+    3,
+    'Raw diagnostics retained in source response',
+  )
   assert.ok(
     dialogMarkup.includes(
       'AI đã hoàn tất quét tài liệu nhưng không nhận diện được trường thông tin hợp lệ',
     ),
     'Explains honest zero usable reason',
   )
-  assert.ok(dialogMarkup.includes('legacy:1.0.2:document.summary'), 'Displays expected field key')
+  assert.ok(
+    !dialogMarkup.includes('legacy:1.0.2:document.summary'),
+    'Raw field key is not a user label',
+  )
   assert.ok(dialogMarkup.includes('Không đọc được'), 'Displays quality unreadable')
   assert.ok(dialogMarkup.includes('Không có trong nguồn'), 'Displays missing reason not_present')
 
@@ -792,10 +797,8 @@ test('Scenario 9: Extraction Dialog displays ExtractionSummary diagnostics and h
 </body>
 </html>`
 
-  const scratchDir =
-    'C:\\Users\\52duc\\.gemini\\antigravity\\brain\\ba1483dc-f97f-4cbd-8ed3-8c6a0cf3faf0\\scratch'
-  const artifactDir =
-    'C:\\Users\\52duc\\.gemini\\antigravity\\brain\\ba1483dc-f97f-4cbd-8ed3-8c6a0cf3faf0'
+  const scratchDir = testArtifactRoot
+  const artifactDir = testArtifactRoot
   const htmlPath = path.join(scratchDir, 'demo-extraction-dialog.html')
   const screenshotPath = path.join(artifactDir, 'demo-extraction-dialog.png')
 
@@ -804,7 +807,7 @@ test('Scenario 9: Extraction Dialog displays ExtractionSummary diagnostics and h
 
   const chromePath =
     'C:\\Users\\52duc\\AppData\\Local\\ms-playwright\\chromium-1243\\chrome-win64\\chrome.exe'
-  if (fs.existsSync(chromePath)) {
+  if (process.env.AIC_RENDER_TEST_ARTIFACTS === 'true' && fs.existsSync(chromePath)) {
     spawnSync(
       chromePath,
       [
@@ -1357,7 +1360,20 @@ test('Scenario 10: 60-document enterprise dossier architecture (Layer A Command 
   // 3. Period resolution & business rule check (§2.1: never falsify verified year)
   const bctcVerified = resolveDocumentPeriod(docs[0])
   assert.equal(bctcVerified.year, '2024')
-  assert.equal(bctcVerified.isVerified, true, 'Extraction-backed year is marked verified')
+  assert.equal(
+    bctcVerified.isVerified,
+    false,
+    'Extraction-backed year still requires human verification',
+  )
+  const humanPeriod = {
+    ...docs[0],
+    extraction: docs[0].extraction.map((f) => ({ ...f, quality: 'human_reviewed' })),
+  }
+  assert.equal(
+    resolveDocumentPeriod(humanPeriod).isVerified,
+    true,
+    'Explicitly human-reviewed period is verified',
+  )
 
   const taxEstimated = resolveDocumentPeriod(docs[10]) // ToKhaiThue_Q1_2024.pdf
   assert.equal(taxEstimated.year, '2024')
@@ -1469,10 +1485,8 @@ test('Scenario 10: 60-document enterprise dossier architecture (Layer A Command 
     'utf8',
   )
 
-  const scratchDir =
-    'C:\\Users\\52duc\\.gemini\\antigravity\\brain\\ba1483dc-f97f-4cbd-8ed3-8c6a0cf3faf0\\scratch'
-  const artifactDir =
-    'C:\\Users\\52duc\\.gemini\\antigravity\\brain\\ba1483dc-f97f-4cbd-8ed3-8c6a0cf3faf0'
+  const scratchDir = testArtifactRoot
+  const artifactDir = testArtifactRoot
   const chromePath =
     'C:\\Users\\52duc\\AppData\\Local\\ms-playwright\\chromium-1243\\chrome-win64\\chrome.exe'
 
@@ -1553,7 +1567,7 @@ test('Scenario 10: 60-document enterprise dossier architecture (Layer A Command 
   const mobilePngPath = path.join(artifactDir, 'demo-enterprise-explorer-mobile.png')
   fs.writeFileSync(mobileHtmlPath, mobileHtml, 'utf8')
 
-  if (fs.existsSync(chromePath)) {
+  if (process.env.AIC_RENDER_TEST_ARTIFACTS === 'true' && fs.existsSync(chromePath)) {
     // 1. Capture Command Center
     spawnSync(
       chromePath,
@@ -1720,7 +1734,8 @@ test('Scenario 11: One-ZIP Multi-Year Dossier (60 PDF documents, intake banner, 
   )
 
   assert.ok(bannerMarkup.includes('Hồ sơ tài liệu đa năm'), 'Renders Dossier title')
-  assert.ok(bannerMarkup.includes('#00000000'), 'Renders short archive ID')
+  assert.ok(!bannerMarkup.includes('#00000000'), 'Machine archive ID is not primary user content')
+  assert.ok(archive.id, 'Archive traceability is retained in the response')
   assert.ok(bannerMarkup.includes('Đã tiếp nhận toàn bộ'), 'Renders intake accepted badge')
   assert.ok(
     bannerMarkup.includes('Hoàn tất với lưu ý / tệp cần rà soát'),
@@ -1850,10 +1865,8 @@ test('Scenario 11: One-ZIP Multi-Year Dossier (60 PDF documents, intake banner, 
     path.resolve(__dirname, '../../src/styles/workspace.css'),
     'utf8',
   )
-  const scratchDir =
-    'C:\\Users\\52duc\\.gemini\\antigravity\\brain\\ba1483dc-f97f-4cbd-8ed3-8c6a0cf3faf0\\scratch'
-  const artifactDir =
-    'C:\\Users\\52duc\\.gemini\\antigravity\\brain\\ba1483dc-f97f-4cbd-8ed3-8c6a0cf3faf0'
+  const scratchDir = testArtifactRoot
+  const artifactDir = testArtifactRoot
   const chromePath =
     'C:\\Users\\52duc\\AppData\\Local\\ms-playwright\\chromium-1243\\chrome-win64\\chrome.exe'
 
@@ -1922,7 +1935,7 @@ test('Scenario 11: One-ZIP Multi-Year Dossier (60 PDF documents, intake banner, 
   const dossierExplorerPngPath = path.join(artifactDir, 'demo-dossier-explorer-members.png')
   fs.writeFileSync(dossierExplorerHtmlPath, dossierExplorerHtml, 'utf8')
 
-  if (fs.existsSync(chromePath)) {
+  if (process.env.AIC_RENDER_TEST_ARTIFACTS === 'true' && fs.existsSync(chromePath)) {
     // 1. Capture Dossier Intake & Command Center
     spawnSync(
       chromePath,

@@ -1,5 +1,41 @@
 import type { Locale } from '@/lib/api/contracts'
 export const messages = {
+  assessmentNotReady: [
+    'Run document review on the current sources and wait for processing to finish before assessment.',
+    'Hãy rà soát tài liệu nguồn hiện tại và chờ xử lý hoàn tất trước khi đánh giá.',
+    '请先审查当前来源并等待处理完成，再运行评估。',
+  ],
+  staleAssessment: [
+    'Assessment inputs changed. Run a new assessment before acknowledging.',
+    'Dữ liệu đánh giá đã thay đổi. Hãy chạy đánh giá mới trước khi ghi nhận.',
+    '评估输入已改变，请重新评估后再确认。',
+  ],
+  assessmentAlreadyAcknowledged: [
+    'This assessment has already been acknowledged. Refresh to view the recorded confirmation.',
+    'Đánh giá này đã được ghi nhận. Làm mới để xem xác nhận đã lưu.',
+    '此评估已确认，请刷新查看记录。',
+  ],
+  extractionUnavailable: [
+    'Extraction results are not available yet. Check the document processing status.',
+    'Chưa có kết quả trích xuất. Vui lòng kiểm tra trạng thái xử lý tài liệu.',
+    '提取结果尚不可用，请检查文件处理状态。',
+  ],
+  extractionPending: [
+    'AI is processing this document. Results will appear when processing finishes.',
+    'AI đang xử lý tài liệu. Kết quả sẽ hiển thị khi xử lý hoàn tất.',
+    'AI 正在处理此文件，完成后将显示结果。',
+  ],
+  extractionFailed: [
+    'AI processing failed. Check the error in the job list; retry is available only when the server allows it.',
+    'AI xử lý thất bại. Xem mã lỗi trong danh sách tác vụ; chỉ thử lại khi máy chủ cho phép.',
+    'AI 处理失败。请查看任务列表中的错误，仅在服务器允许时重试。',
+  ],
+  supportedDocumentTypesHint: [
+    'Choose the closest document type. For a tax report or an unlisted type, choose Other; extraction may be limited.',
+    'Chọn loại tài liệu phù hợp. Với báo cáo thuế hoặc loại chưa có trong danh sách, chọn Khác; khả năng trích xuất có thể bị giới hạn.',
+    '请选择合适类别。税务报告或未列出的类别请选择其他；提取能力可能受限。',
+  ],
+  removeSelectedFile: ['Remove selected file', 'Bỏ tệp đã chọn', '移除所选文件'],
   not_present: ['Not present in the source', 'Không có trong nguồn', '来源中未出现'],
   issueNoLongerDetected: [
     'No longer detected in the current sources. A specialist decision is still required; other findings remain.',
@@ -27,7 +63,11 @@ export const messages = {
     'Link trả lời công khai chờ chốt identity-assurance. Có thể nhập lời khai thay.',
     '公开答复链接待身份保证规则审批，可由专员代录。',
   ],
-  mock: ['MOCK · fixture output', 'MOCK · kết quả fixture', 'MOCK · 示例结果'],
+  mock: [
+    'Illustrative output · mock service',
+    'Kết quả minh họa · dịch vụ mô phỏng',
+    '示例结果 · 模拟服务',
+  ],
   live: ['LIVE · AI service mode', 'LIVE · chế độ dịch vụ AI', 'LIVE · AI 服务模式'],
   source_reviewed: ['Source reviewed', 'Đã rà soát nguồn', '材料已复核'],
   source_mismatch: ['Source subject mismatch', 'Nguồn không đúng chủ thể', '材料主体不符'],
@@ -50,8 +90,8 @@ export const messages = {
     'Ghi nhận đã rà soát bổ sung',
     '记录补充材料复核',
   ],
-  desk: ['Counterparty risk', 'Rủi ro đối tác', '交易对手风险'],
-  cases: ['Counterparties & transactions', 'Đối tác & giao dịch', '交易对手与交易'],
+  desk: ['Financial intelligence', 'Phân tích tài chính', '财务分析'],
+  cases: ['Assessment cases', 'Hồ sơ đánh giá', '评估档案'],
   counterparties: ['Counterparties', 'Đối tác', '交易对手'],
   login: ['Sign in', 'Đăng nhập', '登录'],
   logout: ['Sign out', 'Đăng xuất', '退出'],
@@ -70,16 +110,16 @@ export const messages = {
     '使用企业账号访问分配的档案。',
   ],
   hero: [
-    'Understand your partners. Trade with confidence.',
-    'Hiểu đối tác. Vững giao dịch.',
-    '了解伙伴，稳健交易。',
+    'Understand financial health. Decide with evidence.',
+    'Hiểu sức khỏe tài chính. Quyết định có căn cứ.',
+    '了解财务健康，以证据支持决策。',
   ],
-  heroLead: ['Understand your partners.', 'Hiểu đối tác.', '了解伙伴，'],
-  heroAccent: ['Trade with confidence.', 'Vững giao dịch.', '稳健交易。'],
+  heroLead: ['Understand financial health.', 'Hiểu sức khỏe tài chính.', '了解财务健康，'],
+  heroAccent: ['Decide with evidence.', 'Quyết định có căn cứ.', '以证据支持决策。'],
   heroText: [
-    'Assess suppliers before prepayment and customers before trade credit, with evidence for every decision.',
-    'Đánh giá nhà cung cấp trước trả trước và khách hàng trước bán chịu, với bằng chứng cho mỗi nhận định.',
-    '在预付供应商及向客户赊销前，根据证据进行评估。',
+    'Review company source data, explore seven financial health indicators and trace every finding to its evidence.',
+    'Kiểm tra số liệu doanh nghiệp, xem bảy chỉ số sức khỏe tài chính và truy xuất bằng chứng cho từng nhận định.',
+    '核查企业来源数据，查看七项财务健康指标，并追溯每项分析的证据。',
   ],
   evidenceTitle: ['Evidence you can trace', 'Bằng chứng truy xuất được', '可追溯的证据'],
   evidenceHelp: [
@@ -106,7 +146,39 @@ export const messages = {
   specialist: ['Specialist', 'Chuyên viên', '专员'],
   language: ['Language', 'Ngôn ngữ', '语言'],
   configured: ['Configured', 'Đã cấu hình', '已配置'],
+  responseRecheckRequired: [
+    'Run a current document review after the response files finish processing.',
+    'Chờ tài liệu phản hồi xử lý xong rồi chạy lại rà soát hồ sơ trước khi ghi nhận bổ sung.',
+    '请等待回复文件处理完成并重新运行文件审查后再确认补充材料。',
+  ],
+  responseSourceReviewRequired: [
+    'Review the active response source and confirm the correct subject and requested document type before acknowledging.',
+    'Cần rà soát nguồn phản hồi hiện hành, xác nhận đúng chủ thể và đúng loại tài liệu yêu cầu trước khi ghi nhận bổ sung.',
+    '确认补充材料前需核对当前回复来源、正确主体和所需文件类型。',
+  ],
+  reviewBlocked: [
+    'Resolve the blocking findings and run document review again.',
+    'Cần xử lý các phát hiện đang chặn rồi chạy lại rà soát hồ sơ.',
+    '请先处理阻碍项并重新运行文件审查。',
+  ],
+  requestStateConflict: [
+    'This request is no longer in the required state. Refresh the request list before choosing another action.',
+    'Yêu cầu không còn ở trạng thái phù hợp. Làm mới danh sách để kiểm tra trước khi chọn thao tác tiếp theo.',
+    '请求状态已改变，请刷新列表后再选择后续操作。',
+  ],
+  actionBlocked: [
+    'This action does not meet the current requirements. Review the case status and prerequisites.',
+    'Thao tác chưa đáp ứng điều kiện hiện hành. Kiểm tra trạng thái hồ sơ và các điều kiện cần thiết.',
+    '此操作尚不满足当前条件，请检查案件状态和前置要求。',
+  ],
   configured_pilot: ['Pilot configured', 'Đã cấu hình pilot', '已配置试点'],
+  blocked: ['Insufficient financial evidence', 'Chưa đủ bằng chứng tài chính', '财务依据不足'],
+  PREVIEW_ELIGIBLE: ['Experimental index available', 'Có chỉ số thử nghiệm', '可查看实验性指数'],
+  verified_zero_debt_exception: [
+    'Verified zero-debt exception',
+    'Ngoại lệ không nợ vay đã được xác minh',
+    '已核实的零债务例外',
+  ],
   validation_pending: ['Validation pending', 'Đang chờ kiểm định', '待验证'],
   validated_for_limited_use: [
     'Validated for limited use',
@@ -114,7 +186,8 @@ export const messages = {
     '已验证供有限使用',
   ],
   financialIndex: ['Experimental financial index', 'Chỉ số tài chính thử nghiệm', '实验性财务指数'],
-  indexBand: ['Financial index band', 'Band chỉ số tài chính', '财务指数分段'],
+  indexBand: ['AIC financial health band', 'Mức sức khỏe tài chính AIC', 'AIC财务健康分档'],
+  zoom: ['PDF zoom', 'Độ phóng to PDF', 'PDF缩放'],
   experimentalIndex: [
     'AIC experimental financial index — NOT VALIDATED. No credit grade or PD.',
     'Chỉ số tài chính thử nghiệm AIC — CHƯA KIỂM ĐỊNH. Không phải hạng tín nhiệm hoặc PD.',
@@ -223,14 +296,13 @@ export const messages = {
   issuer: ['Issuer', 'Bên phát hành', '发行方'],
   organization: ['Your organization', 'Doanh nghiệp sử dụng', '您的企业'],
   counterparty: ['Counterparty', 'Đối tác được đánh giá', '被评估交易对手'],
-  overview: ['Overview & transaction', 'Tổng quan & giao dịch', '概览与交易'],
+  overview: ['Case overview', 'Tổng quan hồ sơ', '档案概览'],
   files: ['Files', 'Tài liệu', '文件'],
   review: ['Document review', 'Rà soát hồ sơ', '文件审查'],
   information: ['Non-financial information', 'Thông tin phi tài chính', '非财务信息'],
-  assessment: ['Risk assessment', 'Đánh giá rủi ro', '风险评估'],
+  assessment: ['Financial health', 'Sức khỏe tài chính', '财务健康'],
   history: ['Requests & history', 'Yêu cầu & lịch sử', '请求与历史'],
-  assistant: ['Assistant', 'Trợ lý', '助手'],
-  back: ['Back to transactions', 'Về danh sách giao dịch', '返回交易列表'],
+  back: ['Back to cases', 'Về danh sách hồ sơ', '返回档案列表'],
   revision: ['Revision', 'Lần cập nhật', '修订版本'],
   policy: ['Policy', 'Chính sách', '政策'],
   method: ['Method', 'Phương pháp', '方法'],
@@ -248,11 +320,11 @@ export const messages = {
   ],
   version: ['Version', 'Phiên bản', '版本'],
   page: ['Page', 'Trang', '页'],
-  upload: ['Upload PDF', 'Tải PDF lên', '上传 PDF'],
+  upload: ['Upload PDF / ZIP', 'Tải PDF / ZIP', '上传 PDF / ZIP'],
   uploadHelp: [
-    'PDF only. Up to 10 MiB and 10 pages per file; 10 active files / 40 pages per case. Server checks the original file.',
-    'Chỉ PDF, tối đa 10 MiB và 10 trang/file; 10 file / 40 trang đang dùng/hồ sơ. Máy chủ kiểm tra tài liệu gốc.',
-    '仅限PDF。每个文件最多10MiB/10页；每个档案最多10个有效文件/40页。服务器核验原件。',
+    'PDF: up to 10 MiB, 10 pages per direct upload; 10 active files / 40 pages per case. ZIP dossier: up to 32 MiB, 64 PDFs. Files needing manual processing remain flagged for review.',
+    'PDF tải trực tiếp: tối đa 10 MiB, 10 trang/tệp; 10 tệp / 40 trang đang dùng/hồ sơ. Hồ sơ ZIP: tối đa 32 MiB, 64 PDF. Tệp cần xử lý thủ công được giữ ở trạng thái cần rà soát.',
+    '直接上传PDF：每个最多10MiB、10页；每档案最多10个有效文件、40页。ZIP卷宗：最多32MiB、64个PDF。需人工处理的文件保留待审状态。',
   ],
   new: ['New document', 'Tài liệu mới', '新文件'],
   replace: ['Replace a version', 'Thay thế phiên bản', '替换版本'],
@@ -261,7 +333,7 @@ export const messages = {
   target: ['Linked document / request', 'Tài liệu / yêu cầu liên quan', '关联文件 / 请求'],
   documentType: ['Document type', 'Loại tài liệu', '文件类型'],
   sourceClass: ['Source class', 'Loại nguồn', '来源类别'],
-  chooseFile: ['Choose PDF', 'Chọn PDF', '选择PDF'],
+  chooseFile: ['Choose PDF / ZIP', 'Chọn PDF / ZIP', '选择 PDF / ZIP'],
   status: ['Status', 'Trạng thái', '状态'],
   registration: ['Business registration', 'Đăng ký kinh doanh', '工商登记'],
   financial_statement: ['Financial statements', 'Báo cáo tài chính', '财务报表'],
@@ -321,7 +393,11 @@ export const messages = {
     'Ghi nhận bạn đã xem phiên bản này; không phê duyệt hoặc thực hiện giao dịch.',
     '记录您已阅读此版本，不代表批准或执行交易。',
   ],
-  stale: ['Outdated · inputs have changed', 'Đã cũ · đầu vào thay đổi', '已过期 · 输入已更改'],
+  stale: [
+    'Recalculate: source data has changed',
+    'Cần tính lại vì dữ liệu đã thay đổi',
+    '数据已更改，请重新计算',
+  ],
   provisional: ['Provisional', 'Đánh giá có giới hạn', '暂定评估'],
   metrics: ['Financial metrics', 'Chỉ số tài chính', '财务指标'],
   formula: ['Formula / period', 'Công thức / kỳ', '公式 / 期间'],
@@ -334,6 +410,17 @@ export const messages = {
   request: ['Request supplement', 'Yêu cầu bổ sung', '请求补充'],
   approve: ['Approve request', 'Duyệt yêu cầu', '批准请求'],
   export: ['Download approved text', 'Tải văn bản đã duyệt', '下载已批准文本'],
+  requestRecord: ['Approval record for audit', 'Bản ghi phê duyệt để đối chiếu', '审批核对记录'],
+  requestRecordHelp: [
+    'Includes internal references. Use for audit, not as a recipient letter.',
+    'Có mã tham chiếu nội bộ. Dùng để đối chiếu, không dùng làm văn bản gửi người nhận.',
+    '包含内部参考编号，用于核对，不作为发给收件人的信函。',
+  ],
+  downloadRecord: [
+    'Download original approval record',
+    'Tải bản ghi phê duyệt gốc',
+    '下载原始审批记录',
+  ],
   draft: ['Draft', 'Bản nháp', '草稿'],
   approved: ['Approved', 'Đã duyệt', '已批准'],
   cancelled: ['Cancelled', 'Đã hủy', '已取消'],
@@ -343,6 +430,7 @@ export const messages = {
   noRequests: ['No supplement requests yet.', 'Chưa có yêu cầu bổ sung.', '尚无补充请求。'],
   noHistory: ['No history yet.', 'Chưa có lịch sử.', '尚无历史。'],
   questionnaire: ['Questionnaire', 'Bộ câu hỏi', '问卷'],
+  question: ['Question', 'Câu hỏi', '问题'],
   invite: ['Create response link', 'Tạo liên kết trả lời', '创建回复链接'],
   staffEntry: ['Transcribe partner response', 'Nhập thay lời khai đối tác', '代录交易对手回复'],
   verify: ['Review verification', 'Rà soát xác minh', '核查验证'],
@@ -353,7 +441,12 @@ export const messages = {
   self_assessed: ['Self-assessed', 'Tự đánh giá', '自评'],
   skipped: ['Skipped', 'Đã bỏ qua', '已跳过'],
   missing: ['Missing', 'Còn thiếu', '缺失'],
-  SME_direct: ['Partner submitted', 'Đối tác tự cung cấp', '交易对手直接提交'],
+  SME_direct: [
+    'Submitted directly by the respondent',
+    'Người trả lời gửi trực tiếp',
+    '答题人直接提交',
+  ],
+  published: ['Published', 'Đã phát hành', '已发布'],
   staff_transcribed: ['Transcribed by specialist', 'Chuyên viên nhập thay', '专员代录'],
   recipient: ['Recipient reference', 'Thông tin người nhận', '接收人标识'],
   expires: ['Expires at', 'Hết hạn lúc', '到期时间'],
@@ -393,6 +486,13 @@ export const messages = {
     'We could not connect to the service. Your input has not been marked as saved. Please try again later.',
     'Chưa kết nối được dịch vụ. Dữ liệu nhập chưa được đánh dấu đã lưu. Vui lòng thử lại sau.',
     '无法连接服务。输入未标记为已保存，请稍后重试。',
+  ],
+  viewingPage: ['Viewing page', 'Trang đang xem', '当前页'],
+  quotedPage: ['Quoted page', 'Trang trích dẫn', '引用页'],
+  staleReview: [
+    'The review is out of date. Copy your draft text before closing, run the case review again, then select a finding from the new review and resubmit.',
+    'Bản rà soát đã cũ. Sao chép nội dung bản nháp trước khi đóng, chạy lại rà soát hồ sơ, rồi chọn phát hiện thuộc bản mới và gửi lại.',
+    '审核已过期。关闭前请复制草稿内容，重新运行档案审核，然后选择新审核中的发现并重新提交。',
   ],
   conflict: [
     'This record changed. Your draft is preserved. Load the latest version, compare it, then submit again.',
@@ -523,7 +623,11 @@ export const messages = {
   journeyClassify: ['2. Categorization', '2. Phân nhóm hồ sơ', '2. 分类归集'],
   journeyExtraction: ['3. AI Extraction', '3. AI trích xuất', '3. AI提取'],
   journeyReview: ['4. Specialist review', '4. Chuyên viên kiểm tra', '4. 专员核验'],
-  journeyMetrics: ['5. Permitted metrics', '5. Chỉ số được phép', '5. 准入指标'],
+  journeyMetrics: [
+    '5. Financial health review',
+    '5. Đánh giá sức khỏe tài chính',
+    '5. 财务健康评估',
+  ],
   groupBctc: ['Financial Statements (BCTC)', 'Báo cáo tài chính (BCTC)', '财务报表 (BCTC)'],
   groupTax: ['Tax & Invoices', 'Thuế & Hóa đơn', '税务与发票'],
   groupContract: ['Contracts & Legal', 'Hợp đồng & Pháp lý', '合同与法律'],
@@ -574,9 +678,9 @@ export const messages = {
     '拖放 PDF 或 ZIP 文件至此，或点击浏览',
   ],
   dropzoneSubtitle: [
-    'PDF up to 10 MiB, max 10 pages per file.',
-    'Tệp PDF tối đa 10 MiB, tối đa 10 trang mỗi tệp.',
-    '每个PDF文件最大10 MiB，最多10页。',
+    'PDF: up to 10 MiB / 10 pages. ZIP: up to 32 MiB / 64 PDFs.',
+    'PDF: tối đa 10 MiB / 10 trang. ZIP: tối đa 32 MiB / 64 PDF.',
+    'PDF：最多10MiB、10页。ZIP：最多32MiB、64个PDF。',
   ],
   dropzoneActive: [
     'Drop file here to upload...',
@@ -584,9 +688,9 @@ export const messages = {
     '释放文件以开始上传...',
   ],
   unsupportedFormatsNotice: [
-    'RAR, Excel (XLSX), and images (JPG/PNG) are not supported by the backend in this preview. Please upload valid PDFs.',
-    'Hệ thống hiện tại chưa hỗ trợ tệp nén RAR, bảng tính Excel (XLSX) hoặc hình ảnh (JPG/PNG). Vui lòng sử dụng tệp PDF hợp lệ.',
-    '当前预览版后端暂不支持 RAR、Excel (XLSX) 或图片格式 (JPG/PNG)，请使用有效 PDF。',
+    'RAR, Excel (XLSX), and images (JPG/PNG) are not supported by the backend in this preview. Please use a valid PDF or a ZIP dossier containing PDFs.',
+    'Hệ thống hiện tại chưa hỗ trợ tệp nén RAR, bảng tính Excel (XLSX) hoặc hình ảnh (JPG/PNG). Vui lòng dùng PDF hợp lệ hoặc hồ sơ ZIP chứa các PDF.',
+    '当前预览版后端暂不支持 RAR、Excel (XLSX) 或图片格式 (JPG/PNG)，请使用有效PDF或包含PDF的ZIP卷宗。',
   ],
   fileSelected: ['Selected file', 'Tệp đã chọn', '已选文件'],
   fileSize: ['Size', 'Dung lượng', '文件大小'],
@@ -708,8 +812,41 @@ export const messages = {
   ],
   liveSync: ['Live sync active', 'Đang đồng bộ thời gian thực…', '正在实时同步…'],
   refreshState: ['Refresh status', 'Làm mới trạng thái', '刷新状态'],
+  financialImportCountryMismatch: [
+    'The report country differs from the company in this case. Check the selected country and company record.',
+    'Quốc gia của báo cáo khác doanh nghiệp trong hồ sơ. Kiểm tra quốc gia đã chọn và thông tin doanh nghiệp.',
+    '报表国家与案件企业不同，请检查所选国家及企业资料。',
+  ],
+  financialImportScopeMismatch: [
+    'The selected pages do not support this reporting period or basis. Check the year and standalone/consolidated tables.',
+    'Các trang chọn chưa khớp kỳ hoặc cơ sở báo cáo. Kiểm tra cột năm và bảng riêng lẻ/hợp nhất.',
+    '所选页面与期间或口径不符，请核对年份列及单体/合并报表。',
+  ],
+  financialImportPages: [
+    'Choose up to 16 relevant statement pages, including at most 8 scanned pages. Select fewer pages if the text limit is reached.',
+    'Chọn tối đa 16 trang bảng báo cáo, trong đó tối đa 8 trang scan. Chọn ít trang hơn nếu vượt giới hạn chữ.',
+    '请选择最多16个报表页，其中扫描页不超过8页；超过文字限制时请减少页数。',
+  ],
+  financialImportReviewRequired: [
+    'Compare the source pages and confirm the import review before verifying these financial facts.',
+    'Cần đối chiếu trang nguồn và xác nhận rà soát khi nhập BCTC trước khi xác minh dữ kiện.',
+    '核实财务事实前，请先对照原页并确认导入核查。',
+  ],
+  financialImportLockedValue: [
+    'Imported facts must retain their source value and scope. To correct a value, choose manual entry and record its evidence.',
+    'Dữ kiện trích xuất phải giữ đúng số và phạm vi nguồn. Nếu sửa số, chọn nhập tay và ghi rõ căn cứ.',
+    '导入事实必须保留原始数值及范围；如需修改，请选择手工录入并注明依据。',
+  ],
+  financialImportUncertain: [
+    'AI could not produce a result that passes the source checks. Review the original pages, select clearer statement pages or enter verified source figures manually.',
+    'AI chưa tạo được kết quả đạt kiểm tra nguồn. Hãy xem bản gốc, chọn trang bảng báo cáo rõ hơn hoặc nhập tay số liệu có căn cứ.',
+    'AI结果未通过来源核查，请查看原件、选择更清晰的报表页，或手工录入有依据的数据。',
+  ],
 } as const
 export type MessageKey = keyof typeof messages
 export function translate(locale: Locale, key: MessageKey) {
-  return messages[key]?.[locale === 'vi' ? 1 : locale === 'zh-CN' ? 2 : 0] ?? String(key)
+  return (
+    messages[key]?.[locale === 'vi' ? 1 : locale === 'zh-CN' ? 2 : 0] ??
+    (locale === 'vi' ? 'Cần kiểm tra' : locale === 'zh-CN' ? '需要核查' : 'Needs review')
+  )
 }

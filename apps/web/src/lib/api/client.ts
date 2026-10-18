@@ -25,7 +25,6 @@ type Options = {
   respondentToken?: string
   auth?: boolean
   bytes?: boolean
-  /** Defaults: 90s for uploads, 30s otherwise. Long model-backed reads may raise it (proxy caps at 85s). */
   timeoutMs?: number
   /** Successful headers are ephemeral; callers must never persist capability secrets. */
   onSuccessHeaders?: (headers: Headers) => void

@@ -1,13 +1,12 @@
 import 'reflect-metadata'
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
-import { loadConfig, AppConfig } from './config/configuration'
+import { loadConfig, AppConfig, assertDocumentRuntime } from './config/configuration'
 import { FoundationExceptionFilter } from './foundation/http'
 const cookieParser = require('cookie-parser')
 
 export async function createApplication(config: AppConfig = loadConfig(), quiet = false) {
-  if (config.documentRuntime && (config.isProduction || process.env.NODE_ENV === 'production'))
-    throw new Error('Local document runtime cannot run in production')
+  assertDocumentRuntime(config)
   // Recheck mode here as well: no injected config can turn a production process into a harness.
   if (
     config.runtimeMode === 'prototype' &&

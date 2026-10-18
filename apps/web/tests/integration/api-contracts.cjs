@@ -452,7 +452,12 @@ async function main() {
         members: [member],
       }
       assert.deepEqual(dto.dossierArchive(archive), archive)
-      assert.deepEqual(dto.dossierArchiveList([archive]), [archive])
+      const { members: archiveMembers, ...archiveSummary } = archive
+      assert.deepEqual(dto.dossierArchiveList([archiveSummary]), [archiveSummary])
+      assert.throws(
+        () => dto.dossierArchiveList([archive]),
+        'List summaries cannot contain detail-only members',
+      )
 
       const memberSummary = {
         member_id: '00000000-0000-4000-8000-000000000402',

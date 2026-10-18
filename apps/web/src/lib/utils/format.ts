@@ -16,3 +16,9 @@ export function displayValue(value: unknown) {
       ? JSON.stringify(value, null, 2)
       : String(value)
 }
+
+/** Presentation only: retain every significant digit without floating-point conversion. */
+export function displayDecimal(value: unknown) {
+  const text = displayValue(value)
+  return /^-?\d+\.\d+$/.test(text) ? text.replace(/0+$/, '').replace(/\.$/, '') : text
+}

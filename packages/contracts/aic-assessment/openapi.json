@@ -1,0 +1,6549 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AIC Assessment integration",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api/v2"
+    }
+  ],
+  "security": [
+    {
+      "session": []
+    }
+  ],
+  "paths": {
+    "/cases/{id}/assessments": {
+      "get": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]*$"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Case assessment history",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentPage"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssessmentInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Immutable assessment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Assessment"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/assessments/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Assessment checked against current inputs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Assessment"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/assessments/{id}/acknowledge": {
+      "post": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssessmentAcknowledgementInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Human acknowledgement; not transaction approval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Assessment"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cases/{id}/readiness": {
+      "get": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "set_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current assessment and numeric readiness",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Readiness"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cases/{id}/financial-trends": {
+      "get": {
+        "operationId": "readFinancialTrendsV1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "baseline_set_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Source-grounded current financial comparison; no score",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinancialTrendsV1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/company-assessments/capabilities": {
+      "get": {
+        "summary": "Read company-health schema availability without running migrations",
+        "responses": {
+          "200": {
+            "description": "Versioned company-health response; same session and case ACL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyHealthCapabilitiesV1"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session required"
+          }
+        }
+      }
+    },
+    "/company-assessments": {
+      "post": {
+        "summary": "Create company-health workspace without an exposure",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompanyHealthCreateV1"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Versioned company-health response; same session and case ACL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyHealthCaseV1"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session required"
+          },
+          "403": {
+            "description": "Origin or CSRF rejected"
+          },
+          "404": {
+            "description": "Counterparty unavailable"
+          },
+          "409": {
+            "description": "Idempotency conflict"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "503": {
+            "description": "COMPANY_HEALTH_SCHEMA_REQUIRED; operator-controlled rollout pending"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "aic_fe_qa",
+        "description": "Deployment cookie name is configurable with AIC_COOKIE_NAME."
+      }
+    },
+    "schemas": {
+      "Organization": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "tax_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "country": {
+            "type": "string",
+            "minLength": 1
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "tax_id",
+          "country",
+          "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "role": {
+            "const": "specialist"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "display_name",
+          "role"
+        ],
+        "additionalProperties": false
+      },
+      "LoginInput": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "\\S",
+            "description": "Also bounded to256 UTF-8 bytes at runtime"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024,
+            "pattern": "\\S",
+            "description": "Also bounded to1024 UTF-8 bytes at runtime; exact value is not trimmed"
+          }
+        },
+        "required": [
+          "username",
+          "password"
+        ],
+        "additionalProperties": false
+      },
+      "SessionOutput": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "csrf_token": {
+            "type": "string",
+            "minLength": 1
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "user",
+          "csrf_token",
+          "expires_at"
+        ],
+        "additionalProperties": false
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "details": {
+            "type": [
+              "object",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "request_id",
+          "details"
+        ],
+        "additionalProperties": false
+      },
+      "Counterparty": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "tax_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "industry_code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "identity_status": {
+            "enum": [
+              "unresolved",
+              "confirmed",
+              "conflicting"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "name",
+          "country",
+          "tax_id",
+          "industry_code",
+          "source_refs",
+          "identity_status",
+          "revision",
+          "created_at",
+          "updated_at"
+        ],
+        "additionalProperties": false
+      },
+      "ExposureRead": {
+        "type": "object",
+        "properties": {
+          "amount_vnd": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[1-9][0-9]{0,23}$"
+          },
+          "term_days": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "organization_role": {
+            "type": "string"
+          },
+          "counterparty_role": {
+            "type": "string"
+          },
+          "contract_ref": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "conditions": {
+            "type": "array",
+            "items": true
+          },
+          "source_origin": {
+            "type": "string"
+          },
+          "due_date": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "amount_missing_reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "term_null_reason": {
+            "enum": [
+              null,
+              "not_agreed",
+              "source_missing",
+              "ambiguous"
+            ]
+          },
+          "claims": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "source_refs": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "schema_version": {
+            "type": "string"
+          },
+          "verification": {
+            "const": "unverified"
+          }
+        },
+        "required": [
+          "amount_vnd",
+          "term_days",
+          "organization_role",
+          "counterparty_role",
+          "contract_ref",
+          "conditions",
+          "source_origin"
+        ],
+        "additionalProperties": false
+      },
+      "Case": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "counterparty_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "exposure_kind": {
+            "enum": [
+              "RECEIVABLE",
+              "PREPAYMENT",
+              "LOAN",
+              "DEBT_INVESTMENT"
+            ]
+          },
+          "lifecycle_stage": {
+            "enum": [
+              "proposed",
+              "active"
+            ]
+          },
+          "exposure": {
+            "$ref": "#/components/schemas/ExposureRead"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "policy_version": {
+            "type": "string"
+          },
+          "method_version": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "documents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            }
+          },
+          "jobs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Job"
+            }
+          },
+          "questionnaires": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Questionnaire"
+            }
+          },
+          "issue_history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Finding"
+            }
+          },
+          "review_stale": {
+            "type": "boolean"
+          },
+          "counterparty_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "latest_review_run_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Finding"
+            }
+          },
+          "readiness": {
+            "$ref": "#/components/schemas/Readiness"
+          },
+          "requests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocumentRequest"
+            }
+          },
+          "waivers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Waiver"
+            }
+          },
+          "transaction_review": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TransactionReview"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "policy_artifact_hash": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "latest_assessment_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "assessment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Assessment"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "counterparty_id",
+          "exposure_kind",
+          "lifecycle_stage",
+          "exposure",
+          "revision",
+          "policy_version",
+          "method_version",
+          "created_at",
+          "updated_at"
+        ],
+        "additionalProperties": false
+      },
+      "HistoryEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "actor": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "revision_before": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "revision_after": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "subject_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "actor",
+          "action",
+          "time",
+          "reason",
+          "revision_before",
+          "revision_after",
+          "subject_refs"
+        ],
+        "additionalProperties": false
+      },
+      "CasePage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Case"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "additionalProperties": false
+      },
+      "CounterpartyPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Counterparty"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "additionalProperties": false
+      },
+      "HistoryEventPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HistoryEvent"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "additionalProperties": false
+      },
+      "Document": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lineage": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "pages": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "type": {
+            "enum": [
+              "registration",
+              "loan_request",
+              "financial_statement",
+              "contract",
+              "acceptance_record",
+              "payment_record",
+              "invoice",
+              "other"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "queued",
+              "running",
+              "completed",
+              "partial",
+              "failed"
+            ]
+          },
+          "owner_party_ref": {
+            "const": "unresolved"
+          },
+          "source": {
+            "type": "object",
+            "properties": {
+              "source_class": {
+                "type": "string"
+              },
+              "document_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "ai_mode": {
+                "enum": [
+                  "live",
+                  "mock"
+                ]
+              },
+              "subject_verification": {
+                "const": "unverified"
+              }
+            },
+            "required": [
+              "source_class",
+              "document_id",
+              "version",
+              "sha256",
+              "ai_mode",
+              "subject_verification"
+            ],
+            "additionalProperties": false
+          },
+          "classification": {
+            "type": "object",
+            "properties": {
+              "declared_type": {
+                "type": "string"
+              },
+              "verified": {
+                "const": false
+              }
+            },
+            "required": [
+              "declared_type",
+              "verified"
+            ],
+            "additionalProperties": false
+          },
+          "extraction": {
+            "$ref": "#/components/schemas/ExtractionRead"
+          },
+          "source_review": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string"
+              },
+              "declared_type": {
+                "enum": [
+                  "registration",
+                  "loan_request",
+                  "financial_statement",
+                  "contract",
+                  "acceptance_record",
+                  "payment_record",
+                  "invoice",
+                  "other"
+                ]
+              },
+              "subject_match": {
+                "enum": [
+                  "match",
+                  "mismatch",
+                  "unresolved"
+                ]
+              },
+              "reviewed_pages": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 10,
+                "items": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 10
+                }
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "verification": {
+                "const": "source_reviewed"
+              },
+              "entered_by": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "document_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "document_version": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "source_hash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "actor_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "counterparty_revision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "reason",
+              "declared_type",
+              "subject_match",
+              "reviewed_pages",
+              "evidence_refs",
+              "verification",
+              "entered_by",
+              "document_id",
+              "document_version",
+              "source_hash",
+              "actor_id",
+              "created_at"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "lineage",
+          "version",
+          "hash",
+          "pages",
+          "type",
+          "name",
+          "status",
+          "owner_party_ref",
+          "source",
+          "classification"
+        ],
+        "additionalProperties": false
+      },
+      "ExtractedField": {
+        "type": "object",
+        "properties": {
+          "field_key": {
+            "type": "string"
+          },
+          "value": true,
+          "raw_value": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "quality": {
+            "enum": [
+              "readable",
+              "uncertain",
+              "unreadable",
+              "human_reviewed"
+            ]
+          },
+          "missing_reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "evidence_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "field_key",
+          "value",
+          "raw_value",
+          "quality",
+          "missing_reason",
+          "evidence_refs"
+        ],
+        "additionalProperties": false
+      },
+      "ExtractionRead": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/ExtractedField"
+        }
+      },
+      "Evidence": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "document_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "document_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "quote": {
+            "type": "string"
+          },
+          "source_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "bbox": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "number"
+            },
+            "minItems": 4,
+            "maxItems": 4
+          }
+        },
+        "required": [
+          "id",
+          "document_id",
+          "document_version",
+          "page",
+          "quote",
+          "source_hash",
+          "bbox"
+        ],
+        "additionalProperties": false
+      },
+      "SourceInput": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "declaration",
+              "document",
+              "questionnaire"
+            ]
+          },
+          "reported_by": {
+            "enum": [
+              "organization",
+              "counterparty"
+            ]
+          },
+          "document_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "document_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "document_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "evidence_ref": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "questionnaire_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "question_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "response_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "response_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "kind",
+          "reported_by"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "document"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "document_id",
+                "document_version",
+                "document_sha256",
+                "evidence_ref"
+              ]
+            },
+            "else": {
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "document_id"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "document_version"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "document_sha256"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "evidence_ref"
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "questionnaire"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "questionnaire_id",
+                "question_id",
+                "response_id",
+                "response_revision"
+              ]
+            },
+            "else": {
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "questionnaire_id"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "question_id"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "response_id"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "response_revision"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "ConditionInput": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "payment",
+              "delivery",
+              "acceptance",
+              "refund",
+              "guarantee",
+              "other"
+            ]
+          },
+          "scope": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "trigger_text": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 4000
+          },
+          "reported_state": {
+            "enum": [
+              "proposed",
+              "reported_satisfied",
+              "unknown"
+            ]
+          },
+          "due_on": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "missing_reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 1000
+          },
+          "source_refs": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "items": {
+              "$ref": "#/components/schemas/SourceInput"
+            }
+          }
+        },
+        "required": [
+          "kind",
+          "scope",
+          "trigger_text",
+          "reported_state",
+          "due_on",
+          "missing_reason",
+          "source_refs"
+        ],
+        "additionalProperties": false
+      },
+      "ClaimInput": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "paid",
+              "received"
+            ]
+          },
+          "event_state": {
+            "enum": [
+              "proposed",
+              "actual"
+            ]
+          },
+          "claimant_party": {
+            "enum": [
+              "organization",
+              "counterparty"
+            ]
+          },
+          "payer_party": {
+            "enum": [
+              "organization",
+              "counterparty"
+            ]
+          },
+          "payee_party": {
+            "enum": [
+              "organization",
+              "counterparty"
+            ]
+          },
+          "currency": {
+            "const": "VND"
+          },
+          "amount_vnd": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^(0|[1-9][0-9]{0,23})$"
+          },
+          "amount_missing_reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 1000
+          },
+          "occurred_on": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "planned_on": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "date_missing_reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 1000
+          },
+          "obligation_ref": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source_refs": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "items": {
+              "$ref": "#/components/schemas/SourceInput"
+            }
+          }
+        },
+        "required": [
+          "kind",
+          "event_state",
+          "claimant_party",
+          "payer_party",
+          "payee_party",
+          "currency",
+          "amount_vnd",
+          "amount_missing_reason",
+          "occurred_on",
+          "planned_on",
+          "date_missing_reason",
+          "obligation_ref",
+          "source_refs"
+        ],
+        "additionalProperties": false
+      },
+      "ExposureWriteInput": {
+        "type": "object",
+        "properties": {
+          "amount_vnd": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[1-9][0-9]{0,23}$"
+          },
+          "amount_missing_reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "term_days": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "term_null_reason": {
+            "enum": [
+              null,
+              "not_agreed",
+              "source_missing",
+              "ambiguous"
+            ]
+          },
+          "organization_role": {
+            "enum": [
+              "seller",
+              "buyer"
+            ]
+          },
+          "counterparty_role": {
+            "enum": [
+              "buyer",
+              "seller"
+            ]
+          },
+          "contract_ref": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "due_date": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "source_origin": {
+            "const": "staff_entered"
+          },
+          "conditions": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/ConditionInput"
+            }
+          },
+          "claims": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/ClaimInput"
+            }
+          }
+        },
+        "required": [
+          "amount_vnd",
+          "term_days",
+          "organization_role",
+          "counterparty_role",
+          "contract_ref",
+          "conditions",
+          "source_origin"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "amount_vnd": {
+                  "type": "null"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "amount_missing_reason"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "term_days": {
+                  "type": "null"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "term_null_reason"
+              ],
+              "properties": {
+                "term_null_reason": {
+                  "type": "string"
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "term_null_reason": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "CaseCreateInput": {
+        "type": "object",
+        "properties": {
+          "counterparty_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "exposure_kind": {
+            "enum": [
+              "RECEIVABLE",
+              "PREPAYMENT"
+            ]
+          },
+          "lifecycle_stage": {
+            "enum": [
+              "proposed",
+              "active"
+            ]
+          },
+          "exposure": {
+            "$ref": "#/components/schemas/ExposureWriteInput"
+          }
+        },
+        "required": [
+          "counterparty_id",
+          "exposure_kind",
+          "lifecycle_stage",
+          "exposure"
+        ],
+        "additionalProperties": false
+      },
+      "ExposureUpdateInput": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "exposure": {
+            "$ref": "#/components/schemas/ExposureWriteInput"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "exposure"
+        ],
+        "additionalProperties": false
+      },
+      "RevisionInput": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "expected_revision"
+        ],
+        "additionalProperties": false
+      },
+      "ReasonInput": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "pattern": "\\S"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "DocumentClassificationInput": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "pattern": "\\S"
+          },
+          "declared_type": {
+            "enum": [
+              "registration",
+              "loan_request",
+              "financial_statement",
+              "contract",
+              "acceptance_record",
+              "payment_record",
+              "invoice",
+              "other"
+            ]
+          },
+          "subject_match": {
+            "enum": [
+              "match",
+              "mismatch",
+              "unresolved"
+            ]
+          },
+          "reviewed_pages": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 10,
+            "uniqueItems": true,
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10
+            }
+          },
+          "evidence_refs": {
+            "type": "array",
+            "maxItems": 100,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "expected_revision",
+          "reason",
+          "declared_type",
+          "subject_match",
+          "reviewed_pages",
+          "evidence_refs"
+        ],
+        "additionalProperties": false
+      },
+      "DocumentCorrectionInput": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "pattern": "\\S"
+          },
+          "field_key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "value": true,
+          "evidence_refs": {
+            "type": "array",
+            "maxItems": 100,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "expected_revision",
+          "reason",
+          "field_key",
+          "value",
+          "evidence_refs"
+        ],
+        "additionalProperties": false
+      },
+      "DocumentDecisionOutput": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "decision": {
+            "type": "object"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "document_id",
+          "revision",
+          "decision",
+          "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "DocumentFieldVerificationInput": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "pattern": "\\S"
+          },
+          "field_key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "evidence_refs": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "expected_revision",
+          "reason",
+          "field_key",
+          "evidence_refs"
+        ],
+        "additionalProperties": false
+      },
+      "RequestDraftInput": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "run_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "issue_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "purpose": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "pattern": "\\S"
+          },
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10000,
+            "pattern": "\\S"
+          },
+          "document_types": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 8,
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "registration",
+                "loan_request",
+                "financial_statement",
+                "contract",
+                "acceptance_record",
+                "payment_record",
+                "invoice",
+                "other"
+              ]
+            }
+          }
+        },
+        "required": [
+          "expected_revision",
+          "run_id",
+          "issue_id",
+          "purpose",
+          "content",
+          "document_types"
+        ],
+        "additionalProperties": false
+      },
+      "WaiverInput": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "requirement_key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "issue_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "pattern": "\\S"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "requirement_key",
+          "issue_id",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "Finding": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "issue_key": {
+            "type": "string"
+          },
+          "rule_id": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "evidence_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "finding_state": {
+            "enum": [
+              "open",
+              "verified_resolved",
+              "dismissed"
+            ]
+          },
+          "handling_state": {
+            "enum": [
+              "none",
+              "requested",
+              "waived"
+            ]
+          },
+          "limitations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "absence_basis": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "issue_key",
+          "rule_id",
+          "category",
+          "severity",
+          "summary",
+          "evidence_refs",
+          "finding_state",
+          "handling_state",
+          "limitations"
+        ],
+        "additionalProperties": false
+      },
+      "TransactionReview": {
+        "type": "object",
+        "properties": {
+          "exposure_kind": {
+            "enum": [
+              "RECEIVABLE",
+              "PREPAYMENT"
+            ]
+          },
+          "status": {
+            "enum": [
+              "BLOCKED",
+              "FOLLOW_UP",
+              "CLEAR_FOR_REVIEW",
+              "UNKNOWN"
+            ]
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Finding"
+            }
+          },
+          "limitations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "verified_settlement_vnd": {
+            "type": "null"
+          },
+          "verified_outstanding_vnd": {
+            "type": "null"
+          }
+        },
+        "required": [
+          "exposure_kind",
+          "status",
+          "findings",
+          "limitations",
+          "verified_settlement_vnd",
+          "verified_outstanding_vnd"
+        ],
+        "additionalProperties": false
+      },
+      "IssueDecisionInput": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "action": {
+            "enum": [
+              "resolve",
+              "dismiss",
+              "reopen"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "pattern": "\\S"
+          },
+          "evidence_refs": {
+            "type": "array",
+            "maxItems": 100,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "expected_revision",
+          "action",
+          "reason",
+          "evidence_refs"
+        ],
+        "additionalProperties": false
+      },
+      "IssueDecisionOutput": {
+        "type": "object",
+        "properties": {
+          "issue": {
+            "$ref": "#/components/schemas/Finding"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "decision_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "issue",
+          "revision",
+          "decision_id",
+          "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "QuestionnaireCreateInput": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "pattern": "\\S"
+          },
+          "questions": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 3000,
+                  "pattern": "\\S"
+                }
+              },
+              "required": [
+                "label"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "expected_revision",
+          "reason",
+          "questions"
+        ],
+        "additionalProperties": false
+      },
+      "Question": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "const": 1
+          },
+          "answer_type": {
+            "const": "text"
+          },
+          "label": {
+            "type": "string"
+          },
+          "requiredness": {
+            "const": "optional"
+          },
+          "allowed_to_skip": {
+            "const": true
+          },
+          "source_requirements": {
+            "type": "object",
+            "properties": {
+              "declaration_allowed": {
+                "const": true
+              },
+              "documents_required": {
+                "const": false
+              },
+              "skip_reason_required": {
+                "const": true
+              }
+            },
+            "required": [
+              "declaration_allowed",
+              "documents_required",
+              "skip_reason_required"
+            ],
+            "additionalProperties": false
+          },
+          "verification_policy": {
+            "const": "human_source_review_only_not_fact_or_settlement_certification"
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "answer_type",
+          "label",
+          "requiredness",
+          "allowed_to_skip",
+          "source_requirements",
+          "verification_policy"
+        ],
+        "additionalProperties": false
+      },
+      "StaffResponseInput": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "pattern": "\\S"
+          },
+          "question_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "question_version": {
+            "const": 1
+          },
+          "answer_state": {
+            "enum": [
+              "submitted",
+              "self_assessed",
+              "skipped"
+            ]
+          },
+          "answer_json": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 5000
+          },
+          "reported_by": {
+            "enum": [
+              "organization",
+              "counterparty"
+            ]
+          },
+          "reported_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "pattern": "\\S"
+          },
+          "source_refs": {
+            "type": "array",
+            "maxItems": 100,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "expected_revision",
+          "reason",
+          "question_id",
+          "question_version",
+          "answer_state",
+          "answer_json",
+          "reported_by",
+          "reported_reference",
+          "source_refs"
+        ],
+        "additionalProperties": false
+      },
+      "ResponseVerificationInput": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "response_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "pattern": "\\S"
+          },
+          "status": {
+            "enum": [
+              "unverified",
+              "verified",
+              "conflicting"
+            ]
+          },
+          "evidence_refs": {
+            "type": "array",
+            "maxItems": 100,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "expected_revision",
+          "response_revision",
+          "reason",
+          "status",
+          "evidence_refs"
+        ],
+        "additionalProperties": false
+      },
+      "StaffResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "question_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "question_version": {
+            "const": 1
+          },
+          "answer_state": {
+            "enum": [
+              "submitted",
+              "self_assessed",
+              "skipped"
+            ]
+          },
+          "answer_json": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "origin": {
+            "enum": [
+              "staff_transcribed",
+              "SME_direct"
+            ]
+          },
+          "source_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reported_by": {
+            "enum": [
+              "organization",
+              "counterparty"
+            ]
+          },
+          "reported_reference": {
+            "type": "string"
+          },
+          "entered_by": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "verification_status": {
+            "enum": [
+              "unverified",
+              "verified",
+              "conflicting"
+            ]
+          },
+          "verification_stale": {
+            "type": "boolean"
+          },
+          "invitation_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "id",
+          "question_id",
+          "question_version",
+          "answer_state",
+          "answer_json",
+          "origin",
+          "source_refs",
+          "revision",
+          "reported_by",
+          "reported_reference",
+          "entered_by",
+          "created_at",
+          "reason",
+          "verification_status",
+          "verification_stale"
+        ],
+        "additionalProperties": false
+      },
+      "Questionnaire": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policy_version": {
+            "const": "MVP-OPTIONAL-TEXT-1"
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Question"
+            }
+          },
+          "responses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StaffResponse"
+            }
+          },
+          "version": {
+            "const": 1
+          },
+          "state": {
+            "enum": [
+              "draft",
+              "published",
+              "closed"
+            ]
+          },
+          "invitations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Invitation"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "policy_version",
+          "questions",
+          "responses"
+        ],
+        "additionalProperties": false
+      },
+      "ResponseVerificationOutput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "response_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "response_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "status": {
+            "enum": [
+              "unverified",
+              "verified",
+              "conflicting"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "evidence_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "actor_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "response_id",
+          "response_revision",
+          "revision",
+          "status",
+          "reason",
+          "evidence_refs",
+          "actor_id",
+          "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "CounterpartyCreateInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 250,
+            "pattern": "\\S"
+          },
+          "country": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "pattern": "\\S"
+          },
+          "tax_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "industry_code": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 50
+          },
+          "source": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "const": "declaration"
+              },
+              "reported_by": {
+                "enum": [
+                  "organization",
+                  "counterparty"
+                ]
+              },
+              "reported_reference": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "\\S"
+              },
+              "statement": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000,
+                "pattern": "\\S"
+              }
+            },
+            "required": [
+              "kind",
+              "reported_by",
+              "reported_reference",
+              "statement"
+            ],
+            "additionalProperties": false
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "pattern": "\\S"
+          }
+        },
+        "required": [
+          "name",
+          "country",
+          "tax_id",
+          "industry_code",
+          "source",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "CounterpartyUpdateInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 250,
+            "pattern": "\\S"
+          },
+          "country": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "pattern": "\\S"
+          },
+          "tax_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "industry_code": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 50
+          },
+          "source": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "const": "declaration"
+              },
+              "reported_by": {
+                "enum": [
+                  "organization",
+                  "counterparty"
+                ]
+              },
+              "reported_reference": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "\\S"
+              },
+              "statement": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000,
+                "pattern": "\\S"
+              }
+            },
+            "required": [
+              "kind",
+              "reported_by",
+              "reported_reference",
+              "statement"
+            ],
+            "additionalProperties": false
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "pattern": "\\S"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "name",
+          "country",
+          "tax_id",
+          "industry_code",
+          "source",
+          "reason",
+          "expected_revision"
+        ],
+        "additionalProperties": false
+      },
+      "DocumentRetryOutput": {
+        "type": "object",
+        "properties": {
+          "job": {
+            "$ref": "#/components/schemas/Job"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "job",
+          "revision"
+        ],
+        "additionalProperties": false
+      },
+      "InvitationCreateInput": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "pattern": "\\S"
+          },
+          "question_ids": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "reported_by": {
+            "enum": [
+              "organization",
+              "counterparty"
+            ]
+          },
+          "recipient_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "pattern": "\\S"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "reason",
+          "question_ids",
+          "reported_by",
+          "recipient_reference"
+        ],
+        "additionalProperties": false
+      },
+      "Invitation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "questionnaire_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "questionnaire_version": {
+            "const": 1
+          },
+          "question_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "reported_by": {
+            "enum": [
+              "organization",
+              "counterparty"
+            ]
+          },
+          "recipient_reference": {
+            "type": "string"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "revoked",
+              "expired",
+              "submitted",
+              "closed"
+            ]
+          },
+          "token_delivery": {
+            "const": "one_time_response_header"
+          }
+        },
+        "required": [
+          "id",
+          "questionnaire_id",
+          "questionnaire_version",
+          "question_ids",
+          "reported_by",
+          "recipient_reference",
+          "expires_at",
+          "created_at",
+          "status",
+          "token_delivery"
+        ],
+        "additionalProperties": false
+      },
+      "InvitationCreated": {
+        "type": "object",
+        "properties": {
+          "invitation": {
+            "$ref": "#/components/schemas/Invitation"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "invitation",
+          "revision"
+        ],
+        "additionalProperties": false
+      },
+      "QuestionnaireState": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "const": 1
+          },
+          "state": {
+            "enum": [
+              "draft",
+              "published",
+              "closed"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "state",
+          "revision"
+        ],
+        "additionalProperties": false
+      },
+      "RespondentForm": {
+        "type": "object",
+        "properties": {
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Question"
+            }
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "questionnaire_version": {
+            "const": 1
+          },
+          "receipt": {
+            "$ref": "#/components/schemas/RespondentReceipt"
+          }
+        },
+        "required": [
+          "questions",
+          "expires_at",
+          "questionnaire_version"
+        ],
+        "additionalProperties": false
+      },
+      "RespondentSubmitInput": {
+        "type": "object",
+        "properties": {
+          "reported_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "pattern": "\\S"
+          },
+          "answers": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "items": {
+              "type": "object",
+              "properties": {
+                "question_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "question_version": {
+                  "const": 1
+                },
+                "answer_state": {
+                  "enum": [
+                    "submitted",
+                    "self_assessed",
+                    "skipped"
+                  ]
+                },
+                "answer_json": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 5000
+                },
+                "skip_reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 4000
+                }
+              },
+              "required": [
+                "question_id",
+                "question_version",
+                "answer_state",
+                "answer_json",
+                "skip_reason"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "reported_reference",
+          "answers"
+        ],
+        "additionalProperties": false
+      },
+      "RespondentReceipt": {
+        "type": "object",
+        "properties": {
+          "receipt_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "submitted_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "answer_count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+          },
+          "identity_assurance": {
+            "const": "self_reported_capability_only"
+          }
+        },
+        "required": [
+          "receipt_id",
+          "submitted_at",
+          "answer_count",
+          "identity_assurance"
+        ],
+        "additionalProperties": false
+      },
+      "ReviewRun": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "case_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "case_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "rules_version": {
+            "type": "string"
+          },
+          "policy_version": {
+            "type": "string"
+          },
+          "snapshot_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "source_snapshot_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "state": {
+            "const": "completed"
+          },
+          "stale": {
+            "type": "boolean"
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Finding"
+            }
+          },
+          "issue_history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Finding"
+            }
+          },
+          "transaction_review": {
+            "$ref": "#/components/schemas/TransactionReview"
+          },
+          "financial_health": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "const": "unconfigured"
+              },
+              "score": {
+                "type": "null"
+              },
+              "band": {
+                "type": "null"
+              },
+              "grade": {
+                "type": "null"
+              },
+              "pd": {
+                "type": "null"
+              },
+              "blockers": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "status",
+              "score",
+              "band",
+              "grade",
+              "pd",
+              "blockers"
+            ],
+            "additionalProperties": false
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "counterparty_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "checked_case_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "id",
+          "case_id",
+          "case_revision",
+          "rules_version",
+          "policy_version",
+          "snapshot_hash",
+          "state",
+          "stale",
+          "findings",
+          "transaction_review",
+          "financial_health",
+          "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "DocumentRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "approved",
+              "closed",
+              "cancelled"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "run_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "issue_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "document_types": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "registration",
+                "loan_request",
+                "financial_statement",
+                "contract",
+                "acceptance_record",
+                "payment_record",
+                "invoice",
+                "other"
+              ]
+            }
+          },
+          "approved_payload": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "approved_hash": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "revision",
+          "run_id",
+          "issue_id",
+          "purpose",
+          "content",
+          "document_types",
+          "created_at",
+          "updated_at"
+        ],
+        "additionalProperties": false
+      },
+      "Waiver": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "actor_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policy_version": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "requirement_key": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "issue_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revoked_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "actor_id",
+          "policy_version",
+          "created_at",
+          "active",
+          "requirement_key",
+          "reason",
+          "issue_id"
+        ],
+        "additionalProperties": false
+      },
+      "Readiness": {
+        "type": "object",
+        "properties": {
+          "case_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "document_review_allowed": {
+            "type": "boolean"
+          },
+          "numeric_assessment_allowed": {
+            "type": "boolean"
+          },
+          "method_status": {
+            "enum": [
+              "unconfigured",
+              "configured_pilot",
+              "validation_pending",
+              "validated_for_limited_use",
+              "retired"
+            ]
+          },
+          "blockers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "limitations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "waivable_requirements": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "requirement_key": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "issue_id": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "required": [
+                "requirement_key"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "assessment_allowed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "case_revision",
+          "document_review_allowed",
+          "numeric_assessment_allowed",
+          "method_status",
+          "blockers",
+          "limitations",
+          "waivable_requirements"
+        ],
+        "additionalProperties": false
+      },
+      "Job": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "case_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "document_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "enum": [
+              "queued",
+              "running",
+              "completed",
+              "partial",
+              "failed"
+            ]
+          },
+          "attempts": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "retryable": {
+            "type": "boolean"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "retryable": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "code",
+                "retryable"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "mode": {
+            "enum": [
+              "live",
+              "mock"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "state"
+        ],
+        "additionalProperties": false
+      },
+      "DocumentAccepted": {
+        "type": "object",
+        "properties": {
+          "document": {
+            "$ref": "#/components/schemas/Document"
+          },
+          "job": {
+            "$ref": "#/components/schemas/Job"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "document",
+          "job",
+          "revision"
+        ],
+        "additionalProperties": false
+      },
+      "FinancialSourceInput": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "const": "document"
+              },
+              "document_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "document_version": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "source_hash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10
+              },
+              "quote": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "evidence_ref": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "kind",
+              "document_id",
+              "document_version",
+              "source_hash",
+              "page",
+              "quote",
+              "evidence_ref"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "const": "manual_entry"
+              },
+              "statement": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000,
+                "pattern": "\\S"
+              }
+            },
+            "required": [
+              "kind",
+              "statement"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "const": "financial_import"
+              },
+              "receipt_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "fact_key": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "source_kind": {
+                "enum": [
+                  "document",
+                  "dossier_member",
+                  "financial_file"
+                ]
+              },
+              "source_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "source_hash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 600
+              },
+              "quote": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              }
+            },
+            "required": [
+              "kind",
+              "receipt_id",
+              "fact_key",
+              "source_kind",
+              "source_id",
+              "source_hash",
+              "page",
+              "quote"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "FinancialSetInput": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "pattern": "\\S"
+          },
+          "period": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "enum": [
+                  "FY",
+                  "TTM",
+                  "INTERIM"
+                ]
+              },
+              "start_date": {
+                "type": "string",
+                "format": "date"
+              },
+              "end_date": {
+                "type": "string",
+                "format": "date"
+              }
+            },
+            "required": [
+              "kind",
+              "start_date",
+              "end_date"
+            ],
+            "additionalProperties": false
+          },
+          "basis": {
+            "enum": [
+              "standalone",
+              "consolidated"
+            ]
+          },
+          "accounting_regime": {
+            "enum": [
+              "VN_TT133",
+              "VN_TT99",
+              "VN_TT58",
+              "IFRS",
+              "OTHER",
+              "UNKNOWN",
+              "US_GAAP",
+              "CN_ASBE",
+              "VN_TT200"
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "unit_multiplier": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,11}$"
+          },
+          "industry_scope": {
+            "enum": [
+              "DISTRIBUTION_WHOLESALE_PILOT",
+              "MANUFACTURING",
+              "RETAIL",
+              "BUSINESS_SERVICES",
+              "CONSUMER_DURABLES",
+              "OTHER",
+              "UNKNOWN"
+            ]
+          },
+          "observation_kind": {
+            "enum": [
+              "actual",
+              "forecast"
+            ]
+          },
+          "audit_status": {
+            "enum": [
+              "audited",
+              "unaudited",
+              "unknown"
+            ]
+          },
+          "statement_version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "facts": {
+            "type": "array",
+            "maxItems": 14,
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "enum": [
+                    "current_assets",
+                    "current_liabilities",
+                    "cash",
+                    "unrestricted_short_term_equivalents",
+                    "trade_receivables",
+                    "total_equity",
+                    "total_assets",
+                    "total_liabilities",
+                    "interest_bearing_debt",
+                    "operating_profit",
+                    "depreciation_amortization",
+                    "interest_expense",
+                    "net_revenue",
+                    "cash_from_operations"
+                  ]
+                },
+                "raw_value": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "pattern": "^-?[0-9]{1,30}(\\.[0-9]{1,12})?$"
+                },
+                "raw_label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 500
+                },
+                "missing_reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 1000
+                },
+                "source": {
+                  "$ref": "#/components/schemas/FinancialSourceInput"
+                }
+              },
+              "required": [
+                "key",
+                "raw_value",
+                "raw_label",
+                "missing_reason",
+                "source"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "import_review": {
+            "type": "object",
+            "properties": {
+              "receipt_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "confirmed": {
+                "const": true
+              }
+            },
+            "required": [
+              "receipt_id",
+              "confirmed"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "expected_revision",
+          "reason",
+          "period",
+          "basis",
+          "accounting_regime",
+          "currency",
+          "unit_multiplier",
+          "industry_scope",
+          "observation_kind",
+          "audit_status",
+          "statement_version",
+          "facts"
+        ],
+        "additionalProperties": false
+      },
+      "FinancialVerifyInput": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "set_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "pattern": "\\S"
+          },
+          "status": {
+            "enum": [
+              "verified",
+              "unverified",
+              "rejected"
+            ]
+          },
+          "fact_ids": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 14,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "bridge_assertions": {
+            "type": "object",
+            "properties": {
+              "quick_assets_non_overlapping": {
+                "type": "boolean"
+              },
+              "quick_assets_eligible": {
+                "type": "boolean"
+              },
+              "da_addback_to_operating_profit": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "quick_assets_non_overlapping",
+              "quick_assets_eligible",
+              "da_addback_to_operating_profit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "expected_revision",
+          "set_revision",
+          "reason",
+          "status",
+          "fact_ids",
+          "bridge_assertions"
+        ],
+        "additionalProperties": false
+      },
+      "FinancialScope": {
+        "type": "object",
+        "properties": {
+          "entity_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "country": {
+            "type": "string"
+          },
+          "industry": {
+            "type": "string"
+          },
+          "pilot_scope": {
+            "type": "string"
+          },
+          "period": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "enum": [
+                  "FY",
+                  "TTM",
+                  "INTERIM"
+                ]
+              },
+              "start_date": {
+                "type": "string",
+                "format": "date"
+              },
+              "end_date": {
+                "type": "string",
+                "format": "date"
+              }
+            },
+            "required": [
+              "kind",
+              "start_date",
+              "end_date"
+            ],
+            "additionalProperties": false
+          },
+          "basis": {
+            "enum": [
+              "standalone",
+              "consolidated"
+            ]
+          },
+          "accounting_regime": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "unit_multiplier": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,11}$"
+          }
+        },
+        "required": [
+          "entity_id",
+          "country",
+          "industry",
+          "pilot_scope",
+          "period",
+          "basis",
+          "accounting_regime",
+          "currency",
+          "unit_multiplier"
+        ],
+        "additionalProperties": false
+      },
+      "FinancialFactRead": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "enum": [
+              "current_assets",
+              "current_liabilities",
+              "cash",
+              "unrestricted_short_term_equivalents",
+              "trade_receivables",
+              "total_equity",
+              "total_assets",
+              "total_liabilities",
+              "interest_bearing_debt",
+              "operating_profit",
+              "depreciation_amortization",
+              "interest_expense",
+              "net_revenue",
+              "cash_from_operations"
+            ]
+          },
+          "raw_value": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^-?[0-9]{1,30}(\\.[0-9]{1,12})?$"
+          },
+          "raw_label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "missing_reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 1000
+          },
+          "source": {
+            "$ref": "#/components/schemas/FinancialSourceInput"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "normalized_decimal": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "currency": {
+            "type": "string"
+          },
+          "unit_multiplier": {
+            "type": "string"
+          },
+          "period": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "enum": [
+                  "FY",
+                  "TTM",
+                  "INTERIM"
+                ]
+              },
+              "start_date": {
+                "type": "string",
+                "format": "date"
+              },
+              "end_date": {
+                "type": "string",
+                "format": "date"
+              }
+            },
+            "required": [
+              "kind",
+              "start_date",
+              "end_date"
+            ],
+            "additionalProperties": false
+          },
+          "basis": {
+            "type": "string"
+          },
+          "adjustments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "unit_normalization"
+                },
+                "multiplier": {
+                  "type": "string"
+                },
+                "result": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "multiplier",
+                "result"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "source_origin": {
+            "enum": [
+              "staff_entered",
+              "document"
+            ]
+          },
+          "entered_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recorded_case_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "current_source": {
+            "type": "boolean"
+          },
+          "verification": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "enum": [
+                  "unverified",
+                  "verified",
+                  "stale",
+                  "rejected"
+                ]
+              },
+              "verified_revision": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 1
+              },
+              "verified_by": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "uuid"
+              },
+              "verified_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "status",
+              "verified_revision",
+              "verified_by",
+              "verified_at"
+            ],
+            "additionalProperties": false
+          },
+          "verification_reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "raw_value",
+          "raw_label",
+          "missing_reason",
+          "source",
+          "id",
+          "revision",
+          "normalized_decimal",
+          "currency",
+          "unit_multiplier",
+          "period",
+          "basis",
+          "adjustments",
+          "source_origin",
+          "entered_by",
+          "recorded_case_revision",
+          "current_source",
+          "verification"
+        ],
+        "additionalProperties": false
+      },
+      "FinancialSetRead": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "scope": {
+            "$ref": "#/components/schemas/FinancialScope"
+          },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "observation_kind": {
+                "enum": [
+                  "actual",
+                  "forecast"
+                ]
+              },
+              "audit_status": {
+                "enum": [
+                  "audited",
+                  "unaudited",
+                  "unknown"
+                ]
+              },
+              "statement_version": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              }
+            },
+            "required": [
+              "observation_kind",
+              "audit_status",
+              "statement_version"
+            ],
+            "additionalProperties": false
+          },
+          "facts": {
+            "type": "array",
+            "maxItems": 14,
+            "items": {
+              "$ref": "#/components/schemas/FinancialFactRead"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "verification_stale": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "revision",
+          "scope",
+          "metadata",
+          "facts",
+          "created_at",
+          "verification_stale"
+        ],
+        "additionalProperties": false
+      },
+      "FinancialRegistry": {
+        "type": "object",
+        "properties": {
+          "sets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FinancialSetRead"
+            }
+          },
+          "selected_set_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "method_status": {
+            "enum": [
+              "unconfigured",
+              "configured_pilot",
+              "validation_pending",
+              "validated_for_limited_use",
+              "retired"
+            ]
+          },
+          "score": {
+            "type": "null"
+          },
+          "band": {
+            "type": "null"
+          },
+          "grade": {
+            "type": "null"
+          },
+          "pd": {
+            "type": "null"
+          },
+          "metrics": {
+            "type": "array",
+            "maxItems": 7,
+            "items": {
+              "type": "object",
+              "required": [
+                "metric_id",
+                "group",
+                "formula_id",
+                "formula",
+                "status",
+                "raw_ratio",
+                "source_facts",
+                "max_points",
+                "anchors",
+                "points",
+                "flags",
+                "blockers"
+              ],
+              "properties": {
+                "points": {
+                  "type": "null"
+                },
+                "status": {
+                  "enum": [
+                    "available",
+                    "unavailable"
+                  ]
+                }
+              }
+            }
+          },
+          "blockers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "strengths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "weaknesses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "limitations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "sets",
+          "selected_set_id",
+          "method_status",
+          "score",
+          "band",
+          "grade",
+          "pd",
+          "metrics",
+          "blockers",
+          "strengths",
+          "weaknesses",
+          "limitations"
+        ],
+        "additionalProperties": false
+      },
+      "FinancialMutationOutput": {
+        "type": "object",
+        "properties": {
+          "set": {
+            "$ref": "#/components/schemas/FinancialSetRead"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "set",
+          "revision"
+        ],
+        "additionalProperties": false
+      },
+      "LegacyExtractionRead": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "document_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "source_hash": {
+            "type": "string"
+          },
+          "ai_mode": {
+            "enum": [
+              "live",
+              "mock"
+            ]
+          },
+          "schema_version": {
+            "const": "1.0.2"
+          },
+          "verification": {
+            "const": "unverified"
+          },
+          "raw": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "document_id",
+          "document_version",
+          "source_hash",
+          "ai_mode",
+          "schema_version",
+          "verification",
+          "raw"
+        ],
+        "additionalProperties": false
+      },
+      "ArchiveImportOutput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "archive_sha256",
+          "case_id",
+          "revision",
+          "state",
+          "items"
+        ],
+        "properties": {
+          "archive_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "case_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "state": {
+            "enum": [
+              "accepted",
+              "partial",
+              "rejected"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 32,
+            "items": {
+              "$ref": "#/components/schemas/ArchiveImportItem"
+            }
+          }
+        }
+      },
+      "ArchiveImportItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "entry_index",
+          "entry_path",
+          "group",
+          "suggested_type",
+          "classification_verification",
+          "status",
+          "document",
+          "job",
+          "rejection"
+        ],
+        "properties": {
+          "entry_index": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 31
+          },
+          "entry_path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "group": {
+            "enum": [
+              "financial_statements",
+              "contracts",
+              "tax",
+              "payments",
+              "other"
+            ]
+          },
+          "suggested_type": {
+            "enum": [
+              "registration",
+              "loan_request",
+              "financial_statement",
+              "contract",
+              "acceptance_record",
+              "payment_record",
+              "invoice",
+              "other"
+            ]
+          },
+          "classification_verification": {
+            "const": "unverified"
+          },
+          "status": {
+            "enum": [
+              "accepted",
+              "rejected"
+            ]
+          },
+          "document": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Document"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "job": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Job"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rejection": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "code",
+                  "retryable"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "pattern": "^[A-Z][A-Z0-9_]+$"
+                  },
+                  "retryable": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "accepted"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "document": {
+                  "$ref": "#/components/schemas/Document"
+                },
+                "job": {
+                  "$ref": "#/components/schemas/Job"
+                },
+                "rejection": {
+                  "type": "null"
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "document": {
+                  "type": "null"
+                },
+                "job": {
+                  "type": "null"
+                },
+                "rejection": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ExtractionSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "document_id",
+          "document_version",
+          "source_hash",
+          "job_state",
+          "ai_mode",
+          "verification",
+          "group",
+          "suggested_type",
+          "classification_verification",
+          "outcome",
+          "total_fields",
+          "non_null_fields",
+          "usable_fields",
+          "diagnostics",
+          "fields"
+        ],
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "document_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "source_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "job_state": {
+            "enum": [
+              "queued",
+              "running",
+              "completed",
+              "partial",
+              "failed"
+            ]
+          },
+          "ai_mode": {
+            "enum": [
+              "live",
+              "mock"
+            ]
+          },
+          "verification": {
+            "const": "unverified"
+          },
+          "group": {
+            "enum": [
+              "financial_statements",
+              "contracts",
+              "tax",
+              "payments",
+              "other"
+            ]
+          },
+          "suggested_type": {
+            "enum": [
+              "registration",
+              "loan_request",
+              "financial_statement",
+              "contract",
+              "acceptance_record",
+              "payment_record",
+              "invoice",
+              "other"
+            ]
+          },
+          "classification_verification": {
+            "const": "unverified"
+          },
+          "outcome": {
+            "enum": [
+              "processing",
+              "ready_for_review",
+              "zero_usable_fields",
+              "failed"
+            ]
+          },
+          "total_fields": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "non_null_fields": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "usable_fields": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "diagnostics": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "code",
+                "field_key"
+              ],
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "field_key": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "field_key",
+                "has_value",
+                "quality",
+                "missing_reason",
+                "evidence_count"
+              ],
+              "properties": {
+                "field_key": {
+                  "type": "string"
+                },
+                "has_value": {
+                  "type": "boolean"
+                },
+                "quality": {
+                  "enum": [
+                    "readable",
+                    "uncertain",
+                    "unreadable"
+                  ]
+                },
+                "missing_reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "evidence_count": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        }
+      },
+      "DossierAccepted": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "archive_id",
+          "case_id",
+          "archive_sha256",
+          "revision",
+          "intake_state",
+          "manifest_url"
+        ],
+        "properties": {
+          "archive_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "case_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "archive_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "intake_state": {
+            "const": "queued"
+          },
+          "manifest_url": {
+            "type": "string",
+            "pattern": "^/api/v2/dossier-archives/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          }
+        }
+      },
+      "DossierArchiveSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "case_id",
+          "archive_sha256",
+          "intake_state",
+          "processing_state",
+          "created_at",
+          "counters",
+          "error_code"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "case_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "archive_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "intake_state": {
+            "enum": [
+              "queued",
+              "validating",
+              "registering",
+              "accepted",
+              "partially_accepted",
+              "rejected"
+            ]
+          },
+          "processing_state": {
+            "enum": [
+              "waiting",
+              "processing",
+              "finished",
+              "finished_with_errors"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "counters": {
+            "$ref": "#/components/schemas/DossierCounters"
+          },
+          "error_code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "DossierArchive": {
+        "description": "Archive summary fields plus members in stable ZIP entry order; flattened to keep strict additionalProperties semantics in draft-07.",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "case_id",
+          "archive_sha256",
+          "intake_state",
+          "processing_state",
+          "created_at",
+          "counters",
+          "error_code",
+          "members"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "case_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "archive_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "intake_state": {
+            "enum": [
+              "queued",
+              "validating",
+              "registering",
+              "accepted",
+              "partially_accepted",
+              "rejected"
+            ]
+          },
+          "processing_state": {
+            "enum": [
+              "waiting",
+              "processing",
+              "finished",
+              "finished_with_errors"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "counters": {
+            "$ref": "#/components/schemas/DossierCounters"
+          },
+          "error_code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "members": {
+            "type": "array",
+            "maxItems": 128,
+            "items": {
+              "$ref": "#/components/schemas/DossierMember"
+            }
+          }
+        }
+      },
+      "DossierArchiveList": {
+        "type": "array",
+        "maxItems": 4,
+        "items": {
+          "$ref": "#/components/schemas/DossierArchiveSummary"
+        }
+      },
+      "DossierMember": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "archive_id",
+          "entry_index",
+          "entry_path",
+          "byte_size",
+          "sha256",
+          "detected_mime",
+          "group",
+          "suggested_type",
+          "classification_verification",
+          "period_suggestion",
+          "subject_verification",
+          "intake_state",
+          "processing_state",
+          "page_count",
+          "document_id",
+          "job_id",
+          "error_code",
+          "retryable",
+          "source_url"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "archive_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "entry_index": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 127
+          },
+          "entry_path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "byte_size": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "sha256": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "detected_mime": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "group": {
+            "enum": [
+              "financial_statements",
+              "contracts",
+              "tax",
+              "payments",
+              "other"
+            ]
+          },
+          "suggested_type": {
+            "enum": [
+              "registration",
+              "loan_request",
+              "financial_statement",
+              "contract",
+              "acceptance_record",
+              "payment_record",
+              "invoice",
+              "other"
+            ]
+          },
+          "classification_verification": {
+            "const": "unverified"
+          },
+          "period_suggestion": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "year",
+              "kind",
+              "basis",
+              "verification"
+            ],
+            "properties": {
+              "year": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "kind": {
+                "const": "unresolved"
+              },
+              "basis": {
+                "const": "unresolved"
+              },
+              "verification": {
+                "const": "unverified"
+              }
+            }
+          },
+          "subject_verification": {
+            "const": "unresolved"
+          },
+          "intake_state": {
+            "enum": [
+              "awaiting_inspection",
+              "inspecting",
+              "registered",
+              "rejected",
+              "needs_review"
+            ]
+          },
+          "processing_state": {
+            "enum": [
+              "waiting",
+              "queued",
+              "running",
+              "completed_with_usable_data",
+              "completed_zero_usable",
+              "failed",
+              "needs_review",
+              "not_applicable"
+            ]
+          },
+          "page_count": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "document_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "job_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "error_code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "retryable": {
+            "type": "boolean"
+          },
+          "source_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^/api/v2/dossier-members/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/source$"
+          }
+        }
+      },
+      "DossierMemberSummary": {
+        "description": "Response of GET /api/v2/dossier-members/:id/extraction-summary. ExtractionSummary is the unchanged existing demo definition in the merged definitions root.",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "member_id",
+          "archive_id",
+          "document_id",
+          "job_id",
+          "intake_state",
+          "processing_state",
+          "error_code",
+          "extraction"
+        ],
+        "properties": {
+          "member_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "archive_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "document_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "job_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "intake_state": {
+            "enum": [
+              "awaiting_inspection",
+              "inspecting",
+              "registered",
+              "rejected",
+              "needs_review"
+            ]
+          },
+          "processing_state": {
+            "enum": [
+              "waiting",
+              "queued",
+              "running",
+              "completed_with_usable_data",
+              "completed_zero_usable",
+              "failed",
+              "needs_review",
+              "not_applicable"
+            ]
+          },
+          "error_code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "extraction": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExtractionSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "DossierCounters": {
+        "description": "Snapshot counters, not a single additive partition. registered counts stored source PDFs that are not rejected, including awaiting_inspection, inspecting, and needs_review; it does not imply canonical document/job assignment, queued extraction, or analysis. awaiting_inspection includes inspecting. needs_review counts each member once across both state axes.",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "discovered",
+          "registered",
+          "rejected",
+          "awaiting_inspection",
+          "queued",
+          "running",
+          "completed_with_usable_data",
+          "completed_zero_usable",
+          "failed",
+          "needs_review"
+        ],
+        "properties": {
+          "discovered": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 128
+          },
+          "registered": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 128
+          },
+          "rejected": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 128
+          },
+          "awaiting_inspection": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 128
+          },
+          "queued": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 128
+          },
+          "running": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 128
+          },
+          "completed_with_usable_data": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 128
+          },
+          "completed_zero_usable": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 128
+          },
+          "failed": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 128
+          },
+          "needs_review": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 128
+          }
+        }
+      },
+      "Assessment": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/TransactionAssessment"
+          },
+          {
+            "$ref": "#/components/schemas/CompanyHealthAssessmentV1"
+          }
+        ]
+      },
+      "AssessmentInput": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "financial_set_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "expected_revision"
+        ],
+        "additionalProperties": false
+      },
+      "AssessmentAcknowledgementInput": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "pattern": ".*[^ ].*"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "AssessmentPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "case_revision",
+                "created_at",
+                "method_version",
+                "state"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "case_revision": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "created_at": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "method_version": {
+                  "type": "string"
+                },
+                "state": {
+                  "const": "completed"
+                }
+              }
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[1-9][0-9]*$"
+          }
+        }
+      },
+      "FinancialTrendsV1": {
+        "type": "object",
+        "properties": {
+          "contract_version": {
+            "const": "AIC-FINANCIAL-TRENDS-1"
+          },
+          "case_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "captured_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "baseline_set_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "set": {
+                  "$ref": "#/components/schemas/FinancialSetRead"
+                },
+                "comparison_issues": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "gap_before": {
+                  "type": "boolean"
+                },
+                "facts": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "fact_id": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "format": "uuid"
+                      },
+                      "fact_revision": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "verified",
+                          "missing",
+                          "stale",
+                          "unverified",
+                          "rejected"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "key",
+                      "value",
+                      "fact_id",
+                      "fact_revision",
+                      "status"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "metrics": {
+                  "type": "array",
+                  "maxItems": 7,
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "metric_id",
+                      "group",
+                      "formula_id",
+                      "formula",
+                      "status",
+                      "raw_ratio",
+                      "source_facts",
+                      "max_points",
+                      "anchors",
+                      "points",
+                      "flags",
+                      "blockers"
+                    ],
+                    "properties": {
+                      "points": {
+                        "type": "null"
+                      },
+                      "status": {
+                        "enum": [
+                          "available",
+                          "unavailable"
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "required": [
+                "set",
+                "comparison_issues",
+                "gap_before",
+                "facts",
+                "metrics"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "baseline_metrics": {
+            "type": "array",
+            "maxItems": 7,
+            "items": {
+              "type": "object",
+              "required": [
+                "metric_id",
+                "group",
+                "formula_id",
+                "formula",
+                "status",
+                "raw_ratio",
+                "source_facts",
+                "max_points",
+                "anchors",
+                "points",
+                "flags",
+                "blockers"
+              ],
+              "properties": {
+                "points": {
+                  "type": "null"
+                },
+                "status": {
+                  "enum": [
+                    "available",
+                    "unavailable"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "contract_version",
+          "case_revision",
+          "captured_at",
+          "baseline_set_id",
+          "rows",
+          "baseline_metrics"
+        ],
+        "additionalProperties": false
+      },
+      "CompanyHealthCaseV1": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "counterparty_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "exposure_kind": {
+            "type": "null"
+          },
+          "lifecycle_stage": {
+            "type": "null"
+          },
+          "exposure": {
+            "type": "null"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "policy_version": {
+            "type": "null"
+          },
+          "method_version": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "documents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            }
+          },
+          "jobs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Job"
+            }
+          },
+          "questionnaires": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Questionnaire"
+            }
+          },
+          "issue_history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Finding"
+            }
+          },
+          "review_stale": {
+            "type": "boolean"
+          },
+          "counterparty_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "latest_review_run_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Finding"
+            }
+          },
+          "readiness": {
+            "$ref": "#/components/schemas/Readiness"
+          },
+          "requests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocumentRequest"
+            }
+          },
+          "waivers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Waiver"
+            }
+          },
+          "transaction_review": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TransactionReview"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "policy_artifact_hash": {
+            "type": "null"
+          },
+          "latest_assessment_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "assessment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Assessment"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "purpose": {
+            "const": "company_health"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "counterparty_id",
+          "exposure_kind",
+          "lifecycle_stage",
+          "exposure",
+          "revision",
+          "policy_version",
+          "method_version",
+          "created_at",
+          "updated_at",
+          "purpose",
+          "policy_artifact_hash"
+        ],
+        "additionalProperties": false
+      },
+      "Workspace": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Case"
+          },
+          {
+            "$ref": "#/components/schemas/CompanyHealthCaseV1"
+          }
+        ]
+      },
+      "WorkspacePage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Workspace"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "additionalProperties": false
+      },
+      "CompanyHealthCreateV1": {
+        "type": "object",
+        "properties": {
+          "schema_version": {
+            "const": "AIC-COMPANY-HEALTH-1"
+          },
+          "counterparty_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "pattern": "\\S"
+          }
+        },
+        "required": [
+          "schema_version",
+          "counterparty_id",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "CompanyHealthCapabilitiesV1": {
+        "type": "object",
+        "properties": {
+          "schema_version": {
+            "const": "AIC-COMPANY-HEALTH-1"
+          },
+          "available": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "schema_version",
+          "available"
+        ],
+        "additionalProperties": false
+      },
+      "TransactionAssessment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "case_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "case_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "checked_case_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "method_version": {
+            "type": "string"
+          },
+          "method_status": {
+            "enum": [
+              "unconfigured",
+              "configured_pilot",
+              "validation_pending",
+              "validated_for_limited_use",
+              "retired"
+            ]
+          },
+          "method_policy_hash": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "policy_version": {
+            "type": "string"
+          },
+          "snapshot_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "state": {
+            "const": "completed"
+          },
+          "stale": {
+            "type": "boolean"
+          },
+          "overall_score": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^-?[0-9]+([.][0-9]+)?$"
+          },
+          "grade": {
+            "type": "null"
+          },
+          "pd": {
+            "type": "null"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "financial_set_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "factors": {
+            "type": "array",
+            "maxItems": 7,
+            "items": {
+              "type": "object",
+              "properties": {
+                "factor_id": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "status": {
+                  "enum": [
+                    "available",
+                    "missing",
+                    "waived",
+                    "conflicting",
+                    "not_applicable"
+                  ]
+                },
+                "score": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "pattern": "^-?[0-9]+([.][0-9]+)?$"
+                },
+                "value": {},
+                "rationale": {
+                  "type": "string"
+                },
+                "evidence_refs": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "verification_state": {
+                  "type": "string"
+                },
+                "limitations": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "factor_id",
+                "label",
+                "status",
+                "score",
+                "value",
+                "rationale",
+                "evidence_refs",
+                "verification_state",
+                "limitations"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "strengths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "weaknesses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "red_flags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "limitations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "financial_health": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "enum": [
+                  "PREVIEW_ELIGIBLE",
+                  "blocked"
+                ]
+              },
+              "score": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^-?[0-9]+([.][0-9]+)?$"
+              },
+              "band": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^AIC-F[1-5]$"
+              },
+              "score_quality": {
+                "enum": [
+                  "experimental_not_validated",
+                  "unavailable"
+                ]
+              },
+              "pd": {
+                "type": "null"
+              },
+              "components": {
+                "type": "array",
+                "maxItems": 7,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "metric_id": {
+                      "enum": [
+                        "AIC-M01",
+                        "AIC-M02",
+                        "AIC-M03",
+                        "AIC-M04",
+                        "AIC-M05",
+                        "AIC-M06",
+                        "AIC-M07"
+                      ]
+                    },
+                    "formula_id": {
+                      "type": "string"
+                    },
+                    "raw_value": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "pattern": "^-?[0-9]+([.][0-9]+)?$"
+                    },
+                    "points": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "pattern": "^-?[0-9]+([.][0-9]+)?$"
+                    },
+                    "max_points": {
+                      "type": "string",
+                      "pattern": "^[0-9]+$"
+                    },
+                    "source_facts": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "format": "uuid"
+                      }
+                    },
+                    "verification_state": {
+                      "type": "string"
+                    },
+                    "blockers": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "flags": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "metric_id",
+                    "formula_id",
+                    "raw_value",
+                    "points",
+                    "max_points",
+                    "source_facts",
+                    "verification_state",
+                    "blockers",
+                    "flags"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "blockers": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "status",
+              "score",
+              "band",
+              "score_quality",
+              "pd",
+              "components",
+              "blockers"
+            ],
+            "additionalProperties": false
+          },
+          "transaction_review": {
+            "type": "object",
+            "properties": {
+              "exposure_kind": {
+                "enum": [
+                  "RECEIVABLE",
+                  "PREPAYMENT"
+                ]
+              },
+              "status": {
+                "enum": [
+                  "BLOCKED",
+                  "FOLLOW_UP",
+                  "CLEAR_FOR_REVIEW",
+                  "UNKNOWN"
+                ]
+              },
+              "findings": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "severity": {
+                      "type": "string"
+                    },
+                    "evidence_refs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "verification_state": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "severity",
+                    "evidence_refs",
+                    "verification_state"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "limitations": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "exposure_kind",
+              "status",
+              "findings",
+              "limitations"
+            ],
+            "additionalProperties": false
+          },
+          "calculation_trace": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "acknowledged_by": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "acknowledged_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "acknowledgement_reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "case_id",
+          "case_revision",
+          "checked_case_revision",
+          "method_version",
+          "method_status",
+          "method_policy_hash",
+          "policy_version",
+          "snapshot_hash",
+          "state",
+          "stale",
+          "overall_score",
+          "grade",
+          "pd",
+          "created_at",
+          "financial_set_id",
+          "factors",
+          "strengths",
+          "weaknesses",
+          "red_flags",
+          "limitations",
+          "financial_health",
+          "transaction_review",
+          "calculation_trace",
+          "acknowledged_by",
+          "acknowledged_at",
+          "acknowledgement_reason"
+        ],
+        "additionalProperties": false
+      },
+      "CompanyHealthAssessmentV1": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "case_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "case_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "checked_case_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "method_version": {
+            "type": "string"
+          },
+          "method_status": {
+            "enum": [
+              "unconfigured",
+              "configured_pilot",
+              "validation_pending",
+              "validated_for_limited_use",
+              "retired"
+            ]
+          },
+          "method_policy_hash": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "policy_version": {
+            "type": "null"
+          },
+          "snapshot_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "state": {
+            "const": "completed"
+          },
+          "stale": {
+            "type": "boolean"
+          },
+          "overall_score": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^-?[0-9]+([.][0-9]+)?$"
+          },
+          "grade": {
+            "type": "null"
+          },
+          "pd": {
+            "type": "null"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "financial_set_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "factors": {
+            "type": "array",
+            "maxItems": 7,
+            "items": {
+              "type": "object",
+              "properties": {
+                "factor_id": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "status": {
+                  "enum": [
+                    "available",
+                    "missing",
+                    "waived",
+                    "conflicting",
+                    "not_applicable"
+                  ]
+                },
+                "score": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "pattern": "^-?[0-9]+([.][0-9]+)?$"
+                },
+                "value": {},
+                "rationale": {
+                  "type": "string"
+                },
+                "evidence_refs": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "verification_state": {
+                  "type": "string"
+                },
+                "limitations": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "factor_id",
+                "label",
+                "status",
+                "score",
+                "value",
+                "rationale",
+                "evidence_refs",
+                "verification_state",
+                "limitations"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "strengths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "weaknesses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "red_flags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "limitations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "financial_health": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "enum": [
+                  "PREVIEW_ELIGIBLE",
+                  "blocked"
+                ]
+              },
+              "score": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^-?[0-9]+([.][0-9]+)?$"
+              },
+              "band": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^AIC-F[1-5]$"
+              },
+              "score_quality": {
+                "enum": [
+                  "experimental_not_validated",
+                  "unavailable"
+                ]
+              },
+              "pd": {
+                "type": "null"
+              },
+              "components": {
+                "type": "array",
+                "maxItems": 7,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "metric_id": {
+                      "enum": [
+                        "AIC-M01",
+                        "AIC-M02",
+                        "AIC-M03",
+                        "AIC-M04",
+                        "AIC-M05",
+                        "AIC-M06",
+                        "AIC-M07"
+                      ]
+                    },
+                    "formula_id": {
+                      "type": "string"
+                    },
+                    "raw_value": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "pattern": "^-?[0-9]+([.][0-9]+)?$"
+                    },
+                    "points": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "pattern": "^-?[0-9]+([.][0-9]+)?$"
+                    },
+                    "max_points": {
+                      "type": "string",
+                      "pattern": "^[0-9]+$"
+                    },
+                    "source_facts": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "format": "uuid"
+                      }
+                    },
+                    "verification_state": {
+                      "type": "string"
+                    },
+                    "blockers": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "flags": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "metric_id",
+                    "formula_id",
+                    "raw_value",
+                    "points",
+                    "max_points",
+                    "source_facts",
+                    "verification_state",
+                    "blockers",
+                    "flags"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "blockers": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "status",
+              "score",
+              "band",
+              "score_quality",
+              "pd",
+              "components",
+              "blockers"
+            ],
+            "additionalProperties": false
+          },
+          "transaction_review": {
+            "type": "null"
+          },
+          "calculation_trace": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "acknowledged_by": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "acknowledged_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "acknowledgement_reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "purpose": {
+            "const": "company_health"
+          }
+        },
+        "required": [
+          "id",
+          "case_id",
+          "case_revision",
+          "checked_case_revision",
+          "method_version",
+          "method_status",
+          "method_policy_hash",
+          "policy_version",
+          "snapshot_hash",
+          "state",
+          "stale",
+          "overall_score",
+          "grade",
+          "pd",
+          "created_at",
+          "financial_set_id",
+          "factors",
+          "strengths",
+          "weaknesses",
+          "red_flags",
+          "limitations",
+          "financial_health",
+          "transaction_review",
+          "calculation_trace",
+          "acknowledged_by",
+          "acknowledged_at",
+          "acknowledgement_reason",
+          "purpose"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}
