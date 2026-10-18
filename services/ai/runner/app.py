@@ -15,7 +15,7 @@ from typing import Callable
 
 from fastapi import FastAPI, Request
 from fastapi.concurrency import run_in_threadpool
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse
 
 from .backends import Backend, GoldFixtures, LiveBackend, MockBackend
 from .config import MODE_MOCK, Settings
@@ -24,7 +24,7 @@ from .errors import (FORBIDDEN, INVALID_MODEL_OUTPUT, INVALID_REQUEST, PAYLOAD_T
                      error_response)
 from .guards import evaluation_output_violations, extraction_output_violations, inspection_output_violations
 from .input_guards import evaluation_input_violations
-from .provider_diagnostics import emit_failure
+from .responses import UTF8JSONResponse as JSONResponse
 
 logger = logging.getLogger("runner")
 
@@ -79,7 +79,8 @@ def create_app(settings: Settings | None = None, backend: Backend | None = None,
     backend = backend or build_backend(settings, contracts)
 
     # Internal service: spec chuẩn là packages/contracts/internal-openapi.json, không tự sinh docs.
-    app = FastAPI(title="Fintech AI internal", version=SCHEMA_VERSION, docs_url=None, redoc_url=None, openapi_url=None)
+    app = FastAPI(title="Fintech AI internal", version=SCHEMA_VERSION, docs_url=None, redoc_url=None, openapi_url=None,
+                  default_response_class=JSONResponse)
     app.state.settings, app.state.contracts, app.state.backend = settings, contracts, backend
     app.state.chat_contracts = ChatContracts(settings.contracts_dir)
     app.state.chat = chat or build_chat(settings)
