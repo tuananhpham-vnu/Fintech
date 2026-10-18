@@ -17,6 +17,47 @@ export INTERNAL_API_KEY=<lấy qua kênh nhóm, không commit>
 ../../.venv/bin/python scripts/g0_consumer_check.py       # G0-T: ghi evidence/g0-t-report.json
 ```
 
+### Windows PowerShell 5.1: UTF-8
+
+JSON responses declare `Content-Type: application/json; charset=utf-8`. The bytes are UTF-8; Windows PowerShell 5.1
+can decode them as Latin-1 when the charset is absent, corrupting both OCR text and Python diagnostic messages.
+Setting the request's `-ContentType` alone does not control response decoding. PowerShell 7 uses UTF-8 for JSON by default.
+
+Offline check with synthetic gold data (no Gemini calls). In one PowerShell window, from the repository root:
+
+```powershell
+$env:AI_MODE = 'mock'
+$env:INTERNAL_API_KEY = 'local-utf8-check'
+Set-Location services/ai
+& ..\..\.venv\Scripts\python.exe -m runner serve --port 8101
+```
+
+In a second window, this client works in Windows PowerShell 5.1 and PowerShell 7:
+
+```powershell
+$payload = @{
+    schema_version = '1.0.2'
+    document_id = 'bdd9ea62-ce2f-5e12-b0d7-a7320811dea1'
+    case_id = 'a06adf0c-7110-51f6-86ad-4b4b903c3e9e'
+    type = 'contract'
+    storage_key = '04_contract.pdf'
+    sha256 = '33a453e3558ff0e8b5a770b70b38f2fb1bc32a2484cd3e916742ed973d378764'
+}
+$requestBytes = [Text.Encoding]::UTF8.GetBytes(($payload | ConvertTo-Json -Compress))
+$response = Invoke-WebRequest -UseBasicParsing -Method Post -Uri 'http://127.0.0.1:8101/internal/v1/extract' `
+    -Headers @{ 'X-Internal-Key' = 'local-utf8-check' } -ContentType 'application/json; charset=utf-8' -Body $requestBytes
+$response.Headers['Content-Type'] # application/json; charset=utf-8
+$result = $response.Content | ConvertFrom-Json
+($result.fields | Where-Object field_key -eq 'contract.ref').value -ceq ('H' + [char]0x0110 + '01') # True
+# Save original HTTP bytes, avoiding another decoding/encoding step:
+[IO.File]::WriteAllBytes((Join-Path $env:TEMP 'fintech-extract-utf8.json'), $response.RawContentStream.ToArray())
+```
+
+For an older server without a charset, decode the original bytes explicitly:
+`$result = [Text.Encoding]::UTF8.GetString($response.RawContentStream.ToArray()) | ConvertFrom-Json`.
+Previously corrupted saved files need a fresh correctly decoded response; this is not a repair of their contents.
+OCR-derived fields remain `uncertain` until reviewed, regardless of display encoding.
+
 | Biến môi trường | Mặc định | Ý nghĩa |
 |---|---|---|
 | `INTERNAL_API_KEY` | (bắt buộc) | So khớp header `X-Internal-Key`. Không đặt thì mọi route trả 403 (fail closed) |

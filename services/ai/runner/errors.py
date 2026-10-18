@@ -4,9 +4,8 @@ from __future__ import annotations
 import uuid
 from typing import Sequence
 
-from fastapi.responses import JSONResponse
-
 from .contracts import Violation
+from .responses import UTF8JSONResponse as JSONResponse
 
 # Mã dùng ở service nội bộ (catalogue trong docs/contracts.md §9.6)
 INVALID_REQUEST = "INVALID_REQUEST"
