@@ -57,9 +57,6 @@ export function RequestDraft({
         }}
       >
         <fieldset disabled={action.busy}>
-          <p className="mono">
-            {detail.id} · {detail.latest_review_run_id ?? '—'}
-          </p>
           <label className="field-label">
             {t('findings')}
             <select required value={issue} onChange={(e) => setIssue(e.target.value)}>
@@ -72,7 +69,7 @@ export function RequestDraft({
             </select>
           </label>
           <label className="field-label">
-            {t('type')} *
+            {t('documentType')} *
             <select
               value={documentType}
               onChange={(e) => setDocumentType(e.target.value as DocumentType)}

@@ -41,6 +41,9 @@ function pagination(query: any = {}) {
 const iso = (value: any) => (value instanceof Date ? value.toISOString() : value)
 export function projectCase(row: any) {
   return {
+    ...(row.purpose === 'company_health'
+      ? { purpose: 'company_health', policy_artifact_hash: null }
+      : {}),
     id: row.id,
     organization_id: row.organization_id,
     counterparty_id: row.counterparty_id,

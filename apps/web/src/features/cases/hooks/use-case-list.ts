@@ -34,8 +34,8 @@ export function useCaseList() {
   const visible =
     rows.data?.items.filter(
       (c) =>
-        (!kind || c.exposure_kind === kind) &&
-        `${names.data?.[c.counterparty_id]?.name ?? ''} ${names.data?.[c.counterparty_id]?.tax_id ?? ''} ${c.exposure.contract_ref ?? ''} ${c.id}`
+        (!kind || c.exposure_kind === kind || (kind === 'company_health' && c.purpose === kind)) &&
+        `${names.data?.[c.counterparty_id]?.name ?? ''} ${names.data?.[c.counterparty_id]?.tax_id ?? ''} ${c.exposure?.contract_ref ?? ''} ${c.id}`
           .toLowerCase()
           .includes(query.toLowerCase()),
     ) ?? []

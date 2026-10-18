@@ -2,6 +2,7 @@
 import { Status } from '@/components/ui/status'
 import type { SourceTarget } from '@/features/evidence/types'
 import type { Document } from '@/lib/api/contracts'
+import { DocumentLineage } from './document-lineage'
 import { useLocale } from '@/lib/i18n/locale-provider'
 import {
   FileText,
@@ -34,11 +35,13 @@ const groupIcons: Record<
 
 export function DocumentGroups({
   documents,
+  sourceDocuments,
   openSource,
   onInspect,
   onClassify,
 }: {
   documents: Document[]
+  sourceDocuments?: Document[]
   openSource: (target: SourceTarget) => void
   onInspect: (doc: Document) => void
   onClassify: (doc: Document) => void
@@ -112,6 +115,10 @@ export function DocumentGroups({
                           </div>
                           <div className="file-copy">
                             <strong>{doc.name ?? t(doc.type)}</strong>
+                            <DocumentLineage
+                              document={doc}
+                              documents={sourceDocuments ?? documents}
+                            />
                             <p>
                               {t(doc.type)} · {t('version')} {doc.version} · {doc.pages} {t('page')}
                             </p>
@@ -132,7 +139,9 @@ export function DocumentGroups({
 
                           {/* Extraction and document status badge */}
                           {doc.status === 'completed' ? (
-                            usableCount > 0 ? (
+                            usableCount === null ? (
+                              <span className="tag neutral">{t('extractionUnavailable')}</span>
+                            ) : usableCount > 0 ? (
                               <span className="tag green">
                                 <span className="status-dot" />
                                 {t('extractedWithFields')} ({usableCount})

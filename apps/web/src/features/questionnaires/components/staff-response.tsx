@@ -56,7 +56,7 @@ export function StaffResponse({
         )
       }
     >
-      <h3>{question.label ?? question.id}</h3>
+      <h3>{question.label ?? t('question')}</h3>
       <Status value="staff_transcribed" />
       <Status value="unverified" />
       <label className="field-label">

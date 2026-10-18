@@ -5,16 +5,19 @@ import { documentsApi } from '@/features/documents/api'
 import type { CaseDetail, Document, DocumentType } from '@/lib/api/contracts'
 import { useLocale } from '@/lib/i18n/locale-provider'
 import { useState } from 'react'
+import type { SourceTarget } from '@/features/evidence/types'
 export function DocumentClassification({
   document,
   detail,
   onClose,
   onSaved,
+  openSource,
 }: {
   document: Document
   detail: CaseDetail
   onClose: () => void
   onSaved: () => void
+  openSource: (s: SourceTarget) => void
 }) {
   const { t } = useLocale(),
     [type, setType] = useState(document.source_review?.declared_type ?? document.type),
@@ -47,8 +50,22 @@ export function DocumentClassification({
       <h3>
         {document.name ?? t(document.type)} · v{document.version}
       </h3>
+      <button
+        type="button"
+        className="secondary-button"
+        onClick={() =>
+          openSource({
+            documentId: document.id,
+            version: document.version,
+            hash: document.hash,
+            name: document.name,
+          })
+        }
+      >
+        {t('source')} · v{document.version}
+      </button>
       <label className="field-label">
-        {t('type')}
+        {t('documentType')}
         <select value={type} onChange={(e) => setType(e.target.value as DocumentType)}>
           {(
             [

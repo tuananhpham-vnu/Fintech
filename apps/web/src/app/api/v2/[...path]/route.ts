@@ -23,8 +23,9 @@ async function forward(request: Request, context: { params: Promise<{ path: stri
   const origin = request.headers.get('origin')
   const originMatches =
     origin === publicOrigin ||
-    origin?.replace('//localhost:', '//127.0.0.1:') ===
-      publicOrigin.replace('//localhost:', '//127.0.0.1:')
+    (process.env.NODE_ENV !== 'production' &&
+      origin?.replace('//localhost:', '//127.0.0.1:') ===
+        publicOrigin.replace('//localhost:', '//127.0.0.1:'))
   if (write && !originMatches) return error(403, 'ORIGIN_REJECTED')
   if (!process.env.AIC_BACKEND_URL) return error(503, 'BACKEND_NOT_CONFIGURED')
   let base: string
@@ -64,13 +65,15 @@ async function forward(request: Request, context: { params: Promise<{ path: stri
     return error(400, 'IDEMPOTENCY_REQUIRED')
   let body: ArrayBuffer | undefined
   if (write) {
-    const max = endpoint.endsWith('/dossier-archives')
-      ? 33 * 1024 * 1024
-      : endpoint.endsWith('/document-archives')
-        ? 21 * 1024 * 1024
-        : endpoint.endsWith('/documents')
-          ? 11 * 1024 * 1024
-          : 1024 * 1024
+    const max = endpoint.endsWith('/financial-files')
+      ? 26_000_000
+      : endpoint.endsWith('/dossier-archives')
+        ? 33 * 1024 * 1024
+        : endpoint.endsWith('/document-archives')
+          ? 21 * 1024 * 1024
+          : endpoint.endsWith('/documents')
+            ? 11 * 1024 * 1024
+            : 1024 * 1024
     if (Number(request.headers.get('content-length') ?? 0) > max)
       return error(413, 'PAYLOAD_TOO_LARGE')
     const reader = request.body?.getReader(),
@@ -107,7 +110,12 @@ async function forward(request: Request, context: { params: Promise<{ path: stri
       body,
       cache: 'no-store',
       redirect: 'manual',
-      signal: AbortSignal.any([request.signal, AbortSignal.timeout(85_000)]),
+      signal: AbortSignal.any([
+        request.signal,
+        AbortSignal.timeout(
+          /\/(financial-imports|financial-files)$/.test(endpoint) ? 270_000 : 85_000,
+        ),
+      ]),
     })
     if (upstream.status >= 300 && upstream.status < 400 && upstream.status !== 304)
       return error(502, 'UPSTREAM_REDIRECT_REJECTED')

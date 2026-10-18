@@ -4,6 +4,8 @@ import { Loading } from '@/components/feedback/loading'
 import { Pagination } from '@/components/ui/pagination'
 import { type CaseDetail } from '@/lib/api/contracts'
 import { useLocale } from '@/lib/i18n/locale-provider'
+import { actionText, presentNote, productText } from '@/lib/i18n/product-copy'
+import { companyHealthText } from '@/lib/i18n/company-health-copy'
 import { formatTime } from '@/lib/utils/format'
 import { useCaseHistory } from '../hooks/use-case-history'
 export function CaseHistory({ detail }: { detail: CaseDetail }) {
@@ -12,7 +14,11 @@ export function CaseHistory({ detail }: { detail: CaseDetail }) {
   return (
     <section className="panel timeline-panel">
       <div className="section-title">
-        <h3>{t('history')}</h3>
+        <h3>
+          {detail.purpose === 'company_health'
+            ? companyHealthText(locale, 'history')
+            : t('history')}
+        </h3>
         <button className="text-button" onClick={history.reload}>
           {t('refresh')}
         </button>
@@ -27,21 +33,13 @@ export function CaseHistory({ detail }: { detail: CaseDetail }) {
           {history.data.items.map((event) => (
             <li key={event.id}>
               <span className="timeline-point" />
-              <strong>{event.action}</strong>
-              <p>{event.reason}</p>
+              <strong>{actionText(event.action, locale)}</strong>
+              <p>{presentNote(event.reason, locale)}</p>
               <small>
-                {event.actor} · {t('revision')} {event.revision_before ?? '—'} →{' '}
+                {productText(locale, 'recorded')} · {t('revision')} {event.revision_before ?? '—'} →{' '}
                 {event.revision_after ?? '—'}
               </small>
               <time dateTime={event.time}>{formatTime(event.time, locale)}</time>
-              <details>
-                <summary>{t('evidence')}</summary>
-                {event.subject_refs.map((ref) => (
-                  <p className="mono" key={ref}>
-                    {ref}
-                  </p>
-                ))}
-              </details>
             </li>
           ))}
         </ol>

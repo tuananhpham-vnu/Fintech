@@ -30,9 +30,14 @@ original exception for main's global error sanitization. The callback must use
 its provided client for all transaction work; nested transactions/savepoints are
 not supplied. The pool is exposed for operator/bootstrap/integration-test use.
 
-Initialization executes SELECT 1, locates the latest numbered local migration,
+Initialization executes SELECT 1, locates the latest required numbered migration,
 and requires its matching name/canonical SHA-256 checksum in `aic.schema_migrations`.
-Currently this is `0003_authorization_row_locks.sql`. Missing
+Migration 0020 introduced the separately gated company-health expansion; an
+installed 0020 must have its matching checksum. The current release also includes
+0021 for immutable international financial-import sources, so its latest required
+readiness migration is now 0021. Apply the full ordered migration set before running
+this release. See the company-health v1 contract for its controlled rollout/backup/
+rollback boundary. No startup path runs migrations. Missing
 migration files (including the required 0003 baseline), a missing schema/ledger,
 a missing latest row, or a checksum mismatch reject startup and close the pool.
 This is read-only verification;

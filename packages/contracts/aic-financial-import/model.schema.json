@@ -1,0 +1,191 @@
+{
+  "type": "object",
+  "properties": {
+    "document_type": {
+      "enum": [
+        "financial_statement",
+        "other"
+      ]
+    },
+    "scope": {
+      "type": "object",
+      "properties": {
+        "entity_name": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "country": {
+          "enum": [
+            "VN",
+            "US",
+            "CN"
+          ]
+        },
+        "period_kind": {
+          "enum": [
+            "FY",
+            "INTERIM",
+            "TTM"
+          ]
+        },
+        "start_date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "end_date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "basis": {
+          "enum": [
+            "standalone",
+            "consolidated"
+          ]
+        },
+        "accounting_regime": {
+          "enum": [
+            "VN_TT133",
+            "VN_TT200",
+            "VN_TT99",
+            "VN_TT58",
+            "US_GAAP",
+            "CN_ASBE",
+            "IFRS",
+            "OTHER",
+            "UNKNOWN"
+          ]
+        },
+        "currency": {
+          "enum": [
+            "VND",
+            "USD",
+            "CNY",
+            "HKD",
+            "EUR",
+            "GBP",
+            "JPY"
+          ]
+        },
+        "unit_multiplier": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]{0,11}$"
+        }
+      },
+      "required": [
+        "entity_name",
+        "country",
+        "period_kind",
+        "start_date",
+        "end_date",
+        "basis",
+        "accounting_regime",
+        "currency",
+        "unit_multiplier"
+      ],
+      "additionalProperties": false
+    },
+    "scope_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 600
+          },
+          "quote": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          }
+        },
+        "required": [
+          "page",
+          "quote"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 12
+    },
+    "facts": {
+      "type": "array",
+      "maxItems": 14,
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "enum": [
+              "current_assets",
+              "current_liabilities",
+              "cash",
+              "unrestricted_short_term_equivalents",
+              "trade_receivables",
+              "total_equity",
+              "total_assets",
+              "total_liabilities",
+              "interest_bearing_debt",
+              "operating_profit",
+              "depreciation_amortization",
+              "interest_expense",
+              "net_revenue",
+              "cash_from_operations"
+            ]
+          },
+          "value": {
+            "type": "string",
+            "pattern": "^-?[0-9]{1,30}(\\.[0-9]{1,12})?$"
+          },
+          "raw_token": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 600
+          },
+          "quote": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "period_end": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "basis": {
+            "enum": [
+              "standalone",
+              "consolidated"
+            ]
+          }
+        },
+        "required": [
+          "key",
+          "value",
+          "raw_token",
+          "label",
+          "page",
+          "quote",
+          "period_end",
+          "basis"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "document_type",
+    "scope",
+    "scope_evidence",
+    "facts"
+  ],
+  "additionalProperties": false
+}

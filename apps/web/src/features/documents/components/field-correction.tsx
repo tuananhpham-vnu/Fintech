@@ -1,4 +1,5 @@
 'use client'
+import { TechnicalDetails } from '@/components/ui/technical-details'
 import { ActionDialog } from '@/components/forms/revision-action-dialog'
 import { casesApi } from '@/features/cases/api'
 import { type CaseDetail, type ExtractedField } from '@/lib/api/contracts'
@@ -7,6 +8,7 @@ import { useLocale } from '@/lib/i18n/locale-provider'
 import { displayValue } from '@/lib/utils/format'
 import { useState } from 'react'
 import { documentFieldLabel } from '../field-labels'
+import type { SourceTarget } from '@/features/evidence/types'
 export function FieldCorrection({
   field,
   verificationOnly = false,
@@ -14,6 +16,7 @@ export function FieldCorrection({
   detail,
   onClose,
   onSaved,
+  openSource,
 }: {
   field: ExtractedField
   verificationOnly?: boolean
@@ -21,6 +24,7 @@ export function FieldCorrection({
   detail: CaseDetail
   onClose: () => void
   onSaved: () => void
+  openSource: (s: SourceTarget) => void
 }) {
   const { t, locale } = useLocale(),
     [value, setValue] = useState(field.value == null ? '' : String(field.value)),
@@ -58,19 +62,22 @@ export function FieldCorrection({
       }
     >
       <h3>{documentFieldLabel(field.field_key, locale).label}</h3>
-      <details>
-        <summary>
-          {locale === 'en'
-            ? 'Technical details'
-            : locale === 'vi'
-              ? 'Chi tiết kỹ thuật'
-              : '技术详情'}
-        </summary>
+      <TechnicalDetails>
         <code>{field.field_key}</code>
-      </details>
+      </TechnicalDetails>
       <p>
         {t('raw')}: {displayValue(field.raw_value)}
       </p>
+      {field.evidence_refs.map((ref, i) => (
+        <button
+          key={ref}
+          type="button"
+          className="secondary-button"
+          onClick={() => openSource({ evidenceId: ref })}
+        >
+          {t('source')} {i + 1}
+        </button>
+      ))}
       {!verificationOnly && (
         <label className="check-label">
           <input type="checkbox" checked={missing} onChange={(e) => setMissing(e.target.checked)} />

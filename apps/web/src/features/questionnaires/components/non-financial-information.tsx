@@ -58,13 +58,16 @@ export function NonFinancialInformation({
               return (
                 <article className="panel aic-section" key={q.id}>
                   <div className="question-card-heading">
-                    <h3>{q.label ?? q.id}</h3>
+                    <h3>{q.label ?? t('question')}</h3>
                     <Status value={q.requiredness} />
                   </div>
                   {responses.length ? (
                     responses.map((r) => (
                       <div key={r.id}>
-                        <blockquote>{displayValue(r.answer_json)}</blockquote>
+                        {r.answer_state === 'skipped' && <p>{t('reason')}</p>}
+                        <blockquote>
+                          {r.answer_state === 'skipped' ? r.reason : displayValue(r.answer_json)}
+                        </blockquote>
                         <div className="status-trio">
                           <Status value={r.answer_state} />
                           <Status value={r.origin} />
@@ -72,6 +75,11 @@ export function NonFinancialInformation({
                           {r.verification_stale && <Status value="stale" tone="amber" />}
                         </div>
                         <p className="help-text">
+                          {r.reported_by && (
+                            <>
+                              {t('reportedBy')}: {t(r.reported_by)} ·{' '}
+                            </>
+                          )}
                           {t('revision')} {r.revision}
                           {r.reported_reference && ` · ${r.reported_reference}`}
                         </p>

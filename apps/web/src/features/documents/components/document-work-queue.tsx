@@ -2,6 +2,7 @@
 import type { SourceTarget } from '@/features/evidence/types'
 import type { Document } from '@/lib/api/contracts'
 import { useLocale } from '@/lib/i18n/locale-provider'
+import { DocumentLineage } from './document-lineage'
 import {
   AlertTriangle,
   CheckCircle2,
@@ -101,6 +102,7 @@ export function DocumentWorkQueue({
                   <strong className="row-filename" title={doc.name ?? t(doc.type)}>
                     {doc.name ?? t(doc.type)}
                   </strong>
+                  <DocumentLineage document={doc} documents={documents} />
                   <div className="row-meta">
                     {/* Period tag */}
                     {periodInfo.year ? (
@@ -146,6 +148,8 @@ export function DocumentWorkQueue({
                       <span className="status-dot" />
                       {locale === 'vi' ? 'Từ chối định dạng' : 'Rejected format'}
                     </span>
+                  ) : doc.status === 'completed' && usableCount === null ? (
+                    <span className="tag neutral">{t('extractionUnavailable')}</span>
                   ) : doc.status === 'completed' && usableCount === 0 ? (
                     <span className="tag amber">
                       <span className="status-dot" />

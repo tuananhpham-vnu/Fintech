@@ -1,4 +1,5 @@
 'use client'
+import { TechnicalDetails } from '@/components/ui/technical-details'
 import { Empty } from '@/components/feedback/empty'
 import { ErrorNotice } from '@/components/feedback/error-notice'
 import { Loading } from '@/components/feedback/loading'
@@ -92,9 +93,13 @@ export function DocumentReview({
         <div className="aic-run-strip">
           <Status value={run.data.state} />
           <span>
-            {run.data.rules_version} · {run.data.policy_version} · {t('revision')}{' '}
-            {run.data.case_revision}
+            {t('revision')} {run.data.case_revision}
           </span>
+          <TechnicalDetails>
+            <p>
+              {run.data.rules_version} · {run.data.policy_version}
+            </p>
+          </TechnicalDetails>
           {stale && <Status value="stale" tone="amber" />}
         </div>
       )}
@@ -115,12 +120,11 @@ export function DocumentReview({
                     {systemLabel(f.category, localizeCategory(f.category, locale), locale)}
                   </p>
                   <h3>{localizeFindingSummary(f, locale)}</h3>
-                  <details className="aic-technical-details">
-                    <summary>{t('technicalDetails')}</summary>
+                  <TechnicalDetails>
                     <p className="mono">
                       {f.rule_id} · {f.category} · {f.id}
                     </p>
-                  </details>
+                  </TechnicalDetails>
                 </div>
                 <Status value={f.severity} />
               </div>

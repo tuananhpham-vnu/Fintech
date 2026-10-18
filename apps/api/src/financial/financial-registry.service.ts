@@ -1,27 +1,38 @@
-import { Inject, Injectable } from '@nestjs/common'
-import { randomUUID } from 'node:crypto'
-import { CaseMutations } from '../foundation/case-mutations'
-import { canonicalJson, requestHash } from '../foundation/canonical'
-import { CoreRepository, requireUuid } from '../foundation/core.repository'
-import { FoundationError, notFound } from '../foundation/errors'
-import { FOUNDATION_CONFIG, FOUNDATION_DB } from '../foundation/ports'
+import { Inject, Injectable } from "@nestjs/common";
+import { randomUUID } from "node:crypto";
+import { CaseMutations } from "../foundation/case-mutations";
+import { canonicalJson, requestHash } from "../foundation/canonical";
+import { CoreRepository, requireUuid } from "../foundation/core.repository";
+import { FoundationError, notFound } from "../foundation/errors";
+import { FOUNDATION_CONFIG, FOUNDATION_DB } from "../foundation/ports";
 import type {
   AuthSession,
   FoundationConfig,
   FoundationDatabase,
   SqlClient,
-} from '../foundation/ports'
-import { validateContract } from '../foundation/validation'
-import { projectLegacyExtraction } from '../documents/evidence-projection'
-import { Decimal } from './decimal'
-import { scoreFhi } from './fhi-scorer'
-import type { FhiInput, FhiFinancialFact, FhiScope } from './fhi-scorer'
-import { FHI_METRICS } from './fhi-method'
+} from "../foundation/ports";
+import { validateContract } from "../foundation/validation";
+import { projectLegacyExtraction } from "../documents/evidence-projection";
+import { Decimal } from "./decimal";
+import { countryCode, importReceipt, importSource, validImportedSource } from './financial-import-source';
+import { scoreFhi } from "./fhi-scorer";
+import type {
+  FhiInput,
+  FhiFinancialFact,
+  FhiScope,
+  FhiEngineResult,
+} from "./fhi-scorer";
+import { FHI_METRICS } from "./fhi-method";
+import { activeFhiPolicy } from "./fhi-policy";
+import {
+  financialComparisonIssues,
+  verifiedTrendFacts,
+} from "./financial-trends";
 
 const fail = (code: string, status = 422): never => {
-  throw new FoundationError(status, code)
-}
-const iso = (value: Date | string) => new Date(value).toISOString()
+  throw new FoundationError(status, code);
+};
+const iso = (value: Date | string) => new Date(value).toISOString();
 @Injectable()
 export class FinancialRegistry {
   constructor(
@@ -31,19 +42,62 @@ export class FinancialRegistry {
     private readonly mutations: CaseMutations,
   ) {}
   private input(name: string, body: unknown): any {
-    const input = JSON.parse(canonicalJson(body))
-    validateContract(name, input)
-    return input
+    const input = JSON.parse(canonicalJson(body));
+    validateContract(name, input);
+    return input;
+  }
+  async trends(session: AuthSession, caseId: string, baselineId?: string) {
+    requireUuid(caseId);
+    if (baselineId) requireUuid(baselineId);
+    return this.db.transaction(async (tx) => {
+      const current = await this.access(tx, session, caseId);
+      const initial = await this.evaluateTx(tx, current, baselineId);
+      const sets = [...initial.registry.sets].sort(
+        (a, b) =>
+          a.scope.period.end_date.localeCompare(b.scope.period.end_date) ||
+          a.id.localeCompare(b.id),
+      );
+      const baseline = sets.find((s) => s.id === baselineId) ?? sets.at(-1);
+      const rows = [];
+      for (const set of sets) {
+        const comparison_issues = financialComparisonIssues(
+          set,
+          baseline,
+          sets,
+        );
+        const registry = (await this.evaluateTx(tx, current, set.id)).registry;
+        const previous = rows.at(-1)?.set;
+        rows.push({
+          set,
+          comparison_issues,
+          gap_before:
+            !!previous &&
+            Number(set.scope.period.end_date.slice(0, 4)) -
+              Number(previous.scope.period.end_date.slice(0, 4)) >
+              1,
+          facts: comparison_issues.length ? [] : verifiedTrendFacts(set),
+          metrics: comparison_issues.length ? [] : registry.metrics,
+        });
+      }
+      return this.output("FinancialTrendsV1", {
+        contract_version: "AIC-FINANCIAL-TRENDS-1",
+        case_revision: Number(current.revision),
+        captured_at: new Date().toISOString(),
+        baseline_set_id: baseline?.id ?? null,
+        baseline_metrics: initial.registry.metrics,
+        rows,
+      });
+    });
   }
   private output(name: string, body: any): any {
-    validateContract(name, body, true)
-    return body
+    validateContract(name, body, true);
+    return body;
   }
   private async access(tx: SqlClient, session: AuthSession, caseId: string) {
     const check = async () => {
       if (
         !(
-          await tx.query('SELECT * FROM aic.lock_active_session($1,$2,$3,$4)', [
+          await tx.query("SELECT * FROM aic.lock_active_session($1,$2,$3,$4)", [
             session.id,
             session.user.id,
             session.user.organization_id,
@@ -51,12 +105,17 @@ export class FinancialRegistry {
           ])
         ).rows[0]
       )
-        fail('SESSION_EXPIRED', 401)
-    }
-    await check()
-    const current = await this.core.assertCaseAccess(tx, session.user, caseId, true)
-    await check()
-    return current
+        fail("SESSION_EXPIRED", 401);
+    };
+    await check();
+    const current = await this.core.assertCaseAccess(
+      tx,
+      session.user,
+      caseId,
+      true,
+    );
+    await check();
+    return current;
   }
   private async source(
     tx: SqlClient,
@@ -64,7 +123,8 @@ export class FinancialRegistry {
     input: any,
     reviewed: boolean,
   ): Promise<boolean> {
-    if (input.kind === 'manual_entry') return true
+    if (input.kind === "manual_entry") return true;
+    if (input.kind === 'financial_import') return validImportedSource(tx, current, input, reviewed);
     const doc = (
       await tx.query(
         `SELECT d.*,r.raw_extraction AS extraction,(l.current_document_id=d.id) AS active FROM aic.mvp_documents d
@@ -79,58 +139,61 @@ export class FinancialRegistry {
           input.source_hash,
         ],
       )
-    ).rows[0]
-    if (!doc?.extraction || !doc.active) return false
-    let projection
+    ).rows[0];
+    if (!doc?.extraction || !doc.active) return false;
+    let projection;
     try {
-      projection = projectLegacyExtraction(doc, doc.extraction)
+      projection = projectLegacyExtraction(doc, doc.extraction);
     } catch {
-      return false
+      return false;
     }
     if (
       !projection.evidence.some(
-        (e) => e.id === input.evidence_ref && e.page === input.page && e.quote === input.quote,
+        (e) =>
+          e.id === input.evidence_ref &&
+          e.page === input.page &&
+          e.quote === input.quote,
       )
     )
-      return false
-    if (!reviewed) return true
+      return false;
+    if (!reviewed) return true;
     const human = (
       await tx.query(
         "SELECT payload_json FROM aic.mvp_document_decisions WHERE organization_id=$1 AND case_id=$2 AND document_id=$3 AND kind='classification' ORDER BY case_revision DESC LIMIT 1",
         [current.organization_id, current.id, doc.id],
       )
-    ).rows[0]?.payload_json
+    ).rows[0]?.payload_json;
     const cp = (
       await tx.query(
-        'SELECT revision FROM aic.counterparties WHERE organization_id=$1 AND id=$2 FOR SHARE',
+        "SELECT revision FROM aic.counterparties WHERE organization_id=$1 AND id=$2 FOR SHARE",
         [current.organization_id, current.counterparty_id],
       )
-    ).rows[0]
+    ).rows[0];
     return (
-      human?.subject_match === 'match' &&
+      human?.subject_match === "match" &&
       human.reviewed_pages.includes(input.page) &&
       Number(human.counterparty_revision) === Number(cp.revision)
-    )
+    );
   }
   private async snapshot(tx: SqlClient, current: any, facts: any[]) {
     const cp = (
       await tx.query(
-        'SELECT revision,identity_status FROM aic.counterparties WHERE organization_id=$1 AND id=$2 FOR SHARE',
+        "SELECT revision,identity_status FROM aic.counterparties WHERE organization_id=$1 AND id=$2 FOR SHARE",
         [current.organization_id, current.counterparty_id],
       )
-    ).rows[0]
+    ).rows[0];
     const decisions = (
       await tx.query(
-        'SELECT id,payload_json FROM aic.mvp_document_decisions WHERE organization_id=$1 AND case_id=$2 ORDER BY case_revision',
+        "SELECT id,payload_json FROM aic.mvp_document_decisions WHERE organization_id=$1 AND case_id=$2 ORDER BY case_revision",
         [current.organization_id, current.id],
       )
-    ).rows
+    ).rows;
     const docs = (
       await tx.query(
-        'SELECT id,current_document_id FROM aic.mvp_document_lineages WHERE organization_id=$1 AND case_id=$2 ORDER BY id',
+        "SELECT id,current_document_id FROM aic.mvp_document_lineages WHERE organization_id=$1 AND case_id=$2 ORDER BY id",
         [current.organization_id, current.id],
       )
-    ).rows
+    ).rows;
     return requestHash({
       counterparty: cp,
       exposure: current.exposure_json,
@@ -141,45 +204,58 @@ export class FinancialRegistry {
         revision: Number(f.revision),
         payload: f.payload_json,
       })),
-    })
+    });
   }
   private async setTx(tx: SqlClient, current: any, row: any) {
     const facts = (
       await tx.query(
-        'SELECT * FROM aic.mvp_financial_facts WHERE organization_id=$1 AND case_id=$2 AND set_id=$3 AND set_revision=$4 ORDER BY fact_key',
+        "SELECT * FROM aic.mvp_financial_facts WHERE organization_id=$1 AND case_id=$2 AND set_id=$3 AND set_revision=$4 ORDER BY fact_key",
         [current.organization_id, current.id, row.id, row.revision],
       )
-    ).rows
-    const hash = await this.snapshot(tx, current, facts)
+    ).rows;
+    const hash = await this.snapshot(tx, current, facts);
     const decisions = (
       await tx.query(
-        'SELECT * FROM aic.mvp_financial_verifications WHERE organization_id=$1 AND case_id=$2 AND set_id=$3 AND set_revision=$4 ORDER BY case_revision',
+        "SELECT * FROM aic.mvp_financial_verifications WHERE organization_id=$1 AND case_id=$2 AND set_id=$3 AND set_revision=$4 ORDER BY case_revision",
         [current.organization_id, current.id, row.id, row.revision],
       )
-    ).rows
-    let stale = false
-    const output = []
+    ).rows;
+    let stale = false;
+    const output = [];
     for (const fact of facts) {
-      const decision = decisions.filter((d) => d.fact_ids.includes(fact.id)).at(-1),
-        currentSource = await this.source(tx, current, fact.payload_json.source, false)
-      const isStale = !!decision && (decision.source_snapshot_hash !== hash || !currentSource)
-      stale ||= isStale
+      const decision = decisions
+          .filter((d) => d.fact_ids.includes(fact.id))
+          .at(-1),
+        currentSource = await this.source(
+          tx,
+          current,
+          fact.payload_json.source,
+          false,
+        );
+      const isStale =
+        !!decision &&
+        (decision.source_snapshot_hash !== hash || !currentSource);
+      stale ||= isStale;
       output.push({
         ...fact.payload_json,
         id: fact.id,
         revision: Number(fact.revision),
         current_source: currentSource,
         verification: {
-          status: !decision ? 'unverified' : isStale ? 'stale' : decision.status,
+          status: !decision
+            ? "unverified"
+            : isStale
+              ? "stale"
+              : decision.status,
           verified_revision: decision ? Number(fact.revision) : null,
           verified_by: decision?.actor_id ?? null,
           verified_at: decision ? iso(decision.created_at) : null,
         },
         ...(decision ? { verification_reason: decision.reason } : {}),
-      })
+      });
     }
     return {
-      read: this.output('FinancialSetRead', {
+      read: this.output("FinancialSetRead", {
         id: row.id,
         revision: Number(row.revision),
         scope: row.scope_json,
@@ -190,35 +266,52 @@ export class FinancialRegistry {
       }),
       decisions,
       hash,
-    }
+    };
   }
   async get(session: AuthSession, caseId: string, setId?: string) {
-    requireUuid(caseId)
-    if (setId !== undefined) requireUuid(setId)
+    requireUuid(caseId);
+    if (setId !== undefined) requireUuid(setId);
     return this.db.transaction(async (tx) => {
-      const current = await this.access(tx, session, caseId)
-      return this.detailTx(tx, current, setId)
-    })
+      const current = await this.access(tx, session, caseId);
+      return this.detailTx(tx, current, setId);
+    });
   }
   async detailTx(tx: SqlClient, current: any, setId?: string) {
+    return (await this.evaluateTx(tx, current, setId)).registry;
+  }
+  /** Internal exact calculation for publication; the ordinary registry remains score-free. */
+  async evaluateTx(tx: SqlClient, current: any, setId?: string) {
     const rows = (
       await tx.query(
-        'SELECT DISTINCT ON(id) * FROM aic.mvp_financial_sets WHERE organization_id=$1 AND case_id=$2 ORDER BY id,revision DESC',
+        "SELECT DISTINCT ON(id) * FROM aic.mvp_financial_sets WHERE organization_id=$1 AND case_id=$2 ORDER BY id,revision DESC",
         [current.organization_id, current.id],
       )
-    ).rows
-    const sets = []
-    const prepared = []
+    ).rows;
+    const sets = [];
+    const prepared = [];
     for (const row of rows) {
-      const value = await this.setTx(tx, current, row)
-      sets.push(value.read)
-      prepared.push(value)
+      const value = await this.setTx(tx, current, row);
+      sets.push(value.read);
+      prepared.push(value);
     }
-    const blockers = ['FHI_METHOD_UNCONFIGURED']
-    let metrics: any[] = []
+    const now = iso(
+      (await tx.query("SELECT clock_timestamp() AS at")).rows[0].at,
+    );
+    const policy = activeFhiPolicy(
+      this.config.fhiPolicy,
+      current.organization_id,
+      now,
+    );
+    const blockers: string[] = policy ? [] : ["FHI_METHOD_UNCONFIGURED"];
+    let engine: FhiEngineResult | null = null;
+    let metrics: any[] = [];
     const selected =
-      setId === undefined ? (sets.length === 1 ? 0 : -1) : sets.findIndex((s) => s.id === setId)
-    if (setId !== undefined && selected === -1) throw notFound()
+      setId === undefined
+        ? sets.length === 1
+          ? 0
+          : -1
+        : sets.findIndex((s) => s.id === setId);
+    if (setId !== undefined && selected === -1) throw notFound();
     if (selected !== -1) {
       const set = sets[selected],
         facts: FhiFinancialFact[] = set.facts.map((f: any) => ({
@@ -227,47 +320,57 @@ export class FinancialRegistry {
           key: f.key,
           statement_set_id: set.id,
           statement_set_revision: set.revision,
-          scope: { ...set.scope, unit_multiplier: '1' },
+          scope: { ...set.scope, unit_multiplier: "1" },
           value: f.normalized_decimal,
           verification: f.verification,
           current_source: f.current_source,
           source_refs: [
-            f.source.kind === 'document'
+            f.source.kind === "document"
               ? {
-                  kind: 'document',
+                  kind: "document",
                   document_id: f.source.document_id,
                   document_version: f.source.document_version,
                   source_hash: f.source.source_hash,
                   page: f.source.page,
                   quote: f.source.quote,
                 }
-              : { kind: 'verified_entry', entry_id: f.id, entry_revision: f.revision },
+              : {
+                  kind: "verified_entry",
+                  entry_id: f.id,
+                  entry_revision: f.revision,
+                },
           ],
-        }))
-      const latest = prepared[selected].decisions.at(-1)
-      const verifiedBridge = (keys: string[], kind: 'quick_assets' | 'ebitda') => {
+        }));
+      // The existing approval artifact does not validate a credit model for US/CN.
+      // International source ratios are available through financial-diagnostics.
+      if (countryCode(set.scope.country) !== 'VN') blockers.push('COUNTRY_METHOD_NOT_VALIDATED');
+      const latest = prepared[selected].decisions.at(-1);
+      const verifiedBridge = (
+        keys: string[],
+        kind: "quick_assets" | "ebitda",
+      ) => {
         if (
           !latest ||
-          latest.status !== 'verified' ||
+          latest.status !== "verified" ||
           latest.source_snapshot_hash !== prepared[selected].hash ||
           !keys.every((k) =>
             set.facts.some(
               (f: any) =>
                 f.key === k &&
-                f.verification.status === 'verified' &&
+                f.verification.status === "verified" &&
                 latest.fact_ids.includes(f.id),
             ),
           )
         )
-          return null
-        const components = facts.filter((f) => keys.includes(f.key))
+          return null;
+        const components = facts.filter((f) => keys.includes(f.key));
         return {
           id: latest.id,
           revision: Number(latest.case_revision),
           statement_set_id: set.id,
           statement_set_revision: set.revision,
           verification: {
-            status: 'verified' as const,
+            status: "verified" as const,
             verified_revision: Number(latest.case_revision),
             verified_by: latest.actor_id,
             verified_at: iso(latest.created_at),
@@ -280,39 +383,49 @@ export class FinancialRegistry {
             fact_revision: f.revision,
           })),
           non_overlapping:
-            kind === 'quick_assets' ? latest.bridge_assertions.quick_assets_non_overlapping : true,
-        }
-      }
+            kind === "quick_assets"
+              ? latest.bridge_assertions.quick_assets_non_overlapping
+              : true,
+        };
+      };
       const quick = verifiedBridge(
-          ['cash', 'unrestricted_short_term_equivalents', 'trade_receivables'],
-          'quick_assets',
+          ["cash", "unrestricted_short_term_equivalents", "trade_receivables"],
+          "quick_assets",
         ),
-        ebitda = verifiedBridge(['operating_profit', 'depreciation_amortization'], 'ebitda')
+        ebitda = verifiedBridge(
+          ["operating_profit", "depreciation_amortization"],
+          "ebitda",
+        );
       const input: FhiInput = {
         statement_set: {
           id: set.id,
           revision: set.revision,
-          scope: { ...set.scope, unit_multiplier: '1' },
+          scope: { ...set.scope, unit_multiplier: "1" },
         },
         facts,
         quick_assets_bridge: quick
           ? {
               ...quick,
-              kind: 'quick_assets',
-              acceptable_per_source: latest.bridge_assertions.quick_assets_eligible,
+              kind: "quick_assets",
+              acceptable_per_source:
+                latest.bridge_assertions.quick_assets_eligible,
             }
           : null,
         ebitda_bridge: ebitda
           ? {
               ...ebitda,
-              kind: 'ebitda',
-              da_is_addback_to_ebit: latest.bridge_assertions.da_addback_to_operating_profit,
+              kind: "ebitda",
+              da_is_addback_to_ebit:
+                latest.bridge_assertions.da_addback_to_operating_profit,
             }
           : null,
-      }
-      const engine = scoreFhi(input)
-      if (set.metadata.observation_kind !== 'actual' || set.scope.accounting_regime === 'UNKNOWN')
-        blockers.push('ACTUAL_KNOWN_ACCOUNTING_BASIS_REQUIRED')
+      };
+      engine = scoreFhi(input);
+      if (
+        set.metadata.observation_kind !== "actual" ||
+        set.scope.accounting_regime === "UNKNOWN"
+      )
+        blockers.push("ACTUAL_KNOWN_ACCOUNTING_BASIS_REQUIRED");
       metrics = engine.metrics.map((m) => ({
         metric_id: m.metric_id,
         group: m.group,
@@ -326,16 +439,18 @@ export class FinancialRegistry {
         points: null,
         flags: m.flags,
         blockers: m.blockers,
-      }))
-      blockers.push(...engine.blockers.map((b) => b.code))
+      }));
+      blockers.push(...engine.blockers.map((b) => b.code));
     } else
       blockers.push(
-        sets.length ? 'EXPLICIT_STATEMENT_SET_SELECTION_REQUIRED' : 'FINANCIAL_INPUTS_REQUIRED',
-      )
-    return this.output('FinancialRegistry', {
+        sets.length
+          ? "EXPLICIT_STATEMENT_SET_SELECTION_REQUIRED"
+          : "FINANCIAL_INPUTS_REQUIRED",
+      );
+    const registry = this.output("FinancialRegistry", {
       sets,
       selected_set_id: selected === -1 ? null : sets[selected].id,
-      method_status: 'unconfigured',
+      method_status: policy?.status ?? "unconfigured",
       score: null,
       band: null,
       grade: null,
@@ -345,26 +460,37 @@ export class FinancialRegistry {
       strengths: [],
       weaknesses: [],
       limitations: [
-        'AIC experimental method is not approved; no score or band is published.',
-        'Verified entry/source fidelity does not confirm legal identity.',
-        'No FX, annualization, profit proxy or weight redistribution.',
-        'Balance sheet tolerance awaits approval; only exact reconciliation is accepted by this implementation.',
+        policy
+          ? "The registry shows source facts and ratios. Publish an assessment for the AIC experimental financial index — NOT VALIDATED."
+          : "AIC experimental method is not approved; no score or band is published.",
+        "Verified entry/source fidelity does not confirm legal identity.",
+        "No FX, annualization, profit proxy or weight redistribution.",
+        "Balance sheet tolerance awaits approval; only exact reconciliation is accepted by this implementation.",
       ],
-    })
+    });
+    return {
+      registry,
+      engine,
+      source_snapshot_hash: requestHash({
+        selected_set_id: registry.selected_set_id,
+        sets,
+        snapshots: prepared.map((value) => value.hash),
+      }),
+    };
   }
   private async resource(session: AuthSession, id: string) {
-    requireUuid(id)
+    requireUuid(id);
     return this.db.transaction(async (tx) => {
       const row = (
         await tx.query(
-          'SELECT * FROM aic.mvp_financial_sets WHERE organization_id=$1 AND id=$2 ORDER BY revision DESC LIMIT 1',
+          "SELECT * FROM aic.mvp_financial_sets WHERE organization_id=$1 AND id=$2 ORDER BY revision DESC LIMIT 1",
           [session.user.organization_id, id],
         )
-      ).rows[0]
-      if (!row) throw notFound()
-      await this.access(tx, session, row.case_id)
-      return row
-    })
+      ).rows[0];
+      if (!row) throw notFound();
+      await this.access(tx, session, row.case_id);
+      return row;
+    });
   }
   async save(
     session: AuthSession,
@@ -373,47 +499,66 @@ export class FinancialRegistry {
     key: string,
     body: unknown,
   ) {
-    const input = this.input('FinancialSetInput', body)
-    if (input.period.start_date > input.period.end_date) fail('INVALID_FINANCIAL_PERIOD')
+    const input = this.input("FinancialSetInput", body);
+    if (input.period.start_date > input.period.end_date)
+      fail("INVALID_FINANCIAL_PERIOD");
     if (new Set(input.facts.map((f: any) => f.key)).size !== input.facts.length)
-      fail('DUPLICATE_FINANCIAL_FACT')
+      fail("DUPLICATE_FINANCIAL_FACT");
     return this.mutations.execute(session, caseId, {
-      operation: id ? 'financial.revise:' + id : 'financial.create',
+      operation: id ? "financial.revise:" + id : "financial.create",
       key,
       expectedRevision: input.expected_revision,
       payload: input,
       work: async (tx, current, next) => {
-        if (!['RECEIVABLE', 'PREPAYMENT'].includes(current.exposure_kind))
-          fail('UNSUPPORTED_EXPOSURE')
+        if (
+          current.purpose !== "company_health" &&
+          !["RECEIVABLE", "PREPAYMENT"].includes(current.exposure_kind)
+        )
+          fail("UNSUPPORTED_EXPOSURE");
         const prior = id
           ? (
               await tx.query(
-                'SELECT * FROM aic.mvp_financial_sets WHERE organization_id=$1 AND case_id=$2 AND id=$3 ORDER BY revision DESC LIMIT 1',
+                "SELECT * FROM aic.mvp_financial_sets WHERE organization_id=$1 AND case_id=$2 AND id=$3 ORDER BY revision DESC LIMIT 1",
                 [current.organization_id, current.id, id],
               )
             ).rows[0]
-          : null
-        if (id && !prior) throw notFound()
+          : null;
+        if (id && !prior) throw notFound();
+        if (input.import_review) {
+          const receipt = await importReceipt(tx, current, input.import_review.receipt_id);
+          if (receipt.document_type !== 'financial_statement' || !receipt.facts.length)
+            fail('FINANCIAL_STATEMENT_REQUIRED');
+          const file = await importSource(tx, current, receipt.source.kind, receipt.source.id);
+          if (file.sha256 !== receipt.sha256) fail('INVALID_FINANCIAL_SOURCE');
+          const cp = (await tx.query('SELECT revision,country FROM aic.counterparties WHERE organization_id=$1 AND id=$2 FOR SHARE',
+            [current.organization_id,current.counterparty_id])).rows[0];
+          if (countryCode(cp.country) !== receipt.scope.country) fail('FINANCIAL_COUNTRY_MISMATCH');
+          await tx.query(`INSERT INTO aic.audit_events(id,organization_id,case_id,actor_type,actor_id,action,subject_id,
+            revision_before,revision_after,metadata_json,reason) VALUES($1,$2,$3,'specialist',$4,'financial.import_reviewed',$5,$6,$7,$8::jsonb,$9)`,
+            [randomUUID(),current.organization_id,current.id,session.user.id,input.import_review.receipt_id,
+              Number(current.revision),next,canonicalJson({counterparty_revision:Number(cp.revision),confirmed:true,
+                reviewed_pages:receipt.selected_pages,source_hash:receipt.sha256}),input.reason]);
+        }
         const setId = id ?? randomUUID(),
-          revision = prior ? Number(prior.revision) + 1 : 1
-        if (!Number.isSafeInteger(revision)) fail('REVISION_CONFLICT', 409)
+          revision = prior ? Number(prior.revision) + 1 : 1;
+        if (!Number.isSafeInteger(revision)) fail("REVISION_CONFLICT", 409);
         const cp = (
           await tx.query(
-            'SELECT country,industry_code FROM aic.counterparties WHERE organization_id=$1 AND id=$2 FOR SHARE',
+            "SELECT country,industry_code FROM aic.counterparties WHERE organization_id=$1 AND id=$2 FOR SHARE",
             [current.organization_id, current.counterparty_id],
           )
-        ).rows[0]
+        ).rows[0];
         const scope: FhiScope = {
           entity_id: current.counterparty_id,
           country: cp.country,
-          industry: cp.industry_code ?? 'UNKNOWN',
+          industry: cp.industry_code ?? "UNKNOWN",
           pilot_scope: input.industry_scope,
           period: input.period,
           basis: input.basis,
           accounting_regime: input.accounting_regime,
           currency: input.currency,
           unit_multiplier: input.unit_multiplier,
-        }
+        };
         await tx.query(
           `INSERT INTO aic.mvp_financial_sets(id,revision,organization_id,case_id,scope_json,metadata_json,bridges_json,case_revision,actor_id,reason)
           VALUES($1,$2,$3,$4,$5::jsonb,$6::jsonb,'{}'::jsonb,$7,$8,$9)`,
@@ -432,25 +577,42 @@ export class FinancialRegistry {
             session.user.id,
             input.reason,
           ],
-        )
+        );
         const old = prior
           ? (
               await tx.query(
-                'SELECT * FROM aic.mvp_financial_facts WHERE organization_id=$1 AND case_id=$2 AND set_id=$3 AND set_revision=$4',
+                "SELECT * FROM aic.mvp_financial_facts WHERE organization_id=$1 AND case_id=$2 AND set_id=$3 AND set_revision=$4",
                 [current.organization_id, current.id, setId, prior.revision],
               )
             ).rows
-          : []
+          : [];
         for (const fact of input.facts) {
-          if (fact.raw_value === null ? !fact.missing_reason?.trim() : fact.missing_reason !== null)
-            fail('FINANCIAL_MISSING_REASON_REQUIRED')
+          if (fact.source.kind === 'financial_import') {
+            const receipt = await importReceipt(tx,current,fact.source.receipt_id);
+            const candidate = receipt.facts.find((f:any) => f.key === fact.key);
+            const scope = receipt.scope;
+            if (!candidate || fact.source.fact_key !== fact.key || fact.raw_value !== candidate.value || fact.raw_label !== candidate.label ||
+              input.currency !== scope.currency || input.unit_multiplier !== scope.unit_multiplier ||
+              input.basis !== scope.basis || input.accounting_regime !== scope.accounting_regime ||
+              input.period.kind !== scope.period_kind || input.period.start_date !== scope.start_date || input.period.end_date !== scope.end_date ||
+              input.observation_kind !== 'actual') fail('FINANCIAL_IMPORT_VALUE_OR_SCOPE_CHANGED');
+          }
+          if (
+            fact.raw_value === null
+              ? !fact.missing_reason?.trim()
+              : fact.missing_reason !== null
+          )
+            fail("FINANCIAL_MISSING_REASON_REQUIRED");
           if (!(await this.source(tx, current, fact.source, false)))
-            fail('INVALID_FINANCIAL_SOURCE')
-          const id = old.find((f) => f.fact_key === fact.key)?.id ?? randomUUID()
+            fail("INVALID_FINANCIAL_SOURCE");
+          const id =
+            old.find((f) => f.fact_key === fact.key)?.id ?? randomUUID();
           const normalized =
             fact.raw_value === null
               ? null
-              : Decimal.parse(fact.raw_value).mul(Decimal.parse(input.unit_multiplier)).toString()
+              : Decimal.parse(fact.raw_value)
+                  .mul(Decimal.parse(input.unit_multiplier))
+                  .toString();
           const payload = {
             ...fact,
             normalized_decimal: normalized,
@@ -463,17 +625,20 @@ export class FinancialRegistry {
                 ? []
                 : [
                     {
-                      kind: 'unit_normalization',
+                      kind: "unit_normalization",
                       multiplier: input.unit_multiplier,
                       result: normalized,
                     },
                   ],
-            source_origin: fact.source.kind === 'manual_entry' ? 'staff_entered' : 'document',
+            source_origin:
+              fact.source.kind === "manual_entry"
+                ? "staff_entered"
+                : "document",
             entered_by: session.user.id,
             recorded_case_revision: next,
-          }
+          };
           await tx.query(
-            'INSERT INTO aic.mvp_financial_facts(id,revision,organization_id,case_id,set_id,set_revision,fact_key,payload_json) VALUES($1,$2,$3,$4,$5,$6,$7,$8::jsonb)',
+            "INSERT INTO aic.mvp_financial_facts(id,revision,organization_id,case_id,set_id,set_revision,fact_key,payload_json) VALUES($1,$2,$3,$4,$5,$6,$7,$8::jsonb)",
             [
               id,
               revision,
@@ -484,10 +649,10 @@ export class FinancialRegistry {
               fact.key,
               canonicalJson(payload),
             ],
-          )
-          if (fact.source.kind === 'document')
+          );
+          if (fact.source.kind === "document")
             await tx.query(
-              'INSERT INTO aic.mvp_financial_source_bindings(organization_id,case_id,fact_id,fact_revision,document_id,document_version,document_sha256) VALUES($1,$2,$3,$4,$5,$6,$7)',
+              "INSERT INTO aic.mvp_financial_source_bindings(organization_id,case_id,fact_id,fact_revision,document_id,document_version,document_sha256) VALUES($1,$2,$3,$4,$5,$6,$7)",
               [
                 current.organization_id,
                 current.id,
@@ -497,56 +662,64 @@ export class FinancialRegistry {
                 fact.source.document_version,
                 fact.source.source_hash,
               ],
-            )
+            );
         }
         const row = (
-          await tx.query('SELECT * FROM aic.mvp_financial_sets WHERE id=$1 AND revision=$2', [
-            setId,
-            revision,
-          ])
-        ).rows[0]
+          await tx.query(
+            "SELECT * FROM aic.mvp_financial_sets WHERE id=$1 AND revision=$2",
+            [setId, revision],
+          )
+        ).rows[0];
         return {
           status: id ? 200 : 201,
-          body: this.output('FinancialMutationOutput', {
+          body: this.output("FinancialMutationOutput", {
             set: (await this.setTx(tx, current, row)).read,
             revision: next,
           }),
-          action: id ? 'financial.revised' : 'financial.created',
+          action: id ? "financial.revised" : "financial.created",
           reason: input.reason,
           subjectId: setId,
-        }
+        };
       },
-    })
+    });
   }
   async revise(session: AuthSession, id: string, key: string, body: unknown) {
-    const row = await this.resource(session, id)
-    return this.save(session, row.case_id, id, key, body)
+    const row = await this.resource(session, id);
+    return this.save(session, row.case_id, id, key, body);
   }
   async verify(session: AuthSession, id: string, key: string, body: unknown) {
-    const input = this.input('FinancialVerifyInput', body),
-      bound = await this.resource(session, id)
+    const input = this.input("FinancialVerifyInput", body),
+      bound = await this.resource(session, id);
     return this.mutations.execute(session, bound.case_id, {
-      operation: 'financial.verify:' + id,
+      operation: "financial.verify:" + id,
       key,
       expectedRevision: input.expected_revision,
       payload: input,
       work: async (tx, current, next) => {
         const row = (
           await tx.query(
-            'SELECT * FROM aic.mvp_financial_sets WHERE organization_id=$1 AND case_id=$2 AND id=$3 ORDER BY revision DESC LIMIT 1',
+            "SELECT * FROM aic.mvp_financial_sets WHERE organization_id=$1 AND case_id=$2 AND id=$3 ORDER BY revision DESC LIMIT 1",
             [current.organization_id, current.id, id],
           )
-        ).rows[0]
-        if (Number(row.revision) !== input.set_revision) fail('STALE_FINANCIAL_SET', 409)
-        const prepared = await this.setTx(tx, current, row)
-        if (input.fact_ids.some((id: string) => !prepared.read.facts.some((f: any) => f.id === id)))
-          fail('INVALID_FINANCIAL_FACT')
-        for (const f of prepared.read.facts.filter((f: any) => input.fact_ids.includes(f.id))) {
-          if (
-            input.status === 'verified' &&
-            (f.normalized_decimal === null || !(await this.source(tx, current, f.source, true)))
+        ).rows[0];
+        if (Number(row.revision) !== input.set_revision)
+          fail("STALE_FINANCIAL_SET", 409);
+        const prepared = await this.setTx(tx, current, row);
+        if (
+          input.fact_ids.some(
+            (id: string) => !prepared.read.facts.some((f: any) => f.id === id),
           )
-            fail('FINANCIAL_SOURCE_REVIEW_REQUIRED')
+        )
+          fail("INVALID_FINANCIAL_FACT");
+        for (const f of prepared.read.facts.filter((f: any) =>
+          input.fact_ids.includes(f.id),
+        )) {
+          if (
+            input.status === "verified" &&
+            (f.normalized_decimal === null ||
+              !(await this.source(tx, current, f.source, true)))
+          )
+            fail("FINANCIAL_SOURCE_REVIEW_REQUIRED");
         }
         await tx.query(
           `INSERT INTO aic.mvp_financial_verifications(id,organization_id,case_id,set_id,set_revision,fact_ids,status,bridge_assertions,source_snapshot_hash,case_revision,actor_id,reason)
@@ -565,18 +738,18 @@ export class FinancialRegistry {
             session.user.id,
             input.reason,
           ],
-        )
+        );
         return {
           status: 200,
-          body: this.output('FinancialMutationOutput', {
+          body: this.output("FinancialMutationOutput", {
             set: (await this.setTx(tx, current, row)).read,
             revision: next,
           }),
-          action: 'financial.verified',
+          action: "financial.verified",
           reason: input.reason,
           subjectId: id,
-        }
+        };
       },
-    })
+    });
   }
 }

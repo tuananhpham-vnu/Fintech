@@ -152,7 +152,10 @@ export class MvpCaseService {
   }
 
   private project(row: any): Record<string, unknown> {
-    const body = { ...projectCase(row), policy_artifact_hash: row.policy_artifact_hash ?? null }
+    const body = {
+      ...projectCase(row),
+      policy_artifact_hash: row.policy_artifact_hash ?? null,
+    }
     validateContract('Case', body, true)
     return body
   }
@@ -456,7 +459,11 @@ export class MvpCaseService {
         await this.active(tx, session)
         if (!cached.active || cached.request_hash !== hash)
           throw new FoundationError(409, 'IDEMPOTENCY_CONFLICT')
-        return { status: 201 as const, body: cached.response_body, replayed: true }
+        return {
+          status: 201 as const,
+          body: cached.response_body,
+          replayed: true,
+        }
       }
       const counterparty = await tx.query('SELECT * FROM aic.lock_case_counterparty($1,$2,$3)', [
         session.user.organization_id,
@@ -539,6 +546,100 @@ export class MvpCaseService {
     })
   }
 
+  async companyCapabilities(sessionInput: AuthSession) {
+    const session = this.principal(sessionInput)
+    return this.db.transaction(async (tx) => {
+      await this.active(tx, session)
+      const available = (
+        await tx.query(`SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_attribute
+        WHERE attrelid='aic.cases'::regclass AND attname='purpose' AND NOT attisdropped) AS available`)
+      ).rows[0].available
+      return { schema_version: 'AIC-COMPANY-HEALTH-1', available }
+    })
+  }
+
+  async createCompany(sessionInput: AuthSession, key: string, body: unknown) {
+    const session = this.principal(sessionInput),
+      input = this.input('CompanyHealthCreateV1', body)
+    this.key(key)
+    const hash = requestHash(input),
+      scope = [session.user.organization_id, session.user.id, 'company_health.create', key]
+    return this.db.transaction(async (tx) => {
+      await this.active(tx, session)
+      const installed = (
+        await tx.query(`SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_attribute
+        WHERE attrelid='aic.cases'::regclass AND attname='purpose' AND NOT attisdropped) AS available`)
+      ).rows[0].available
+      if (!installed) throw new FoundationError(503, 'COMPANY_HEALTH_SCHEMA_REQUIRED')
+      await tx.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [canonicalJson(scope)])
+      await this.active(tx, session)
+      const cached = (
+        await tx.query(
+          `SELECT *,expires_at>clock_timestamp() AS active FROM aic.idempotency_keys
+        WHERE organization_id=$1 AND actor_id=$2 AND operation=$3 AND key=$4`,
+          scope,
+        )
+      ).rows[0]
+      if (cached) {
+        await this.core.assertCaseAccess(tx, session.user, cached.response_body.id, true)
+        await this.active(tx, session)
+        if (!cached.active || cached.request_hash !== hash)
+          throw new FoundationError(409, 'IDEMPOTENCY_CONFLICT')
+        return {
+          status: 201 as const,
+          body: cached.response_body,
+          replayed: true,
+        }
+      }
+      const cp = (
+        await tx.query('SELECT * FROM aic.lock_case_counterparty($1,$2,$3)', [
+          session.user.organization_id,
+          session.user.id,
+          input.counterparty_id,
+        ])
+      ).rows[0]
+      if (!cp) throw notFound()
+      const id = randomUUID(),
+        at = await this.clock(tx)
+      await this.active(tx, session)
+      await tx.query("SET LOCAL synchronous_commit = 'on'")
+      const row = (
+        await tx.query(
+          `INSERT INTO aic.cases
+        (id,organization_id,counterparty_id,purpose,exposure_kind,lifecycle_stage,exposure_json,policy_version,policy_artifact_hash,created_by,created_at,updated_at)
+        VALUES($1,$2,$3,'company_health',NULL,NULL,NULL,NULL,NULL,$4,$5::timestamptz,$5::timestamptz) RETURNING *`,
+          [id, session.user.organization_id, input.counterparty_id, session.user.id, at],
+        )
+      ).rows[0]
+      const result = projectCase(row)
+      validateContract('CompanyHealthCaseV1', result, true)
+      await tx.query(
+        `INSERT INTO aic.audit_events
+        (id,organization_id,case_id,actor_type,actor_id,action,subject_id,revision_before,revision_after,reason,metadata_json)
+        VALUES($1,$2,$3,'specialist',$4,'company_health.created',$3,NULL,1,$5,$6::jsonb)`,
+        [
+          randomUUID(),
+          session.user.organization_id,
+          id,
+          session.user.id,
+          input.reason,
+          canonicalJson({
+            schema_version: input.schema_version,
+            purpose: 'company_health',
+          }),
+        ],
+      )
+      await tx.query(
+        `INSERT INTO aic.idempotency_keys
+        (organization_id,actor_id,operation,key,request_hash,response_status,response_body,expires_at)
+        VALUES($1,$2,$3,$4,$5,201,$6::jsonb,clock_timestamp()+($7::bigint*interval '1 millisecond'))`,
+        [...scope, hash, canonicalJson(result), this.config.idempotencyTtlMs],
+      )
+      await this.active(tx, session)
+      return { status: 201 as const, body: result, replayed: false }
+    })
+  }
+
   async update(sessionInput: AuthSession, caseId: string, key: string, body: unknown) {
     const session = this.principal(sessionInput),
       input = this.input('ExposureUpdateInput', body)
@@ -550,6 +651,7 @@ export class MvpCaseService {
       expectedRevision: input.expected_revision,
       payload: input.exposure,
       work: async (tx, current, nextRevision) => {
+        if (current.purpose === 'company_health') invalid('TRANSACTION_WORKFLOW_REQUIRED')
         // Validate the immutable binding at case creation, not today's registry
         // assignment/effectivity. Historical cases without approval stay closed.
         await this.boundPolicy(
@@ -588,7 +690,11 @@ export class MvpCaseService {
         // CaseMutations owns the final revision write, audit and frozen replay.
         // A changed case revision invalidates dependent review snapshots without
         // altering or deleting any historical result/source/verification record.
-        return { status: 200, body: this.project(row), action: 'exposure.updated' }
+        return {
+          status: 200,
+          body: this.project(row),
+          action: 'exposure.updated',
+        }
       },
     })
   }

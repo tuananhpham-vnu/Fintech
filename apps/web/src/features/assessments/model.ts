@@ -19,7 +19,7 @@ export function assessmentIsStale(
   return (
     !!result &&
     (result.stale ||
-      result.case_revision !== revision ||
+      (result.checked_case_revision ?? result.case_revision) !== revision ||
       (caseId !== undefined && result.case_id !== caseId))
   )
 }

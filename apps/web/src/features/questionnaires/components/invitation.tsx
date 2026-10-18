@@ -3,6 +3,8 @@ import { ActionDialog } from '@/components/forms/revision-action-dialog'
 import { casesApi } from '@/features/cases/api'
 import type { CaseDetail, Questionnaire } from '@/lib/api/contracts'
 import { useLocale } from '@/lib/i18n/locale-provider'
+import { Status } from '@/components/ui/status'
+import { formatTime } from '@/lib/utils/format'
 import { useState } from 'react'
 import { questionnairesApi } from '../api'
 import { nativeCopy } from '../native-copy'
@@ -23,7 +25,9 @@ export function Invitation({
     [party, setParty] = useState<'organization' | 'counterparty'>('counterparty'),
     [selected, setSelected] = useState(questionnaire.questions.map((q) => q.id)),
     [link, setLink] = useState<string | null>(null),
-    [delivered, setDelivered] = useState(false)
+    [delivered, setDelivered] = useState(false),
+    [copied, setCopied] = useState(false),
+    [copyFailed, setCopyFailed] = useState(false)
   return (
     <>
       <div className="wrap-actions">
@@ -33,6 +37,8 @@ export function Invitation({
           onClick={() => {
             setLink(null)
             setDelivered(false)
+            setCopied(false)
+            setCopyFailed(false)
             setMode('create')
           }}
         >
@@ -51,19 +57,54 @@ export function Invitation({
         <div className="panel">
           <p>{copy(link ? 'link' : 'lost')}</p>
           {link && (
-            <input
-              aria-label={copy('link')}
-              readOnly
-              value={link}
-              onFocus={(e) => e.target.select()}
-            />
+            <button
+              className="secondary-button"
+              onClick={() => {
+                void navigator.clipboard
+                  .writeText(link)
+                  .then(() => {
+                    setCopied(true)
+                    setCopyFailed(false)
+                  })
+                  .catch(() => setCopyFailed(true))
+              }}
+            >
+              {locale === 'vi'
+                ? 'Sao chép liên kết trả lời'
+                : locale === 'en'
+                  ? 'Copy response link'
+                  : '复制回复链接'}
+            </button>
+          )}
+          {copied && (
+            <p role="status">
+              {locale === 'vi'
+                ? 'Đã sao chép liên kết.'
+                : locale === 'en'
+                  ? 'Link copied.'
+                  : '链接已复制。'}
+            </p>
+          )}
+          {copyFailed && (
+            <p role="alert">
+              {locale === 'vi'
+                ? 'Trình duyệt chưa cho phép sao chép. Kiểm tra quyền clipboard rồi thử lại.'
+                : locale === 'en'
+                  ? 'Clipboard access is unavailable. Check browser clipboard permission and try again.'
+                  : '无法访问剪贴板，请检查浏览器权限后重试。'}
+            </p>
           )}
         </div>
       )}
       {questionnaire.invitations?.map((invite) => (
         <div className="aic-checklist-row" key={invite.id}>
           <span>
-            {invite.recipient_reference} · {invite.status} · {invite.expires_at}
+            {invite.recipient_reference} ·{' '}
+            <Status
+              value={invite.status}
+              label={invite.status === 'active' ? copy('active') : undefined}
+            />{' '}
+            · {copy('expires')}: {formatTime(invite.expires_at, locale)}
           </span>
           {!['revoked', 'closed'].includes(invite.status) && (
             <button className="text-button" onClick={() => setMode(invite.id)}>
@@ -136,7 +177,7 @@ export function Invitation({
                       )
                     }
                   />
-                  {q.label ?? q.id}
+                  {q.label ?? t('question')}
                 </label>
               ))}
             </>

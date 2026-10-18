@@ -57,7 +57,11 @@ function Sources({
           <p className="help-text">{copy('historical')}</p>
           {values.map((source, i) => (
             <pre key={i} className="request-preview">
-              {JSON.stringify(source, null, 2)}
+              {source.kind === 'document'
+                ? copy('sources')
+                : source.kind === 'questionnaire'
+                  ? copy('sources')
+                  : copy('declaration')}
             </pre>
           ))}
         </>
@@ -87,7 +91,7 @@ function Sources({
                   <option value="declaration">{copy('declaration')}</option>
                   {source.kind !== 'declaration' &&
                     !options.some((option) => option.key === keyOf(source)) && (
-                      <option value={keyOf(source)}>{keyOf(source)}</option>
+                      <option value={keyOf(source)}>{copy('historical')}</option>
                     )}
                   {options
                     .filter(
@@ -104,7 +108,13 @@ function Sources({
                 </select>
               </label>
               {source.kind !== 'declaration' && (
-                <pre className="request-preview">{JSON.stringify(source, null, 2)}</pre>
+                <pre className="request-preview">
+                  {source.kind === 'document'
+                    ? copy('sources')
+                    : source.kind === 'questionnaire'
+                      ? copy('sources')
+                      : copy('declaration')}
+                </pre>
               )}
               <label className="field-label">
                 {copy('claimant')}
@@ -189,7 +199,7 @@ export function ExposureEditors({
             {claim === null ? (
               <>
                 <p>{copy('unsupported')}</p>
-                <pre className="request-preview">{JSON.stringify(row.original, null, 2)}</pre>
+                <pre className="request-preview">{copy('historical')}</pre>
               </>
             ) : (
               <>
@@ -376,7 +386,7 @@ export function ExposureEditors({
             {condition === null ? (
               <>
                 <p>{copy('unsupported')}</p>
-                <pre className="request-preview">{JSON.stringify(row.original, null, 2)}</pre>
+                <pre className="request-preview">{copy('historical')}</pre>
               </>
             ) : (
               <>

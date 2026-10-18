@@ -7,14 +7,17 @@ const original = Module._resolveFilename
 Module._resolveFilename = function (name, ...args) {
   return original.call(this, name.startsWith('@/') ? path.join(root, name.slice(2)) : name, ...args)
 }
-require.extensions['.ts'] = (module, file) =>
+const compile = (module, file) =>
   module._compile(
     ts.transpileModule(fs.readFileSync(file, 'utf8'), {
       compilerOptions: {
         target: ts.ScriptTarget.ES2022,
         module: ts.ModuleKind.CommonJS,
         esModuleInterop: true,
+        jsx: ts.JsxEmit.ReactJSX,
       },
     }).outputText,
     file,
   )
+require.extensions['.ts'] = compile
+require.extensions['.tsx'] = compile

@@ -7,6 +7,7 @@ import { questionnairesApi } from '@/features/questionnaires/api'
 import { useLeaveGuard } from '@/hooks/use-leave-guard'
 import { useMutation } from '@/hooks/use-mutation'
 import { useResource } from '@/hooks/use-resource'
+import { formatTime } from '@/lib/utils/format'
 import { ApiError } from '@/lib/api/client'
 import { useLocale } from '@/lib/i18n/locale-provider'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -28,11 +29,20 @@ export function RespondentForm() {
   useEffect(() => {
     // Strict Mode replays effects in development. The fragment is deliberately
     // erased on first consumption; a replay must not replace that token with ''.
-    if (fragmentConsumed.current) return
-    fragmentConsumed.current = true
-    const params = new URLSearchParams(window.location.hash.slice(1))
-    setToken(params.get('token') ?? '')
-    window.history.replaceState(null, '', window.location.pathname)
+    if (!fragmentConsumed.current) {
+      fragmentConsumed.current = true
+      const params = new URLSearchParams(window.location.hash.slice(1))
+      setToken(params.get('token') ?? '')
+      window.history.replaceState(null, '', window.location.pathname)
+    }
+    // Opening a copied invitation in an existing respondent tab can be a
+    // fragment-only navigation. Start a new document so the old invitation's
+    // answers cannot be reused. The existing beforeunload guard protects drafts.
+    const openInvitation = () => {
+      if (new URLSearchParams(window.location.hash.slice(1)).has('token')) window.location.reload()
+    }
+    window.addEventListener('hashchange', openInvitation)
+    return () => window.removeEventListener('hashchange', openInvitation)
   }, [])
   const load = useCallback(
     (signal: AbortSignal) => questionnairesApi.respondentForm(token ?? '', signal),
@@ -86,8 +96,11 @@ export function RespondentForm() {
             ) : (receipt ?? resource.data?.receipt) ? (
               <section className="panel">
                 <h2>{copy('receipt')}</h2>
-                <p>{(receipt ?? resource.data?.receipt)?.receipt_id}</p>
-                <p>{(receipt ?? resource.data?.receipt)?.submitted_at}</p>
+                <details>
+                  <summary>{t('requestId')}</summary>
+                  <p>{(receipt ?? resource.data?.receipt)?.receipt_id}</p>
+                </details>
+                <p>{formatTime((receipt ?? resource.data?.receipt)!.submitted_at, locale)}</p>
                 <p>{copy('limitation')}</p>
               </section>
             ) : (
@@ -146,12 +159,19 @@ export function RespondentForm() {
                             }))
                         return (
                           <section className="panel questionnaire-question" key={q.id}>
-                            <h2>{q.label ?? q.id}</h2>
+                            <h2>{q.label ?? t('question')}</h2>
                             <p>{t(q.requiredness === 'required' ? 'required' : 'optional')}</p>
                             {preview ? (
                               <>
-                                <p>{t(answer.state as 'submitted')}</p>
-                                <blockquote>{answer.value || '—'}</blockquote>
+                                <p>
+                                  {answer.state === 'submitted'
+                                    ? copy('answerChoice')
+                                    : t(answer.state as 'submitted')}
+                                </p>
+                                {answer.state === 'skipped' && <p>{copy('skip')}</p>}
+                                <blockquote>
+                                  {answer.state === 'skipped' ? answer.reason : answer.value || '—'}
+                                </blockquote>
                               </>
                             ) : ['text', 'string', 'textarea'].includes(q.answer_type) ? (
                               <>
@@ -161,7 +181,7 @@ export function RespondentForm() {
                                     value={answer.state}
                                     onChange={(e) => set({ state: e.target.value })}
                                   >
-                                    <option value="submitted">{t('submitted')}</option>
+                                    <option value="submitted">{copy('answerChoice')}</option>
                                     <option value="self_assessed">{t('self_assessed')}</option>
                                     {q.allowed_to_skip && (
                                       <option value="skipped">{t('skipped')}</option>

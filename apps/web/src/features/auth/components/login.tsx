@@ -55,7 +55,7 @@ export function Login({ reauth = false }: { reauth?: boolean }) {
         </div>
         <div className="login-story-footer">
           <span>AIC RATING</span>
-          <span>COUNTERPARTY INTELLIGENCE</span>
+          <span>{t('assessment')}</span>
         </div>
       </section>
       <section className="login-form-side">

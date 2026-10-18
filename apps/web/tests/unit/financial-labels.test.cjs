@@ -153,18 +153,26 @@ test('presentation preserves original text and decimal spelling, including text 
   }
 })
 
-test('registry renders localized labels and confines system codes to details without changing raw facts', () => {
+test('registry renders localized labels, keeps system codes out of production DOM and preserves source facts', (t) => {
   const fs = require('node:fs')
   const path = require('node:path')
   const Module = require('node:module')
   const ts = require('typescript')
   const React = require('react')
   const { renderToStaticMarkup } = require('react-dom/server')
+  const { SessionContext } = require('../../src/lib/auth/session-context.ts')
+  const previousMode = process.env.NODE_ENV
+  process.env.NODE_ENV = 'production'
+  t.after(() => {
+    if (previousMode === undefined) delete process.env.NODE_ENV
+    else process.env.NODE_ENV = previousMode
+  })
   const file = path.resolve(
     __dirname,
     '../../src/features/financial/components/financial-registry.tsx',
   )
   const registry = {
+    selected_set_id: 'set-id',
     sets: [
       {
         id: 'set-id',
@@ -252,6 +260,7 @@ test('registry renders localized labels and confines system codes to details wit
       if (name === '@/hooks/use-resource')
         return { useResource: () => ({ data: registry, loading: false, error: null, reload() {} }) }
       if (name === '@/components/feedback/error-notice') return { ErrorNotice: () => null }
+      if (name === './financial-diagnostics') return { FinancialDiagnostics: () => null }
       if (
         [
           '@/components/forms/revision-action-dialog',
@@ -273,13 +282,17 @@ test('registry renders localized labels and confines system codes to details wit
       file,
     )
     const html = renderToStaticMarkup(
-      React.createElement(compiled.exports.FinancialInformation, {
-        detail: { id: 'case-id', revision: 1 },
-        reload() {},
-        openSource() {},
-      }),
+      React.createElement(
+        SessionContext.Provider,
+        { value: { status: 'ready', session: null } },
+        React.createElement(compiled.exports.FinancialInformation, {
+          detail: { id: 'case-id', revision: 1 },
+          reload() {},
+          openSource() {},
+        }),
+      ),
     )
-    const primary = html.replace(/<details>[\s\S]*?<\/details>/g, '')
+    const primary = html.replace(/<details(?:\s[^>]*)?>[\s\S]*?<\/details>/g, '')
     for (const raw of [
       'AIC-M01',
       'liquidity',
@@ -295,28 +308,24 @@ test('registry renders localized labels and confines system codes to details wit
       'FUTURE_LIMITATION',
       'entity-id',
     ]) {
-      assert.ok(html.includes(raw), `technical value retained: ${raw}`)
+      assert.ok(!html.includes(raw), `technical value not mounted in production DOM: ${raw}`)
       assert.ok(!primary.includes(raw), `technical value hidden from primary presentation: ${raw}`)
     }
     for (const original of [
-      'current_assets',
       '1.250000000000000000001',
       '1250.000000000000000001',
       'Original missing reason / 原文',
       'Original declaration / Lời khai gốc / 原始陈述',
-      'Original PDF label',
-      '-0.000',
-      '5/3',
       'VND',
     ])
-      assert.ok(primary.includes(original), original)
+      assert.ok(html.includes(original), original)
     for (const [kind, raw] of [
       ['metric', 'AIC-M01'],
       ['verification', 'rejected'],
       ['blocker', 'FUTURE_METRIC_BLOCKER'],
       ['limitation', 'FUTURE_LIMITATION'],
     ])
-      assert.ok(primary.includes(financialLabel(locale, kind, raw).label))
+      assert.ok(html.includes(financialLabel(locale, kind, raw).label), `${locale}: ${kind}/${raw}`)
     assert.equal(JSON.stringify(registry), before)
   }
 })

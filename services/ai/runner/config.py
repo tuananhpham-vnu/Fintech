@@ -46,7 +46,7 @@ class Settings:
 
     @classmethod
     def from_env(cls, env: dict[str, str] | None = None) -> "Settings":
-        if env is None:
+        if env is None and os.environ.get("AI_LOAD_DOTENV", "1") != "0":
             load_dotenv()
         env = dict(os.environ if env is None else env)
         mode = env.get("AI_MODE", MODE_MOCK).strip().lower()

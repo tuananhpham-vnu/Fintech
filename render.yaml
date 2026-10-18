@@ -23,7 +23,7 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.11
       - key: AI_MODE
-        value: live                 # evaluate: rule + Gemini cho ca khó + HITL; inspect/extract: 503 tới khi có extraction
+        value: live                 # inspect/extract dùng provider live; không fallback sang mock
       - key: MODEL_ID
         value: gemini-3.1-flash-lite
       - key: PROMPT_VERSION
@@ -31,7 +31,7 @@ services:
       - key: CONTRACTS_DIR
         value: /opt/render/project/src/packages/contracts
       - key: ENABLE_TEST_CONSOLE
-        value: "1"                  # trang test thủ công /console (file tĩnh); API vẫn đòi X-Internal-Key. Tắt: "0"
+        value: "0"                  # console nội bộ tắt trong cấu hình triển khai
       - key: INTERNAL_API_KEY
         generateValue: true         # Render tự sinh; Đức copy sang env của apps/api
       - key: GEMINI_API_KEY

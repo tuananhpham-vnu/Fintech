@@ -7,48 +7,62 @@ import { PdfView } from '@/features/evidence/components/pdf-view'
 import { SourceTarget } from '@/features/evidence/types'
 import { useResource } from '@/hooks/use-resource'
 import { ApiError } from '@/lib/api/client'
+import { useSession } from '@/lib/auth/session-context'
 import type { Evidence } from '@/lib/api/contracts'
+import { productText } from '@/lib/i18n/product-copy'
 import { useLocale } from '@/lib/i18n/locale-provider'
 import { Download } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 export function SourceViewer({ target, onClose }: { target: SourceTarget; onClose: () => void }) {
-  const { t } = useLocale(),
+  const { t, locale } = useLocale(),
+    { status, session } = useSession(),
+    sessionKey = session
+      ? `${session.user.organization_id}:${session.user.id}:${session.csrf_token}`
+      : '',
     load = useCallback(
       (signal: AbortSignal) =>
         'evidenceId' in target
           ? evidenceApi.evidence(target.evidenceId, signal)
           : Promise.resolve(null),
-      [target],
+      [target, sessionKey],
     )
-  const evidence = useResource(load),
+  const evidence = useResource(load, status === 'ready'),
     [url, setUrl] = useState(''),
     [error, setError] = useState<unknown>(null),
-    [generation, setGeneration] = useState(0)
+    [generation, setGeneration] = useState(0),
+    [displayedPage, setDisplayedPage] = useState<{ sourceKey: string; page: number } | null>(null)
   const isDossierMember = 'dossierMemberId' in target
   const source =
-    'evidenceId' in target
-      ? evidence.data
-      : isDossierMember
-        ? ({
-            document_id: target.dossierMemberId,
-            document_version: 1,
-            source_hash: target.hash ?? '',
-            page: target.page ?? 1,
-            quote: '',
-          } as Evidence)
-        : ({
-            document_id: target.documentId,
-            document_version: target.version,
-            source_hash: target.hash,
-            page: 1,
-            quote: '',
-          } as Evidence)
+    status !== 'ready'
+      ? null
+      : 'evidenceId' in target
+        ? evidence.data
+        : isDossierMember
+          ? ({
+              document_id: target.dossierMemberId,
+              document_version: 1,
+              source_hash: target.hash ?? '',
+              page: target.page ?? 1,
+              quote: '',
+            } as Evidence)
+          : ({
+              document_id: target.documentId,
+              document_version: target.version,
+              source_hash: target.hash,
+              page: 1,
+              quote: '',
+            } as Evidence)
+  const sourceKey = `${url}:${source?.page}`
+  const onPageChange = useCallback(
+    (page: number) => setDisplayedPage({ sourceKey, page }),
+    [sourceKey],
+  )
   useEffect(() => {
-    if (!source) return
-    const controller = new AbortController()
-    let objectUrl = ''
     setUrl('')
     setError(null)
+    if (status !== 'ready' || !source) return
+    const controller = new AbortController()
+    let objectUrl = ''
     const fetchBlob = isDossierMember
       ? evidenceApi.dossierMemberSource(target.dossierMemberId, controller.signal)
       : evidenceApi.source(source.document_id, controller.signal)
@@ -77,7 +91,7 @@ export function SourceViewer({ target, onClose }: { target: SourceTarget; onClos
       controller.abort()
       if (objectUrl) URL.revokeObjectURL(objectUrl)
     }
-  }, [source?.document_id, source?.source_hash, isDossierMember, generation])
+  }, [source?.document_id, source?.source_hash, isDossierMember, generation, status, sessionKey])
   return (
     <Modal title={target.name ?? t('evidence')} onClose={onClose} drawer>
       <ErrorNotice error={evidence.error} retry={evidence.reload} />
@@ -86,12 +100,24 @@ export function SourceViewer({ target, onClose }: { target: SourceTarget; onClos
         <>
           <p className="mono">
             {target.name ? `${target.name} · ` : ''}
-            {source.document_id}
-            {!isDossierMember && ` · ${t('version')} ${source.document_version}`} · {t('page')}{' '}
-            {source.page}
+            {!isDossierMember && `${t('version')} ${source.document_version} · `}
+            {t('viewingPage')}{' '}
+            {displayedPage?.sourceKey === sourceKey ? displayedPage.page : source.page}
           </p>
-          {source.quote && <blockquote>{source.quote}</blockquote>}
-          {source.source_hash && <small className="aic-hash">SHA-256: {source.source_hash}</small>}
+          {source.quote && (
+            <blockquote aria-label={productText(locale, 'originalSource')}>
+              <p>
+                {t('quotedPage')}: {source.page}
+              </p>
+              {source.quote}
+            </blockquote>
+          )}
+          {source.source_hash && (
+            <details>
+              <summary>{productText(locale, 'sourceIdentity')}</summary>
+              <small className="aic-hash">SHA-256: {source.source_hash}</small>
+            </details>
+          )}
           <ErrorNotice error={error} retry={() => setGeneration((n) => n + 1)} />
           {!url && !error && <Loading />}
           {url && (
@@ -100,7 +126,12 @@ export function SourceViewer({ target, onClose }: { target: SourceTarget; onClos
                 <Download size={15} />
                 {t('source')}
               </a>
-              <PdfView key={`${url}:${source.page}`} url={url} initialPage={source.page} />
+              <PdfView
+                key={sourceKey}
+                url={url}
+                initialPage={source.page}
+                onPageChange={onPageChange}
+              />
             </>
           )}
         </>

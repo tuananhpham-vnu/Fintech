@@ -1,6 +1,7 @@
 'use client'
 import type { SourceTarget } from '@/features/evidence/types'
 import { documentTypes, type Document, type DocumentType } from '@/lib/api/contracts'
+import { DocumentLineage } from './document-lineage'
 import { useLocale } from '@/lib/i18n/locale-provider'
 import { DocumentGroups } from './document-groups'
 import {
@@ -391,6 +392,7 @@ export function DocumentExplorer({
                       <ExplorerDocumentRow
                         key={doc.id}
                         doc={doc}
+                        documents={documents}
                         openSource={openSource}
                         onInspect={onInspect}
                         onClassify={onClassify}
@@ -416,6 +418,7 @@ export function DocumentExplorer({
         ) : (
           <DocumentGroups
             documents={filteredDocuments}
+            sourceDocuments={documents}
             openSource={openSource}
             onInspect={onInspect}
             onClassify={onClassify}
@@ -428,11 +431,13 @@ export function DocumentExplorer({
 
 function ExplorerDocumentRow({
   doc,
+  documents,
   openSource,
   onInspect,
   onClassify,
 }: {
   doc: Document
+  documents: Document[]
   openSource: (target: SourceTarget) => void
   onInspect: (doc: Document) => void
   onClassify: (doc: Document) => void
@@ -456,6 +461,7 @@ function ExplorerDocumentRow({
         </div>
         <div className="file-copy">
           <strong title={doc.name ?? t(doc.type)}>{doc.name ?? t(doc.type)}</strong>
+          <DocumentLineage document={doc} documents={documents} />
           <p>
             {t(doc.type)} · {t('version')} {doc.version}
             {doc.pages > 0 && ` · ${doc.pages} ${t('page')}`}
@@ -497,12 +503,14 @@ function ExplorerDocumentRow({
             {t('retainedLongPdfNotice')}
           </span>
         ) : isRejected ? (
-          <span className="tag red" title={String(raw.dossier_error_code ?? '')}>
+          <span className="tag red">
             <span className="status-dot" />
             {locale === 'vi' ? 'Từ chối định dạng' : 'Rejected format'}
           </span>
         ) : doc.status === 'completed' ? (
-          usableCount > 0 ? (
+          usableCount === null ? (
+            <span className="tag neutral">{t('extractionUnavailable')}</span>
+          ) : usableCount > 0 ? (
             <span className="tag green">
               <span className="status-dot" />
               {t('extractedWithFields')} ({usableCount})

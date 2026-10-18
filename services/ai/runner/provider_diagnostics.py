@@ -1,6 +1,6 @@
 """Opt-in, content-free failure classification. Never part of the API contract.
 
-Only allowlisted categories, HTTP integers and validated UUIDs may be logged.
+Only classifications, validated UUIDs and code locations may be logged.
 Do not serialize exception messages/args, provider bodies, prompts or headers.
 """
 from __future__ import annotations
@@ -9,6 +9,8 @@ import json
 import logging
 import os
 import re
+import traceback
+from pathlib import Path
 from uuid import UUID
 
 from providers.gemini import ProviderError, ProviderUnavailable
@@ -16,6 +18,29 @@ from .errors import PROVIDER_UNAVAILABLE, ServiceError
 
 PREFIX = "AIC_SAFE_PROVIDER_DIAGNOSTIC "
 logger = logging.getLogger("runner.provider_diagnostics")
+
+
+def emit_unexpected(error: Exception, operation: object, document_id: object, request_id: object) -> None:
+    """Record code locations only; never exception text, locals or document data."""
+    if os.environ.get("AIC_SAFE_PROVIDER_DIAGNOSTICS") != "1":
+        return
+    identifier = _uuid(request_id)
+    if operation not in ("inspect", "extract", "evaluate") or identifier is None:
+        return
+    root = Path(__file__).resolve().parents[1]
+    frames = []
+    for frame in traceback.extract_tb(error.__traceback__):
+        try:
+            relative = Path(frame.filename).resolve().relative_to(root)
+        except ValueError:
+            continue
+        frames.append({"file": relative.as_posix(), "line": frame.lineno, "function": frame.name})
+    event = {"operation": operation, "request_id": identifier,
+             "service_code": "INTERNAL_ERROR", "exception_type": type(error).__name__, "frames": frames[-8:]}
+    document = _uuid(document_id)
+    if document:
+        event["document_id"] = document
+    logger.error(PREFIX + "%s", json.dumps(event, separators=(",", ":"), sort_keys=True))
 
 
 def _uuid(value: object) -> str | None:

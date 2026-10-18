@@ -171,7 +171,7 @@ test('review-i18n localizes finding summaries without leaking backend English or
   }
   assert.equal(
     localizeFindingSummary(docDeclared, 'vi'),
-    'Tài liệu 55aa4b21-9704-4b49-b4b7-30348359bd43 mới ở trạng thái khai báo, chưa qua xác minh chuyên viên.',
+    'Tài liệu nguồn mới ở trạng thái khai báo, chưa qua xác minh chuyên viên.',
   )
 
   // Document extraction uncertain
@@ -180,7 +180,7 @@ test('review-i18n localizes finding summaries without leaking backend English or
   }
   assert.equal(
     localizeFindingSummary(docUncertain, 'vi'),
-    'Tài liệu 6d8eae40-8648-4b67-a816-cd8f11784397 có trường dữ liệu trích xuất còn thiếu hoặc chưa chắc chắn.',
+    'Tài liệu nguồn có trường dữ liệu trích xuất còn thiếu hoặc chưa chắc chắn.',
   )
 
   // Identity unresolved
@@ -233,7 +233,7 @@ test('review-i18n localizes all standard backend limitations and absence bases',
 test('review-i18n safely handles edge cases, missing parameters, and unknown codes', () => {
   assert.equal(localizeRuleId(null, 'vi'), '')
   assert.equal(localizeRuleId(undefined, 'vi'), '')
-  assert.equal(localizeRuleId('unknown_custom_rule', 'vi'), 'unknown_custom_rule')
+  assert.equal(localizeRuleId('unknown_custom_rule', 'vi'), 'Cần kiểm tra')
 
   assert.equal(localizeCategory(null, 'vi'), '')
   assert.equal(localizeCategory(undefined, 'vi'), '')
@@ -244,7 +244,7 @@ test('review-i18n safely handles edge cases, missing parameters, and unknown cod
   assert.equal(localizeFindingSummary({ summary: '' }, 'vi'), '')
   assert.equal(
     localizeFindingSummary({ summary: '<script>alert(1)</script>' }, 'vi'),
-    '<script>alert(1)</script>',
+    'Cần kiểm tra',
   )
 
   assert.equal(localizeAbsenceBasis(null, 'vi'), undefined)

@@ -25,6 +25,7 @@ type Options = {
   respondentToken?: string
   auth?: boolean
   bytes?: boolean
+  timeoutMs?: number
   /** Successful headers are ephemeral; callers must never persist capability secrets. */
   onSuccessHeaders?: (headers: Headers) => void
 }
@@ -47,7 +48,7 @@ export async function request<T>(
     abort = () => controller.abort(options.signal?.reason)
   const timeout = setTimeout(
     () => controller.abort(),
-    options.body instanceof FormData ? 90_000 : 30_000,
+    options.timeoutMs ?? (options.body instanceof FormData ? 90_000 : 30_000),
   )
   options.signal?.addEventListener('abort', abort, { once: true })
   if (options.signal?.aborted) abort()

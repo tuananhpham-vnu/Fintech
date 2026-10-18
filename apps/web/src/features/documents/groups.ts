@@ -55,10 +55,17 @@ export function getEffectiveDocumentType(doc: Document): DocumentType {
   return doc.source_review?.declared_type ?? doc.type
 }
 
-/** Counts usable extracted fields for a document (value not null, quality not 'missing'). */
-export function countUsableExtractedFields(doc: Document): number {
-  if (!doc.extraction || !Array.isArray(doc.extraction)) return 0
-  return doc.extraction.filter((f) => f.value !== null && f.quality !== 'missing').length
+/** A missing projection is unavailable, not an extraction with zero usable fields. */
+export function countUsableExtractedFields(doc: Document): number | null {
+  if (!Array.isArray(doc.extraction)) return null
+  return doc.extraction.filter(
+    (field) =>
+      field.value !== null &&
+      field.value !== undefined &&
+      field.value !== 'unknown' &&
+      !['missing', 'unreadable'].includes(field.quality) &&
+      field.evidence_refs.length > 0,
+  ).length
 }
 
 export interface GroupedDocuments {
@@ -76,28 +83,28 @@ export interface DocumentPeriodInfo {
 
 /**
  * Resolves period / fiscal year from document metadata.
- * Business Rule (§2.1): Only mark as verified if backed by extracted evidence.
+ * Evidence alone does not establish human verification of a period.
  * Heuristic/filename predictions must be marked unverified (Dự đoán).
  */
 export function resolveDocumentPeriod(doc: Document): DocumentPeriodInfo {
-  // 1. Check extracted fields for verified period
+  // Only a human-reviewed period field establishes a verified year.
   if (doc.extraction && Array.isArray(doc.extraction)) {
     for (const f of doc.extraction) {
       if (f.value !== null && f.evidence_refs?.length > 0) {
-        if (f.period) {
-          const match = f.period.match(/(?:^|\D)(20[12]\d)(?:\D|$)/)
-          if (match) {
-            return { year: match[1], isVerified: true, source: 'field' }
-          }
-        }
         if (f.field_key && f.field_key.includes('period') && typeof f.value === 'string') {
           const match = f.value.match(/(?:^|\D)(20[12]\d)(?:\D|$)/)
           if (match) {
-            return { year: match[1], isVerified: true, source: 'field' }
+            return { year: match[1], isVerified: f.quality === 'human_reviewed', source: 'field' }
           }
         }
       }
     }
+  }
+
+  // A period attached to another field remains a machine suggestion.
+  for (const field of doc.extraction ?? []) {
+    const match = field.period?.match(/(?:^|\D)(20[12]\d)(?:\D|$)/)
+    if (match) return { year: match[1], isVerified: false, source: 'field' }
   }
 
   // 2. Check period_suggestion if present on document
@@ -107,7 +114,7 @@ export function resolveDocumentPeriod(doc: Document): DocumentPeriodInfo {
     if (ps.year && Number.isInteger(ps.year)) {
       return {
         year: String(ps.year),
-        isVerified: ps.verification === 'verified',
+        isVerified: false,
         source: 'suggestion',
       }
     }
@@ -278,7 +285,9 @@ export function filterDocuments(documents: Document[], options: DocumentFilterOp
   // Filter: Status facet
   if (options.statusFilter && options.statusFilter !== 'all') {
     if (options.statusFilter === 'usable') {
-      list = list.filter((doc) => doc.status === 'completed' && countUsableExtractedFields(doc) > 0)
+      list = list.filter(
+        (doc) => doc.status === 'completed' && (countUsableExtractedFields(doc) ?? 0) > 0,
+      )
     } else if (options.statusFilter === 'zero_usable') {
       list = list.filter(
         (doc) => doc.status === 'completed' && countUsableExtractedFields(doc) === 0,
@@ -381,7 +390,10 @@ export function computeIngestionSummary(documents: Document[]): IngestionSummary
     const raw = doc as unknown as Record<string, unknown>
     if (doc.status === 'completed') {
       const usable = countUsableExtractedFields(doc)
-      if (usable > 0) {
+      if (usable === null) {
+        // Await the projection before classifying the extraction outcome.
+        processingFiles++
+      } else if (usable > 0) {
         usableFiles++
       } else {
         zeroUsableFiles++

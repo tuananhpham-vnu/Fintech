@@ -1,5 +1,9 @@
 'use client'
 import { Empty } from '@/components/feedback/empty'
+import { ErrorNotice } from '@/components/feedback/error-notice'
+import { ApiError } from '@/lib/api/client'
+import { TechnicalDetails } from '@/components/ui/technical-details'
+import { localizeBlocker } from '@/lib/i18n/review-i18n'
 import { SectionHeading } from '@/components/ui/section-heading'
 import { Status } from '@/components/ui/status'
 import { ActionDialog } from '@/components/forms/revision-action-dialog'
@@ -7,6 +11,7 @@ import { casesApi } from '@/features/cases/api'
 import { documentsApi } from '@/features/documents/api'
 import { ExtractionDialog } from '@/features/documents/components/extraction-review'
 import { UploadDialog } from '@/features/documents/components/upload-dialog'
+import { FinancialImport } from '@/features/financial/components/financial-import'
 import { DocumentClassification } from './document-classification'
 import { DocumentWorkQueue } from './document-work-queue'
 import { DocumentExplorer } from './document-explorer'
@@ -30,12 +35,14 @@ export function Documents({
   detail,
   reload,
   openSource,
+  openFinancial,
 }: {
   detail: CaseDetail
   reload: () => void
   openSource: (target: SourceTarget) => void
+  openFinancial: () => void
 }) {
-  const { t } = useLocale(),
+  const { t, locale } = useLocale(),
     [upload, setUpload] = useState(false),
     [inspect, setInspect] = useState<Document | null>(null),
     [manual, setManual] = useState<Document | null>(null),
@@ -45,6 +52,8 @@ export function Documents({
     [isPollingDossier, setIsPollingDossier] = useState(false),
     [viewMode, setViewMode] = useState<'command_center' | 'explorer'>('command_center'),
     [explorerInitialActionRequired, setExplorerInitialActionRequired] = useState(false)
+  const [dossierError, setDossierError] = useState<unknown>(null)
+  const [financialImport, setFinancialImport] = useState(false)
 
   const pollingRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -57,6 +66,7 @@ export function Documents({
   const loadLatestDossier = useCallback(
     async (signal?: AbortSignal) => {
       try {
+        setDossierError(null)
         const archives = await documentsApi.listDossierArchives(detail.id, signal)
         if (archives && archives.length > 0) {
           const sorted = [...archives].sort(
@@ -67,8 +77,10 @@ export function Documents({
           setDossierArchive(manifest)
           return manifest
         }
-      } catch {
-        // Dossier endpoint may not be active on older backends; silently ignore
+        if (!signal?.aborted) setDossierArchive(null)
+      } catch (error) {
+        if (signal?.aborted) return null
+        if (!(error instanceof ApiError && error.status === 404)) setDossierError(error)
       }
       return null
     },
@@ -77,6 +89,7 @@ export function Documents({
 
   useEffect(() => {
     const controller = new AbortController()
+    setDossierArchive(null)
     void loadLatestDossier(controller.signal)
     return () => {
       controller.abort()
@@ -117,6 +130,7 @@ export function Documents({
       void documentsApi
         .getDossierArchive(dossierArchive.id)
         .then((updated) => {
+          setDossierError(null)
           setDossierArchive(updated)
           const isFinished =
             updated.intake_state === 'rejected' ||
@@ -130,8 +144,8 @@ export function Documents({
             reload()
           }
         })
-        .catch(() => {
-          // Keep polling on transient transport error
+        .catch((error) => {
+          setDossierError(error)
         })
     }, 2500)
 
@@ -267,6 +281,13 @@ export function Documents({
   return (
     <>
       <SectionHeading title={t('files')} help={t('uploadHelp')}>
+        <button className="secondary-button" onClick={() => setFinancialImport(true)}>
+          {locale === 'vi'
+            ? 'Đọc BCTC Việt / Mỹ / Trung'
+            : locale === 'en'
+              ? 'Read VN / US / CN statements'
+              : '读取越 / 美 / 中财报'}
+        </button>
         {hasDocs && viewMode === 'command_center' && (
           <button
             className="secondary-button"
@@ -284,6 +305,62 @@ export function Documents({
           {t('upload')}
         </button>
       </SectionHeading>
+      {financialImport && (
+        <FinancialImport
+          detail={detail}
+          onSaved={reload}
+          onClose={() => {
+            setFinancialImport(false)
+            reload()
+          }}
+        />
+      )}
+      <section className="panel aic-section">
+        <h3>
+          {locale === 'vi'
+            ? 'Từ tài liệu đến dữ kiện tài chính'
+            : locale === 'en'
+              ? 'From documents to financial facts'
+              : '从文件到财务事实'}
+        </h3>
+        <ol>
+          <li>
+            {locale === 'vi'
+              ? 'Kiểm đúng doanh nghiệp, loại tài liệu và phiên bản PDF.'
+              : locale === 'en'
+                ? 'Confirm company, document type and exact PDF version.'
+                : '确认主体、文件类别及准确PDF版本。'}
+          </li>
+          <li>
+            {locale === 'vi'
+              ? 'Đối chiếu và sửa từng trường với trang nguồn. Trường đọc được chưa phải dữ kiện đã xác minh.'
+              : locale === 'en'
+                ? 'Review and correct each field against its source page. Readable does not mean verified.'
+                : '逐项对照来源页并更正。可读不等于已核实。'}
+          </li>
+          <li>
+            {locale === 'vi'
+              ? 'Lập bộ BCTC đúng kỳ, cơ sở và đơn vị; chọn trích dẫn cho từng chỉ tiêu. Không tự ghép cột nhiều năm.'
+              : locale === 'en'
+                ? 'Create a statement set for the correct period, basis and units, selecting evidence per fact. Multi-year columns are never automatically combined.'
+                : '按正确期间、口径和单位建立报表集，逐项选引用。不会自动合并多年列。'}
+          </li>
+          <li>
+            {locale === 'vi'
+              ? 'Xác minh dữ kiện và từng cầu nối trước khi đánh giá.'
+              : locale === 'en'
+                ? 'Verify facts and each bridge before assessment.'
+                : '评估前核实事实及各项衔接。'}
+          </li>
+        </ol>
+        <button className="secondary-button" onClick={openFinancial}>
+          {locale === 'vi'
+            ? 'Mở bộ BCTC và dữ kiện'
+            : locale === 'en'
+              ? 'Open statement sets and facts'
+              : '打开报表集与事实'}
+        </button>
+      </section>
       {dossierArchive && (
         <DossierArchiveBanner
           archive={dossierArchive}
@@ -326,29 +403,60 @@ export function Documents({
       )}
       {detail.jobs?.length ? (
         <section className="panel aic-section">
-          <h3>{t('status')}</h3>
-          {detail.jobs.map((job) => (
+          <h3>
+            {locale === 'vi'
+              ? 'Nhật ký xử lý tài liệu'
+              : locale === 'en'
+                ? 'Document processing history'
+                : '文件处理历史'}
+          </h3>
+          <p className="help-text">
+            {locale === 'vi'
+              ? 'Lỗi của lần xử lý cũ được giữ để truy vết. Trạng thái nguồn hiện hành nằm trên từng tài liệu; hoàn tất xử lý không xác minh dữ kiện hoặc phát điểm.'
+              : locale === 'en'
+                ? 'Earlier failures remain for traceability. Current source status is shown on each document; processing completion does not verify facts or publish a score.'
+                : '保留旧失败供追溯。当前来源状态见各文件；处理完成不代表核实事实或发布分数。'}
+          </p>
+          {detail.jobs.map((job, index) => (
             <div className="aic-job" key={job.id}>
-              <span className="mono">{job.id}</span>
+              <strong>
+                {locale === 'vi' ? 'Lần xử lý' : locale === 'en' ? 'Processing run' : '处理记录'} ·{' '}
+                {index + 1}
+              </strong>
               <Status value={job.state} />
+              <TechnicalDetails>
+                <code>{job.id}</code>
+              </TechnicalDetails>
               {job.errors?.map((e, i) => (
                 <p className="form-error" key={i}>
-                  {e.message ?? e.code}
+                  {localizeBlocker(e, locale)}
                 </p>
               ))}
               {job.state === 'failed' && (
-                <button
-                  className="secondary-button"
-                  disabled={!job.retryable || retryId !== null}
-                  onClick={() => setRetryId(job.id)}
-                >
-                  {t('retry')}
-                </button>
+                <>
+                  <button
+                    className="secondary-button"
+                    disabled={!job.retryable || retryId !== null}
+                    onClick={() => setRetryId(job.id)}
+                  >
+                    {t('retry')}
+                  </button>
+                  {!job.retryable && (
+                    <p className="help-text">
+                      {locale === 'vi'
+                        ? 'Lần xử lý này không được phép thử lại. Kiểm tra nguồn hiện hành; nếu cần, tải bản thay thế hoặc liên hệ người quản lý hồ sơ.'
+                        : locale === 'en'
+                          ? 'This processing run cannot be retried. Check the current source; upload a replacement or contact the case owner if needed.'
+                          : '此记录不能重试。请核对当前来源，必要时上传替代版本或联系档案负责人。'}
+                    </p>
+                  )}
+                </>
               )}
             </div>
           ))}
         </section>
       ) : null}
+      <ErrorNotice error={dossierError} retry={() => void loadLatestDossier()} />
       {retryId && (
         <ActionDialog
           title={t('retry')}
@@ -381,6 +489,7 @@ export function Documents({
       )}{' '}
       {manual && (
         <DocumentClassification
+          openSource={openSource}
           document={manual}
           detail={detail}
           onClose={() => setManual(null)}

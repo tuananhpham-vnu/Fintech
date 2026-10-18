@@ -1,5 +1,5 @@
 import { ApiError } from '@/lib/api/client'
-import type { DocumentType } from '@/lib/api/contracts'
+import { supportedDocumentTypes, type DocumentType } from '@/lib/api/contracts'
 
 export type UploadMode = 'new' | 'replace' | 'response'
 export type UploadDraft = {
@@ -22,7 +22,11 @@ export async function buildUploadForm(draft: UploadDraft): Promise<FormData> {
     file.size > 10 * 1024 * 1024
   )
     throw new ApiError(422, 'INVALID_PDF', '')
-  if (!sourceClass.trim() || (mode !== 'new' && !target))
+  if (
+    !supportedDocumentTypes.some((supported) => supported === type) ||
+    !/^[A-Za-z0-9_.:-]{1,64}$/.test(sourceClass.trim()) ||
+    (mode !== 'new' && !target)
+  )
     throw new ApiError(422, 'INVALID_INPUT', '')
   if (new TextDecoder().decode(await file.slice(0, 5).arrayBuffer()) !== '%PDF-')
     throw new ApiError(415, 'INVALID_PDF', '')

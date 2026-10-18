@@ -11,6 +11,7 @@ export function Modal({
   dirty = false,
   busy = false,
   drawer = false,
+  wide = false,
 }: {
   title: string
   children: ReactNode
@@ -18,6 +19,7 @@ export function Modal({
   dirty?: boolean
   busy?: boolean
   drawer?: boolean
+  wide?: boolean
 }) {
   const ref = useRef<HTMLDialogElement>(null),
     id = useId(),
@@ -44,7 +46,9 @@ export function Modal({
   return (
     <>
       <dialog
-        className={drawer ? 'modal drawer aic-drawer' : 'modal'}
+        className={
+          drawer ? 'modal drawer aic-drawer' : wide ? 'modal financial-workbench' : 'modal'
+        }
         ref={ref}
         aria-labelledby={id}
         onCancel={(e) => {

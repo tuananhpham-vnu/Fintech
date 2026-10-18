@@ -16,12 +16,14 @@ export function ActionDialog({
   onSaved,
   submit,
   help,
+  wide = false,
 }: {
   title: string
   loadLatest: () => Promise<Case>
   revision: number
   children?: ReactNode
   help?: string
+  wide?: boolean
   onClose: () => void
   onSaved: () => void
   submit: (reason: string, revision: number, keys: MutationKey) => Promise<unknown>
@@ -35,7 +37,7 @@ export function ActionDialog({
     capture = useRef(submit)
   capture.current = submit
   return (
-    <Modal title={title} onClose={onClose} dirty={changed} busy={action.busy}>
+    <Modal title={title} onClose={onClose} dirty={changed} busy={action.busy} wide={wide}>
       <form
         onChange={() => setChanged(true)}
         onSubmit={(e) => {
@@ -65,7 +67,7 @@ export function ActionDialog({
             />
           </label>
           <ErrorNotice error={action.error} />
-          {action.error instanceof ApiError && action.error.status === 409 && (
+          {action.error instanceof ApiError && action.error.code === 'REVISION_CONFLICT' && (
             <div className="aic-recovery">
               <button
                 type="button"
@@ -78,8 +80,12 @@ export function ActionDialog({
                 <>
                   <p>
                     {t('revision')} {latest.revision} ·{' '}
-                    {formatMoney(latest.exposure.amount_vnd, locale)} ·{' '}
-                    {latest.exposure.contract_ref}
+                    {latest.exposure && (
+                      <>
+                        {formatMoney(latest.exposure.amount_vnd, locale)} ·{' '}
+                        {latest.exposure.contract_ref}
+                      </>
+                    )}
                   </p>
                   <p>{t('conflict')}</p>
                   <button

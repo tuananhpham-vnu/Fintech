@@ -27,6 +27,32 @@ function object(value: unknown): value is Obj {
 function fail(): never {
   throw new Error('INVALID_API_RESPONSE')
 }
+function exactKeys(value: Obj, required: string[], optional: string[] = []) {
+  if (
+    required.some((key) => !Object.hasOwn(value, key)) ||
+    Object.keys(value).some((key) => !required.includes(key) && !optional.includes(key))
+  )
+    fail()
+}
+function dateTime(value: unknown) {
+  if (typeof value !== 'string') fail()
+  const parts =
+    /^(\d{4}-\d{2}-\d{2})[Tt](\d{2}):(\d{2}):(\d{2})(?:\.\d+)?([Zz]|[+-]\d{2}:\d{2})$/.exec(value)
+  if (
+    !parts ||
+    Number(parts[2]) > 23 ||
+    Number(parts[3]) > 59 ||
+    Number(parts[4]) > 59 ||
+    !Number.isFinite(Date.parse(value))
+  )
+    fail()
+  const calendarDate = new Date(parts[1] + 'T00:00:00Z')
+  if (
+    !Number.isFinite(calendarDate.getTime()) ||
+    calendarDate.toISOString().slice(0, 10) !== parts[1]
+  )
+    fail()
+}
 function strings(v: Obj, keys: string[]) {
   if (!keys.every((k) => typeof v[k] === 'string')) fail()
 }
@@ -114,7 +140,22 @@ export function counterparty(value: unknown): Counterparty {
   return value as Counterparty
 }
 export function caseRecord(value: unknown): Case {
-  if (!object(value) || !object(value.exposure)) fail()
+  if (!object(value)) fail()
+  if (value.purpose === 'company_health') {
+    strings(value, ['id', 'organization_id', 'counterparty_id', 'created_at', 'updated_at'])
+    revision(value)
+    for (const key of [
+      'exposure_kind',
+      'lifecycle_stage',
+      'exposure',
+      'policy_version',
+      'policy_artifact_hash',
+    ])
+      if (value[key] !== null) fail()
+    return value as Case
+  }
+  if (value.purpose !== undefined && value.purpose !== 'transaction') fail()
+  if (!object(value.exposure)) fail()
   strings(value, [
     'id',
     'organization_id',
@@ -167,6 +208,8 @@ export function page<T>(decode: (v: unknown) => T) {
 }
 export function readiness(value: unknown): Readiness {
   if (!object(value)) fail()
+  if (value.assessment_allowed !== undefined && typeof value.assessment_allowed !== 'boolean')
+    fail()
   revision(value, 'case_revision')
   list(value, ['blockers', 'waivable_requirements'])
   stringList(value, ['limitations'])
@@ -194,15 +237,21 @@ export function readiness(value: unknown): Readiness {
 }
 export function assessment(value: unknown): Assessment {
   if (!object(value)) fail()
-  strings(value, [
-    'id',
-    'case_id',
-    'method_version',
-    'policy_version',
-    'snapshot_hash',
-    'state',
-    'created_at',
+  if (value.checked_case_revision !== undefined) revision(value, 'checked_case_revision')
+  for (const key of [
+    'acknowledged_by',
+    'acknowledged_at',
+    'acknowledgement_reason',
+    'financial_set_id',
   ])
+    if (value[key] != null && typeof value[key] !== 'string') fail()
+  strings(value, ['id', 'case_id', 'method_version', 'snapshot_hash', 'state', 'created_at'])
+  if (value.purpose === 'company_health') {
+    if (value.policy_version !== null || value.transaction_review !== null) fail()
+  } else {
+    if (value.purpose !== undefined) fail()
+    strings(value, ['policy_version'])
+  }
   revision(value, 'case_revision')
   list(value, ['factors'])
   stringList(value, ['strengths', 'weaknesses', 'red_flags', 'limitations'])
@@ -237,9 +286,10 @@ export function assessment(value: unknown): Assessment {
       for (const key of ['formula_id', 'verification_state'])
         if (part[key] !== undefined && typeof part[key] !== 'string') fail()
       if (part.blockers !== undefined) list(part, ['blockers'])
+      if (part.flags !== undefined) stringList(part, ['flags'])
     }
   }
-  if (value.transaction_review !== undefined) {
+  if (value.transaction_review != null) {
     const review = value.transaction_review
     if (
       !object(review) ||
@@ -487,6 +537,14 @@ export function extractionSummary(value: unknown): ExtractionSummary {
 
 export function dossierAccepted(value: unknown): DossierAccepted {
   if (!object(value)) fail()
+  exactKeys(value, [
+    'archive_id',
+    'case_id',
+    'archive_sha256',
+    'revision',
+    'intake_state',
+    'manifest_url',
+  ])
   uuid(value, 'archive_id')
   uuid(value, 'case_id')
   sha256(value, 'archive_sha256')
@@ -517,6 +575,7 @@ export function dossierCounters(value: unknown): DossierCounters {
     'failed',
     'needs_review',
   ]
+  exactKeys(value, keys)
   for (const k of keys) {
     const num = value[k]
     if (!Number.isInteger(num) || (num as number) < 0 || (num as number) > 128) fail()
@@ -524,8 +583,19 @@ export function dossierCounters(value: unknown): DossierCounters {
   return value as DossierCounters
 }
 
-export function dossierArchiveSummary(value: unknown): DossierArchiveSummary {
+function decodeDossierArchiveSummary(value: unknown, withMembers: boolean): DossierArchiveSummary {
   if (!object(value)) fail()
+  exactKeys(value, [
+    'id',
+    'case_id',
+    'archive_sha256',
+    'intake_state',
+    'processing_state',
+    'created_at',
+    'counters',
+    'error_code',
+    ...(withMembers ? ['members'] : []),
+  ])
   uuid(value, 'id')
   uuid(value, 'case_id')
   sha256(value, 'archive_sha256')
@@ -539,14 +609,40 @@ export function dossierArchiveSummary(value: unknown): DossierArchiveSummary {
   ) {
     fail()
   }
-  strings(value, ['created_at'])
+  dateTime(value.created_at)
   dossierCounters(value.counters)
   if (value.error_code !== null && typeof value.error_code !== 'string') fail()
   return value as DossierArchiveSummary
 }
 
+export function dossierArchiveSummary(value: unknown): DossierArchiveSummary {
+  return decodeDossierArchiveSummary(value, false)
+}
+
 export function dossierMember(value: unknown): DossierMember {
   if (!object(value)) fail()
+  exactKeys(value, [
+    'id',
+    'archive_id',
+    'entry_index',
+    'entry_path',
+    'byte_size',
+    'sha256',
+    'detected_mime',
+    'group',
+    'suggested_type',
+    'classification_verification',
+    'period_suggestion',
+    'subject_verification',
+    'intake_state',
+    'processing_state',
+    'page_count',
+    'document_id',
+    'job_id',
+    'error_code',
+    'retryable',
+    'source_url',
+  ])
   uuid(value, 'id')
   uuid(value, 'archive_id')
   if (
@@ -556,7 +652,7 @@ export function dossierMember(value: unknown): DossierMember {
   )
     fail()
   if (typeof value.entry_path !== 'string' || value.entry_path.length < 1) fail()
-  if (!Number.isInteger(value.byte_size) || (value.byte_size as number) < 0) fail()
+  if (!Number.isSafeInteger(value.byte_size) || (value.byte_size as number) < 0) fail()
   if (
     value.sha256 !== null &&
     (typeof value.sha256 !== 'string' || !sha256Pattern.test(value.sha256))
@@ -583,7 +679,8 @@ export function dossierMember(value: unknown): DossierMember {
   if (value.classification_verification !== 'unverified') fail()
   if (!object(value.period_suggestion)) fail()
   const ps = value.period_suggestion as Obj
-  if (ps.year !== null && !Number.isInteger(ps.year)) fail()
+  exactKeys(ps, ['year', 'kind', 'basis', 'verification'])
+  if (ps.year !== null && !Number.isSafeInteger(ps.year)) fail()
   if (ps.kind !== 'unresolved' || ps.basis !== 'unresolved' || ps.verification !== 'unverified')
     fail()
   if (value.subject_verification !== 'unresolved') fail()
@@ -608,7 +705,7 @@ export function dossierMember(value: unknown): DossierMember {
     fail()
   if (
     value.page_count !== null &&
-    (!Number.isInteger(value.page_count) || (value.page_count as number) < 1)
+    (!Number.isSafeInteger(value.page_count) || (value.page_count as number) < 1)
   )
     fail()
   nullableUuid(value, 'document_id')
@@ -628,7 +725,7 @@ export function dossierMember(value: unknown): DossierMember {
 }
 
 export function dossierArchive(value: unknown): DossierArchive {
-  dossierArchiveSummary(value)
+  decodeDossierArchiveSummary(value, true)
   const v = value as Obj
   if (!Array.isArray(v.members) || v.members.length > 128) fail()
   for (const m of v.members) dossierMember(m)
@@ -643,6 +740,16 @@ export function dossierArchiveList(value: unknown): DossierArchiveList {
 
 export function dossierMemberSummary(value: unknown): DossierMemberSummary {
   if (!object(value)) fail()
+  exactKeys(value, [
+    'member_id',
+    'archive_id',
+    'document_id',
+    'job_id',
+    'intake_state',
+    'processing_state',
+    'error_code',
+    'extraction',
+  ])
   uuid(value, 'member_id')
   uuid(value, 'archive_id')
   nullableUuid(value, 'document_id')

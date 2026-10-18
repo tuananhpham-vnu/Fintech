@@ -247,7 +247,14 @@ def _amount(key: str, value: str, quote: str) -> Checked:
         return _reject("UNPARSEABLE_AMOUNT")
     allow_words = not key.startswith("financial.")  # BCTC giữ số in trên báo cáo, hệ số đơn vị là field riêng
     best: bool | None = None
-    expressions = money_expressions(quote, allow_words)
+    # Financial tables have adjacent year columns, often separated by a single
+    # space after OCR. A punctuation-formatted token cannot include that space.
+    # Preserve the stricter free-text money grammar for nonfinancial documents.
+    financial_quote = quote
+    if key.startswith("financial."):
+        financial_quote = re.sub(r"(?<=\d)[ \t]+(?=\d{4,}\b|\d+[.,]\d)", " | ", financial_quote)
+        financial_quote = re.sub(r"(?<=\d)([.,]\d+)(?=[ \t]+\d)", r"\1 |", financial_quote)
+    expressions = money_expressions(financial_quote, allow_words)
     for expression in expressions:          # a partial expression never supports a value
         for candidate, certain in expression.candidates:
             if wanted == candidate:
@@ -401,11 +408,12 @@ def check_value(key: str, value_type: str, value: object, quote: str, registry: 
 # Labels restrict a value to its field, even when the model quotes several fields.
 # Unsupported layouts stay uncertain rather than assigning a role by occurrence.
 _LABELS = {
-    "financial.total_assets": r"tổng tài sản|total assets",
+    "financial.total_assets": r"tổng (?:cộng )?tài sản|total assets",
     "financial.liabilities": r"nợ phải trả|total liabilities",
     "financial.equity": r"vốn chủ sở hữu|equity",
     "financial.unit_multiplier": r"đơn vị(?: tính)?|unit multiplier",
-    "financial.period_end": r"kỳ kết thúc|ngày kết thúc kỳ|period end",
+    # Preserve the Vietnamese date cue "ngày" for the date parser after removing the label.
+    "financial.period_end": r"kỳ kết thúc|ngày kết thúc kỳ|tại(?=\s+ngày\b)|period end|as at",
     "loan.amount": r"đề nghị vay|số tiền vay|loan amount",
     "receipt.amount": r"(?:dự kiến|đến hạn|đã|sẽ|phải)\s+(?:thu|nhận)|khoản thu",
     "contract.amount": r"giá trị(?:\s+(?:hợp đồng|toàn bộ\s+\w+))?|contract amount",
@@ -489,9 +497,14 @@ def labeled_parts(key: str, text: str) -> list[str]:
     return parts
 
 
-def heading_role(label: str) -> str:
+def heading_role(label: str, document_type: str | None = None) -> str:
     """Role named by a `Label:` heading: a role, or attribute / ambiguous / unknown."""
     label = " ".join(nfc(label).split()).strip()
+    if document_type == "financial_statement":
+        # Numbered tax-form headings identify the reporting entity, never a payer/payee.
+        label = re.sub(r"^\[\d{1,2}\]\s*", "", label)
+        if re.fullmatch(r"tên người nộp thuế", label, re.I):
+            return "borrower"
     # The reviewed PDF font maps parentheses to U+FD3E/U+FD3F. Split the
     # comparison label only; preserve aliases and the existing ambiguity rule.
     parts = [p.strip() for p in re.split(r"[()\ufd3e\ufd3f]", label) if p.strip()]
@@ -507,11 +520,12 @@ def heading_role(label: str) -> str:
     return roles.pop() if roles else _UNKNOWN
 
 
-def party_role(text: str, position: int, max_distance: int = 400) -> str | None:
+def party_role(text: str, position: int, max_distance: int = 400,
+               document_type: str | None = None) -> str | None:
     """Role of the party section containing `position`. Sections are bounded by headings: an unrecognised
     heading ends the previous party's section instead of inheriting its role."""
     for heading in reversed(list(_HEADING.finditer(text, 0, position))):
-        role = heading_role(heading["label"])
+        role = heading_role(heading["label"], document_type)
         if role == _ATTRIBUTE:
             continue
         if role in (_AMBIGUOUS, _UNKNOWN) or position - heading.end() > max_distance:
@@ -520,7 +534,8 @@ def party_role(text: str, position: int, max_distance: int = 400) -> str | None:
     return None
 
 
-def _role_supported(key: str, value: str, spans: list[Span], texts: list[str]) -> bool:
+def _role_supported(key: str, value: str, spans: list[Span], texts: list[str],
+                    document_type: str | None = None) -> bool:
     tax_id = normalize.tax_id(value)
     if tax_id is None:
         return False
@@ -532,15 +547,15 @@ def _role_supported(key: str, value: str, spans: list[Span], texts: list[str]) -
         for tax in pattern.finditer(text):
             if tax.start() >= span.end or tax.end() <= span.start:
                 continue
-            if party_role(text, tax.start()) in _ROLES[key]:
+            if party_role(text, tax.start(), document_type=document_type) in _ROLES[key]:
                 return True
     return False
 
 
 def check_source(key: str, value_type: str, value: str, spans: list[Span], texts: list[str],
-                 registry: "Registry") -> Checked:
+                 registry: "Registry", document_type: str | None = None) -> Checked:
     """Check full source context separately from quotation authenticity."""
-    if key in _ROLES and not _role_supported(key, value, spans, texts):
+    if key in _ROLES and not _role_supported(key, value, spans, texts, document_type):
         return _reject("UNVERIFIED_FIELD_ROLE")
     supporting = spans
     if value_type == "decimal":

@@ -48,7 +48,7 @@ export function DossierArchiveBanner({
       case 'rejected':
         return t('intakeRejected')
       default:
-        return state
+        return t('needs_review')
     }
   }
 
@@ -63,7 +63,7 @@ export function DossierArchiveBanner({
       case 'finished_with_errors':
         return t('processingFinishedErrors')
       default:
-        return state
+        return t('needs_review')
     }
   }
 
@@ -118,7 +118,7 @@ export function DossierArchiveBanner({
           ? 'Dossier parse attempts exhausted after 3 retries.'
           : '卷宗解析尝试次数已耗尽（最多3次）。'
     }
-    return code
+    return t('invalidFile')
   }
 
   const isIntakeTerminal = ['accepted', 'partially_accepted', 'rejected'].includes(
@@ -131,16 +131,16 @@ export function DossierArchiveBanner({
     archive.intake_state === 'rejected' || (isIntakeTerminal && isProcessingTerminal)
 
   return (
-    <section className="aic-archive-receipt aic-dossier-banner" aria-label="Dossier Ingestion">
+    <section
+      className="aic-archive-receipt aic-dossier-banner"
+      aria-label={t('dossierBatchArchive')}
+    >
       <div className="aic-archive-header">
         <div className="aic-archive-header-left">
           <FolderArchive size={20} style={{ color: 'var(--primary)' }} />
           <div>
             <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span>{t('dossierBatchArchive')}</span>
-              <span className="mono" style={{ fontSize: '11px', color: 'var(--muted)' }}>
-                #{archive.id.slice(0, 8)}
-              </span>
             </h3>
           </div>
 
@@ -206,12 +206,7 @@ export function DossierArchiveBanner({
           )}
 
           {onClose && isTerminal && (
-            <button
-              type="button"
-              className="icon-button"
-              aria-label="Close dossier banner"
-              onClick={onClose}
-            >
+            <button type="button" className="icon-button" aria-label={t('close')} onClick={onClose}>
               <X size={16} />
             </button>
           )}

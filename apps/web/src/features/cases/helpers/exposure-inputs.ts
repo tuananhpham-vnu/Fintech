@@ -1,5 +1,13 @@
 import { ApiError } from '@/lib/api/client'
-import type { CaseDetail, Document, Exposure, ExposureKind } from '@/lib/api/contracts'
+import type {
+  CaseDetail,
+  TransactionCaseDetail,
+  Document,
+  Exposure,
+  ExposureKind,
+} from '@/lib/api/contracts'
+import type { Locale } from '@/lib/api/contracts'
+import { translate, type MessageKey } from '@/lib/i18n/messages'
 
 export type TransactionDraft = {
   kind: ExposureKind
@@ -285,7 +293,7 @@ function readRow<T>(value: unknown, validate: (input: T) => T): EditorRecord<T> 
     return { input: null, historical: true, original: value }
   }
 }
-export function transactionDraft(initial?: CaseDetail): TransactionDraft {
+export function transactionDraft(initial?: TransactionCaseDetail): TransactionDraft {
   const exposure = initial?.exposure
   const kind = initial?.exposure_kind ?? 'RECEIVABLE'
   return {
@@ -313,13 +321,14 @@ export type DocumentSourceOption = {
 }
 export function questionnaireSourceOptions(
   forms: CaseDetail['questionnaires'] = [],
+  locale: Locale = 'en',
 ): DocumentSourceOption[] {
   return forms.flatMap((form) =>
     (form.responses ?? [])
       .filter((r) => r.answer_state !== 'skipped' && r.reported_by)
       .map((r) => ({
         key: JSON.stringify(['questionnaire', form.id, r.question_id, r.id, r.revision]),
-        label: `${form.questions.find((q) => q.id === r.question_id)?.label ?? r.question_id} · ${r.origin} · v${r.revision} · ${r.verification_status ?? 'unverified'}`,
+        label: `${form.questions.find((q) => q.id === r.question_id)?.label ?? translate(locale, 'question')} · ${translate(locale, r.origin as MessageKey)} · v${r.revision} · ${translate(locale, (r.verification_status ?? 'unverified') as MessageKey)}`,
         source: {
           kind: 'questionnaire' as const,
           reported_by: r.reported_by!,
@@ -344,7 +353,7 @@ export function documentSourceOptions(documents: Document[] = []): DocumentSourc
       )
       .map((ref) => ({
         key: JSON.stringify([doc.id, doc.version, doc.hash, ref]),
-        label: `${doc.name ?? doc.id} · v${doc.version} · ${ref}`,
+        label: `${doc.name ?? '—'} · v${doc.version}`,
         source: {
           kind: 'document' as const,
           document_id: doc.id,
@@ -356,7 +365,7 @@ export function documentSourceOptions(documents: Document[] = []): DocumentSourc
   )
 }
 /** Explicitly accept the revision; preserve every user field and exact source tuple. */
-export function rebaseTransaction(draft: TransactionDraft, latest: CaseDetail) {
+export function rebaseTransaction(draft: TransactionDraft, latest: TransactionCaseDetail) {
   return {
     draft,
     revision: latest.revision,

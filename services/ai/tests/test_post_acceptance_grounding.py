@@ -160,7 +160,7 @@ def extract_proposals(contracts, root, name, doc_type, proposals):
     assert not contracts.violations("ExtractionOutput", output)
     assert not extraction_output_violations(request, output)
     assert output["schema_version"] == output["provenance"]["schema_version"] == "1.0.2"
-    assert output["provenance"]["prompt_version"] == "extraction-v2"
+    assert output["provenance"]["prompt_version"] == "extraction-v3"
     assert output["sha256"] == SOURCES[name][1]
     assert output["fields"] == service.extract(request)["fields"]
     assert output["evidence"] == service.extract(request)["evidence"]
