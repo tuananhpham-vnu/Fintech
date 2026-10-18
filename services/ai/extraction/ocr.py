@@ -2,13 +2,18 @@
 
 - GeminiOcr (mặc định, OCR_ENGINE=gemini): ảnh trang -> Gemini chép nguyên văn. Không cần cài thêm gì, chạy được trên Render.
 - TesseractOcr (OCR_ENGINE=tesseract): gọi binary `tesseract` (cần gói ngôn ngữ `vie`). Dùng khi chạy local/Docker.
+- DoclingOcr (OCR_ENGINE=docling, mặc định khi có DOCLING_PYTHON): Docling LOCAL trong venv riêng (layout, bảng,
+  RapidOCR PP-OCR cho zh/en, Apple Vision cho vi trên macOS), chạy tiến trình con có timeout; không gửi gì ra ngoài.
 Văn bản OCR chỉ là dữ liệu nguồn; mọi trích dẫn sau đó vẫn phải khớp nguyên văn văn bản này.
 """
 from __future__ import annotations
 
+import json
+import os
 import shutil
 import subprocess
 import unicodedata
+from pathlib import Path
 from typing import Protocol
 
 from runner.errors import INVALID_MODEL_OUTPUT, PROVIDER_UNAVAILABLE, ServiceError
@@ -75,3 +80,42 @@ class TesseractOcr:
                 raise ServiceError(503, PROVIDER_UNAVAILABLE, f"tesseract failed on page {page}.") from exc
         deadline.check(f"accepting OCR of page {page}")
         return unicodedata.normalize("NFC", out.stdout.decode("utf-8", "replace"))
+
+
+DOCLING_SCRIPT = Path(__file__).resolve().with_name("docling_page.py")
+_DOCLING_ENV = ("PATH", "HOME", "TMPDIR", "HF_HOME", "HF_HUB_OFFLINE", "OMP_NUM_THREADS")
+
+
+class DoclingOcr:
+    """OCR local bằng Docling (tiến trình con trong venv riêng; hết hạn thì bị kill thật)."""
+
+    def __init__(self, python: str, engine: str = "auto", lang: str = "", timeout_s: float = 300.0,
+                 hf_home: str | None = None):
+        if not python or not Path(python).is_file():
+            raise ServiceError(503, PROVIDER_UNAVAILABLE, "OCR_ENGINE=docling but DOCLING_PYTHON is not a file.")
+        self.python, self.engine, self.lang, self.timeout_s = python, engine, lang, timeout_s
+        self.env = {k: os.environ[k] for k in _DOCLING_ENV if k in os.environ}
+        if hf_home:
+            self.env["HF_HOME"] = hf_home
+        try:
+            out = subprocess.run([python, str(DOCLING_SCRIPT), "--version", "--engine", engine], capture_output=True,
+                                 timeout=120, check=True, env=self.env)
+            self.version = json.loads(out.stdout)["version"]
+        except (OSError, subprocess.SubprocessError, ValueError, KeyError) as exc:
+            raise ServiceError(503, PROVIDER_UNAVAILABLE, "Docling is not runnable from DOCLING_PYTHON.") from exc
+
+    def page_text(self, png: bytes, page: int, deadline: Deadline) -> str:
+        deadline.check(f"OCR page {page}")
+        args = [self.python, str(DOCLING_SCRIPT), "--engine", self.engine] + (["--lang", self.lang] if self.lang else [])
+        with llm.GATE.slot(deadline, f"OCR page {page}"):
+            try:
+                out = subprocess.run(args, input=png, capture_output=True, check=True, env=self.env,
+                                     timeout=max(0.1, min(self.timeout_s, deadline.remaining())))
+                result = json.loads(out.stdout)
+            except (OSError, subprocess.SubprocessError, ValueError) as exc:
+                raise ServiceError(503, PROVIDER_UNAVAILABLE, f"Docling OCR failed on page {page}.") from exc
+        deadline.check(f"accepting OCR of page {page}")
+        if not isinstance(result.get("text"), str):
+            raise ServiceError(503, PROVIDER_UNAVAILABLE, f"Docling OCR returned no text for page {page}.")
+        self.version = result.get("version", self.version)
+        return unicodedata.normalize("NFC", result["text"])

@@ -1,0 +1,42 @@
+{
+  "generated_at": "2026-10-18T01:44:27+07:00",
+  "rows": [
+    {
+      "file": "01_registration.pdf",
+      "ok": false,
+      "error": "PROVIDER_UNAVAILABLE",
+      "message": "Model provider error during field extraction."
+    },
+    {
+      "file": "02_financials.pdf",
+      "ok": false,
+      "error": "PROVIDER_UNAVAILABLE",
+      "message": "Model provider error during field extraction."
+    },
+    {
+      "file": "03_loan_request.pdf",
+      "ok": false,
+      "error": "PROVIDER_UNAVAILABLE",
+      "message": "Model provider error during field extraction."
+    },
+    {
+      "file": "04_contract.pdf",
+      "ok": false,
+      "error": "PROVIDER_UNAVAILABLE",
+      "message": "Model provider error during field extraction."
+    },
+    {
+      "file": "05_wrong_record.pdf",
+      "ok": false,
+      "error": "PROVIDER_UNAVAILABLE",
+      "message": "Model provider error during field extraction."
+    },
+    {
+      "file": "06_correct_record.pdf",
+      "ok": false,
+      "error": "PROVIDER_UNAVAILABLE",
+      "message": "Model provider error during field extraction."
+    }
+  ],
+  "note": "Dev synthetic fixtures; gold used only to score live output after the fact."
+}

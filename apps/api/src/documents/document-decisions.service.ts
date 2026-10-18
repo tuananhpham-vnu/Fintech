@@ -180,25 +180,62 @@ export class DocumentDecisions {
         ],
       )
     ).rows
+    return applyDecisions(projected, rows, await this.counterpartyRevision(session, document.case_id))
+  }
+  /** Same effective fields as projection() for documents just listed by an ACL-checked repository read. */
+  async projections(session: AuthSession, caseId: string, documents: StoredDocument[]) {
+    const rows = (
+      await this.db.query(
+        `SELECT document_id,document_version,document_sha256,kind,payload_json FROM aic.mvp_document_decisions
+      WHERE organization_id=$1 AND case_id=$2 AND kind IN ('correction','verification') ORDER BY case_revision`,
+        [session.user.organization_id, caseId],
+      )
+    ).rows
+    const revision = await this.counterpartyRevision(session, caseId)
+    return documents.map((document) => {
+      if (!document.extraction || document.case_id !== caseId) return null
+      try {
+        const projected = projectLegacyExtraction(document, document.extraction as any)
+        const own = rows.filter(
+          (r) =>
+            r.document_id === document.id &&
+            Number(r.document_version) === Number(document.version) &&
+            r.document_sha256 === document.hash,
+        )
+        return applyDecisions(projected, own, revision)
+      } catch {
+        return null // invalid stored extraction: never guess, the document is simply not used
+      }
+    })
+  }
+  private async counterpartyRevision(session: AuthSession, caseId: string) {
     const cp = (
       await this.db.query(
         'SELECT p.revision FROM aic.counterparties p JOIN aic.cases c ON c.organization_id=p.organization_id AND c.counterparty_id=p.id WHERE c.organization_id=$1 AND c.id=$2',
-        [session.user.organization_id, document.case_id],
+        [session.user.organization_id, caseId],
       )
     ).rows[0]
-    for (const row of rows)
-      if (row.kind === 'correction' || row.kind === 'verification') {
-        const field = projected.fields.find((f) => f.field_key === row.payload_json.field_key)
-        if (field) {
-          if (row.kind === 'correction') field.value = row.payload_json.value
-          field.evidence_refs = row.payload_json.evidence_refs
-          field.quality =
-            Number(row.payload_json.counterparty_revision) === Number(cp?.revision)
-              ? 'human_reviewed'
-              : 'uncertain'
-          field.missing_reason = field.value === null ? 'human_marked_missing' : null
-        }
-      }
-    return projected
+    return cp?.revision
   }
+}
+
+function applyDecisions(
+  projected: ReturnType<typeof projectLegacyExtraction>,
+  rows: { kind: string; payload_json: any }[],
+  counterpartyRevision: unknown,
+) {
+  for (const row of rows)
+    if (row.kind === 'correction' || row.kind === 'verification') {
+      const field = projected.fields.find((f) => f.field_key === row.payload_json.field_key)
+      if (field) {
+        if (row.kind === 'correction') field.value = row.payload_json.value
+        field.evidence_refs = row.payload_json.evidence_refs
+        field.quality =
+          Number(row.payload_json.counterparty_revision) === Number(counterpartyRevision)
+            ? 'human_reviewed'
+            : 'uncertain'
+        field.missing_reason = field.value === null ? 'human_marked_missing' : null
+      }
+    }
+  return projected
 }

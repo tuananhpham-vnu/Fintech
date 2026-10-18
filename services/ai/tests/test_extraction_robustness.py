@@ -383,3 +383,61 @@ def test_text_page_over_full_page_background_is_not_ocred(storage):
     page.insert_htmlbox(pymupdf.Rect(40, 40, 555, 800), "<br>".join(lines))
     info = pdf.inspect(doc.tobytes(), with_pages=True)
     assert info.pages[0].needs_ocr is False
+
+
+# ------------------------------------------------------------------ 4. text layer whose fonts lost their Unicode map
+
+
+def strip_tounicode(doc):
+    for page in doc:
+        for font in page.get_fonts():
+            doc.xref_set_key(font[0], "ToUnicode", "null")
+    return pymupdf.open("pdf", doc.tobytes())
+
+
+def html_page(html):
+    doc = pymupdf.open()
+    doc.new_page(width=595, height=842).insert_htmlbox(pymupdf.Rect(40, 40, 555, 800), html)
+    return doc
+
+
+def inserted_page(text, fontname):
+    doc = pymupdf.open()
+    doc.new_page().insert_text((40, 60), text, fontname=fontname)
+    return doc
+
+
+VI_TEXT = "Hợp đồng số HĐ01. Bên vay: Công ty TNHH Minh Anh. Mã số thuế: 0109876543"
+ZH_TEXT = "企业名称：示例科技有限公司"
+
+
+@pytest.mark.parametrize("text", [VI_TEXT, ZH_TEXT], ids=["vi", "zh"])
+def test_text_page_with_unmapped_identity_font_is_ocred(text):
+    """AI-001: Identity-H font without ToUnicode yields readable-looking glyph ids (no images on the page)."""
+    page = pdf.inspect(strip_tounicode(html_page(text)).tobytes(), with_pages=True).pages[0]
+    assert text not in page.text
+    assert (page.needs_ocr, page.ocr_reason, page.image_count) == (True, "garbled", 0)
+
+
+@pytest.mark.parametrize("text, fontname", [("Company name: SAMPLE LTD. Tax ID: 0109876543", "helv"),
+                                            (ZH_TEXT + " 税号 91110000", "china-s")], ids=["helvetica", "cjk-cmap"])
+def test_standard_fonts_without_tounicode_keep_native_text(text, fontname):
+    page = pdf.inspect(strip_tounicode(inserted_page(text, fontname)).tobytes(), with_pages=True).pages[0]
+    assert page.text.strip() == text and page.needs_ocr is False
+
+
+def test_native_table_is_not_ocred():
+    rows = [["STT", "Hạng mục", "Thành tiền"], ["1", "Thép cuộn", "1.860.000.000"], ["2", "Xi măng", "1.160.000.000"]]
+    html = "<table>" + "".join("<tr>" + "".join(f"<td>{c}</td>" for c in r) + "</tr>" for r in rows) + "</table>"
+    page = pdf.inspect(html_page(html).tobytes(), with_pages=True).pages[0]
+    flat = " ".join(page.text.split())                       # ô hẹp có thể xuống dòng giữa chữ
+    assert page.needs_ocr is False and all(c in flat for r in rows for c in r)
+
+
+def test_garbled_text_layer_is_replaced_by_ocr(contracts, storage):
+    (storage / "broken.pdf").write_bytes(strip_tounicode(html_page(ZH_TEXT)).tobytes())
+    ocr = t.FakeOcr(ZH_TEXT)
+    pages, notes, used = Extractor(contracts, None, ocr).read_pages(SimpleNamespace(data=(storage / "broken.pdf")
+                                                                                    .read_bytes()), Deadline(60))
+    assert used and ocr.pages == [1] and (pages[0].method, pages[0].text) == ("ocr", ZH_TEXT)
+    assert {"OCR_USED", "GARBLED_TEXT_LAYER"} <= {n[0] for n in notes}

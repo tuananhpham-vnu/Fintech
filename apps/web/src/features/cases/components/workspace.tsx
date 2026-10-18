@@ -5,6 +5,7 @@ import { BackLink } from '@/components/layout/back-link'
 import { SectionHeading } from '@/components/ui/section-heading'
 import { Status } from '@/components/ui/status'
 import { RiskAssessment } from '@/features/assessments/components/risk-assessment'
+import { CaseAssistant } from '@/features/assistant/components/case-assistant'
 import { TransactionDialog } from '@/features/cases/components/transaction-dialog'
 import { Overview } from '@/features/cases/components/transaction-overview'
 import { Documents } from '@/features/documents/components/documents'
@@ -28,12 +29,21 @@ import {
   FileText,
   FolderOpen,
   History,
+  MessageSquareText,
   RefreshCw,
   TrendingUp,
 } from 'lucide-react'
 import { useEffect, useState, type ComponentType } from 'react'
 import { useCaseWorkspace } from '../hooks/use-case-workspace'
-export const tabs = ['overview', 'files', 'review', 'information', 'assessment', 'history'] as const
+export const tabs = [
+  'overview',
+  'files',
+  'review',
+  'information',
+  'assessment',
+  'assistant',
+  'history',
+] as const
 export type Tab = (typeof tabs)[number]
 const tabIcons: Record<Tab, ComponentType<{ size?: number; className?: string }>> = {
   overview: FileText,
@@ -41,6 +51,7 @@ const tabIcons: Record<Tab, ComponentType<{ size?: number; className?: string }>
   review: FileCheck,
   information: ClipboardList,
   assessment: TrendingUp,
+  assistant: MessageSquareText,
   history: History,
 }
 export function Workspace({ caseId }: { caseId: string }) {
