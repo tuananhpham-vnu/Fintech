@@ -1,0 +1,151 @@
+Bản hiện hành: AIC Rating 2.0.0 — CR-AIC-01, ngày 16/10/2026. Định vị được chủ dự án xác nhận: SME đánh giá nhà cung cấp/khách hàng cho trả trước và khoản phải thu; cho vay/đầu tư công cụ nợ là phạm vi phụ. Một role nội bộ Chuyên viên. Demo Việt Nam; giao diện en mặc định, zh-CN và vi. Đây là cập nhật thiết kế, không xác nhận code/runtime hoặc phương pháp tính điểm đã hoàn thành.
+1. Quy ước DTO AIC-2.0-DRAFT
+Đây là từ điển thiết kế mới, không khai đã có JSON Schema. R=required; ?=nullable. UUID canonical; dates ISO; money VND chuỗi integer không separator; decimal ratios chuỗi decimal; evidence_refs là ID tới đúng immutable source. Object input reject unknown fields khi phát hành schema. Phân biệt omitted optional với null được cho phép.
+2. Core DTO
+DTO
+
+Fields và validation
+
+
+Error
+
+R code/message/request_id strings; details object? không lộ tài nguyên ngoài ACL.
+
+
+User/SessionOutput
+
+R id,organization_id,display_name,role=specialist. SessionOutput có user, csrf_token, expires_at; không raw session token.
+
+
+CounterpartyInput
+
+R name nonblank,country=VN; tax_id text? giữ số0; industry_code?; source_refs[]; không client gán identity verified.
+
+
+Counterparty
+
+Input + R id,organization_id,revision,identity_status unresolved/confirmed/conflicting,created_at,updated_at. Tax_id missing không tự xác minh pháp nhân bằng tên.
+
+
+CaseCreate
+
+R counterparty_id,exposure_kind,lifecycle_stage,exposure. Organization/creator/IDs từ session/server; policy server chọn và ghi version.
+
+
+ExposureInput
+
+R amount_vnd positive,organization_role,counterparty_role,source_origin; term_days integer≥0?; contract_ref?; conditions[]; due_date?; delivery/refund dates?; paid/received claims? chỉ khi có source. Role pairs RECEIVABLE seller/buyer; PREPAYMENT buyer/seller; LOAN lender/borrower; DEBT_INVESTMENT investor/issuer. Term null phải giải thích chưa xác định.
+
+
+Case
+
+R id,organization_id,counterparty_id,exposure_kind,lifecycle_stage,exposure,revision,policy_version,created_at,updated_at; method_version?,latest_review_run_id?,latest_assessment_id?. Không borrower fields mặc định.
+
+
+RevisionInput
+
+R expected_revision integer>0; current mismatch409, không cho frontend tự tăng.
+
+
+Document/UploadInput
+
+Upload R file/type/source_class/expected_revision; mode new/replace/response; replaces_document_id?/response_request_id? theo mode. Document R immutable id,lineage,version,hash,pages,source,owner_party_ref,type/classification,status; extraction? chưa ready null.
+
+
+DocumentType
+
+registration,financial_statement,tax_report,contract,invoice,acceptance_record,delivery_record,payment_record,collateral_document,loan_request,debt_instrument,other. Hint không thay detection; loan_request chỉ luồng phụ khi applicable.
+
+
+Evidence
+
+R id,document_id,document_version,page≥1,quote,source_hash; bbox normalized[0,1]? không tự tạo. External evidence R URL,publisher,retrieved_at,entity_match,verification; snapshot/hash khi lưu được.
+
+
+ExtractedField
+
+R field_key,value nullable,raw_value?,quality,missing_reason?,evidence_refs[],party_role?,period?,currency?,unit_multiplier?; null có reason missing/unreadable/ambiguous/conflicting/out_of_scope. Không zero-fill.
+
+
+FinancialMetric
+
+R metric_id,formula_id,period,value nullable,status available/unavailable,input_refs[],adjustments[],reason?; denominator0/không tương thích→unavailable. Không coi unknown numerator=0.
+
+
+ReviewRun
+
+R id,case_id,case_revision,rules_version,policy_version,snapshot_hash,state queued/running/completed/partial/failed,stale; results/findings/diagnostics; numeric rating không nhét vào IssueAssessment cũ.
+
+
+Finding
+
+R id,issue_key,rule_id,category,severity,summary,evidence_refs[],finding_state open/verified_resolved/dismissed,handling_state none/requested/waived; absence_basis?; limitations[]; không model gán actor/human decision.
+
+
+WaiverInput/Output
+
+Input R expected_revision,requirement_key,reason; issue_id? nếu requirement issue. Output R id,actor_id,policy_version,created_at,active; revoked_at/reason?; request không có can_waive từ client.
+
+
+ReadinessOutput
+
+R case_revision,document_review_allowed bool,numeric_assessment_allowed bool,method_status unconfigured/research/configured/validated/retired,blockers[{code,message}],limitations[],waivable_requirements[]. Không score.
+
+
+MethodVersion
+
+R version,name,type,scope,status,input_requirements,formula_registry,thresholds,weights,missingness_policy,source_refs,rights_basis?; chưa có hệ số không được status validated. Điểm và PD là hai loại output khác nhau.
+
+
+AssessmentCreate
+
+R expected_revision; method_version? nếu server policy có default; không cho input overall_score. Server check scope/financial/method before202.
+
+
+FactorAssessment
+
+R factor_id,label,status available/missing/waived/conflicting/not_applicable,score nullable,value nullable,rationale,evidence_refs[],verification_state,limitations[]; policy/method controls missingness.
+
+
+Assessment
+
+R id,case_id,case_revision,method_version,policy_version,snapshot_hash,state,stale,factors[],strengths[],weaknesses[],red_flags[],limitations[],created_at. overall_score?,grade?,PD? chỉ giá trị có method hợp lệ; provisional không đồng nghĩa simulated. business_decision không tự sinh.
+
+
+AssessmentAcknowledgement
+
+R expected_revision,reason; server actor/time; chỉ ghi nhận đã xem, không “approve loan” hoặc đổi score.
+
+
+DocumentRequest/Decision
+
+Giữ draft/edit/approve/cancel, evidence binding, immutable approved_payload/export. Decision R action,reason,source revision,evidence; actions correct/classify/verify/resolve/dismiss/reopen riêng waiver.
+
+
+Question/Response
+
+Question R id,version,answer_type,requiredness,allowed_to_skip,source_requirements,verification_policy. Response R question_id,answer_state,answer_json?,origin SME_direct/staff_transcribed,source_refs[],revision; actor server. Staff không giả SME direct.
+
+
+VerificationRecord
+
+R target_type/id/revision,status,reason,evidence_refs,actor/time server. Origin không thay đổi sau verified; response mới invalidate kết quả xác minh trước.
+
+
+Invitation/RespondentForm
+
+R scope question IDs,expires_at,recipient_reference; token secret only once on create. Form chỉ questions/receipt, không case notes/score. Không role contributor.
+
+
+HistoryEvent/Job/List
+
+History R id,actor,action,time,reason?,revision_before/after,subject refs. Job lease/state/errors không fake progress. List items,next_cursor?; cursor limit server20 max100.
+3. Field registry mới cần phát hành
+Định danh: organization.tax_id, counterparty.tax_id; parties.buyer/seller/payer/payee/borrower/lender/issuer. Financial: period/scope/currency/unit, sales/assets/liabilities/equity/cash/current_assets/current_liabilities/operating_profit/net_income/interest/depreciation/inventory/CFO/debt khi nguồn có.
+Transaction: amount, dates, term, payment trigger, deliverables/scope, acceptance, refund, guarantee and paid/received amounts. Trích xuất nguồn không đồng nghĩa verified hoặc điều kiện đã thực hiện.
+Mỗi registry entry có key,type,nullable,unit,party role,source requirements,criticality,doc applicability. Không đòi cùng field trên mọi doc. Chưa đọc được giữ null; không gán out_of_scope nếu đó là input đang cần.
+4. Thống nhất
+Exposure/Case ở01, storage08, operations09, expected03 phải cùng nghĩa. Schema/codegen thực tế là task AIC-B01, chưa được tạo trong lượt này. Các52+2DTO/328field cũ dưới history không phải registry AIC hiện hành.
+Lịch sử trước CR-AIC-01
+Nội dung dưới đây đã bị thay thế cho triển khai mới. Chỉ giữ để truy vết kỹ thuật, bằng chứng và task cũ. Các câu “hiện hành”, “bất biến”, “không thay đổi P0”, quyền reviewer/contributor, borrower, gate và phiên bản trong mục lịch sử không có ưu tiên hơn đặc tả AIC ở trên. Không nhập bundle 1.0.x rồi coi đã có AIC 2.0.0.
+Lịch sử trước 16/10/2026 — không dùng làm đặc tả AIC hiện hành

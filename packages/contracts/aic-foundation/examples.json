@@ -1,0 +1,95 @@
+[
+  {
+    "schema": "CounterpartyCreateInput",
+    "mode": "synthetic_request_only",
+    "value": {
+      "name": "SYNTHETIC reported buyer",
+      "country": "VN",
+      "tax_id": "0000123456",
+      "industry_code": "0010",
+      "source": {
+        "kind": "declaration",
+        "reported_by": "counterparty",
+        "reported_reference": "Self-reported contact",
+        "statement": "Attributes reported to the specialist, not identity verified."
+      },
+      "reason": "Record reported attributes"
+    }
+  },
+  {
+    "schema": "InvitationCreateInput",
+    "mode": "synthetic_request_only",
+    "value": {
+      "expected_revision": 1,
+      "reason": "Invite a scoped optional response",
+      "question_ids": ["11111111-1111-4111-8111-111111111111"],
+      "reported_by": "counterparty",
+      "recipient_reference": "Self-reported recipient"
+    }
+  },
+  {
+    "schema": "RespondentSubmitInput",
+    "mode": "synthetic_request_only_no_credential",
+    "value": {
+      "reported_reference": "Self-reported person",
+      "answers": [
+        {
+          "question_id": "11111111-1111-4111-8111-111111111111",
+          "question_version": 1,
+          "answer_state": "skipped",
+          "answer_json": null,
+          "skip_reason": "Not known by respondent"
+        }
+      ]
+    }
+  },
+  {
+    "schema": "SourceInput",
+    "mode": "synthetic_exact_source_request_only",
+    "value": {
+      "kind": "questionnaire",
+      "reported_by": "counterparty",
+      "questionnaire_id": "22222222-2222-4222-8222-222222222222",
+      "question_id": "11111111-1111-4111-8111-111111111111",
+      "response_id": "33333333-3333-4333-8333-333333333333",
+      "response_revision": 2
+    }
+  },
+  {
+    "schema": "FinancialSetInput",
+    "mode": "synthetic_request_only_not_pilot_approval",
+    "value": {
+      "expected_revision": 1,
+      "reason": "Preserve original statement units and provenance",
+      "period": { "kind": "FY", "start_date": "2025-01-01", "end_date": "2025-12-31" },
+      "basis": "standalone",
+      "accounting_regime": "IFRS",
+      "currency": "VND",
+      "unit_multiplier": "1000",
+      "industry_scope": "UNKNOWN",
+      "observation_kind": "actual",
+      "audit_status": "unaudited",
+      "statement_version": "synthetic-v1",
+      "facts": [
+        {
+          "key": "current_assets",
+          "raw_value": "60.000",
+          "raw_label": "Current assets",
+          "missing_reason": null,
+          "source": {
+            "kind": "manual_entry",
+            "statement": "Specialist transcribed original reported statement, not yet verified"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "schema": "ReasonInput",
+    "mode": "synthetic_manual_retry_command_only_not_reconciliation_override",
+    "value": {
+      "expected_revision": 1,
+      "reason": "Retry a known committed transient failure within remaining budget"
+    }
+  }
+]

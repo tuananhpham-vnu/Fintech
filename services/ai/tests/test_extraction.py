@@ -284,6 +284,8 @@ def test_contract_extraction_grounded(contracts, storage):
     assert len(out["evidence"]) == 6  # quote trùng giữa contract.ref và scope_ref dùng chung evidence
     assert all(e["precision"] == "bbox" and all(0 <= v <= 1 for v in e["bbox"]) for e in out["evidence"])
     assert out["diagnostics"] == [] and out["classification_confident"] is True
+    # 8b0b7ed deliberately versioned the documented party-role prompt as v2;
+    # Contracts 1.0.2 keeps prompt_version a string, independent of schema_version.
     assert out["provenance"] == {"model_id": "fake-model-1", "prompt_version": "extraction-v2", "ocr_version": "none",
                                  "schema_version": "1.0.2"}
     assert len(model.calls) == 1 and "<tai_lieu>" in model.calls[0]["user"]

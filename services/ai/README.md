@@ -1,6 +1,7 @@
 # services/ai — AI service nội bộ (Contracts 1.0.2)
 
-Một FastAPI app nội bộ chứa 3 route theo `packages/contracts/internal-openapi.json`.
+Một FastAPI app nội bộ chứa 3 route theo `packages/contracts/internal-openapi.json`, cộng route trợ lý hồ sơ
+`POST /internal/v1/chat` theo bundle riêng `packages/contracts/aic-chat` (xem [Trợ lý hồ sơ](#trợ-lý-hồ-sơ-post-internalv1chat)).
 Runner/bootstrap, `evaluate` và guards: **Tuấn Anh** (M3). Package `extraction` (`inspect`, `extract`): **Nguyên** (M2).
 Backend (**Đức**) là bên duy nhất ghi DB: service này không có DB, không gọi ngược app, chỉ trả JSON.
 
@@ -104,6 +105,22 @@ Trang chỉ gồm file tĩnh và dữ liệu giả lập. **Không dán hồ sơ
 - **Header `X-AI-Mode: mock|live`** có trên mọi response 200. Ở mock, `provenance.model_id = MOCK-GOLD-NOT-MODEL-OUTPUT`, và UI phải gắn nhãn MOCK.
 - **Mock `evaluate`** chỉ trả lời G01–G03 (khớp `run_id` + `snapshot_hash`), **không bịa** cho input khác (trả 503).
 
+## Trợ lý hồ sơ (`POST /internal/v1/chat`)
+
+Hỏi đáp và phân tích trong phạm vi **một case**. Backend kiểm quyền, chọn phiên bản tài liệu hiện hành, áp correction
+của người duyệt rồi gửi `CaseChatInput` (text trang, field, kết quả rule). Service không có DB và không lưu hội thoại.
+
+- **Chỉ số tính bằng code** (`chat/analysis.py`, Decimal): Nợ/Tài sản, Nợ/Vốn, Vốn/Tài sản, chênh lệch cân đối,
+  tăng trưởng giữa các kỳ, tổng giá trị hợp đồng/đề nghị vay, số MST bên vay khác nhau. Model chỉ được dẫn các chỉ số
+  này, không tự tính. Không chấm điểm, xếp hạng hay PD.
+- **Trích dẫn kiểm nguyên văn** (`chat/verify.py`): quote phải khớp trang nguồn (`grounding.find_quote`); sai thì
+  `verified=false` + `UNVERIFIED_CITATION`; trỏ ra ngoài case thì bị bỏ (`CITATION_OUT_OF_SCOPE`). Số trong câu trả lời
+  không có trong hồ sơ/chỉ số thì cảnh báo `UNSOURCED_NUMBER`. Dòng nghi chỉ dẫn trong tài liệu bị che trước khi gửi model.
+- **Ngân sách**: tối đa 60 tài liệu, 300k ký tự text trang; vượt thì ưu tiên tài liệu khớp từ khóa, phần còn lại chỉ gửi
+  field (`CONTEXT_TRUNCATED`). Gemini 1 lượt + tối đa 1 lần sửa JSON, hạn 75s.
+- `AI_MODE=mock`: câu trả lời mẫu có nhãn `MOCK_ANSWER`, không gọi model. `live` không có key: 503, không rơi về mock.
+- Test: `tests/test_chat.py` (offline, model giả); tích hợp đủ tầng: `apps/api/test/assistant.integration.cjs`.
+
 ## Extraction (M2, Nguyên)
 
 - `inspect`: PyMuPDF đọc cấu trúc (số trang thật kể cả >10, mã hóa, file đính kèm), kiểm SHA-256 và `storage_key`. Không OCR, không LLM.
@@ -120,6 +137,8 @@ Trang chỉ gồm file tĩnh và dữ liệu giả lập. **Không dán hồ sơ
   render; ảnh OCR tối đa 8M pixel, cạnh 5000px, PNG 10MB, dưới 100dpi thì từ chối. Vượt -> 413 `PDF_TOO_LARGE`/`PDF_TOO_MANY_PAGES`.
 - Thời gian: mỗi lời gọi Gemini nhận phần budget còn lại (timeout HTTP, retry, backoff), `maxOutputTokens` 8192; kết quả về sau
   hạn bị bỏ (503). Trang có chữ nhúng ở đầu nhưng thân là ảnh scan được OCR cả trang (`PARTIAL_TEXT_LAYER`, field uncertain).
+  Trang có chữ nhúng không giải mã được (font Type0/Identity mất ToUnicode: MuPDF báo glyph không có Unicode) cũng
+  được OCR cả trang, kể cả khi trang không có ảnh (`GARBLED_TEXT_LAYER`).
 - **Chưa chặn được trong process** (cần giới hạn ở mức tiến trình/container, vd. memory limit của Render, hoặc worker riêng):
   thời gian CPU và bộ nhớ bên trong một lệnh MuPDF native (thread Python không hủy được); font/stream nén bằng filter khác
   Flate; HTTP đang chạy dở chỉ bị bỏ kết quả chứ không bị hủy ngay; httpx timeout tính theo từng pha, không phải tổng.
@@ -178,6 +197,7 @@ Không tính lại `snapshot_hash`/`extraction_hash` (backend là bên duy nhấ
 | `runner/guards.py` | Semantic guards |
 | `runner/__main__.py` | `python -m runner health / serve` |
 | `extraction/` | M2 (**Nguyên**): `storage` (key/hash), `pdf` (PyMuPDF), `ocr`, `grounding` (kiểm căn cứ), `extractor` |
+| `chat/` | Trợ lý hồ sơ: `analysis` (chỉ số Decimal), `context` (prompt, ngân sách), `verify` (trích dẫn/số liệu) |
 | `scripts/g0_consumer_check.py` | Lệnh G0-T, ghi `evidence/g0-t-report.json` |
 | `scripts/task_evidence.py <task>` | Chạy test, ghi `evidence/<task>-report.json` (commit, hash fixture, kết quả từng test, mã T/A) |
 | `scripts/export_evaluator_outputs.py` | Output thật cho gold + biến thể → `evidence/evaluator-outputs/` (mock UI cho Đức) |

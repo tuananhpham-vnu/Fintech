@@ -1,3 +1,8 @@
+import os
+
+# Unit test không bao giờ gọi model thật (kể cả khi Ollama đang chạy trên máy, vd. Kaggle).
+os.environ["LLM_PROVIDER"] = "none"
+
 import pytest
 from fastapi.testclient import TestClient
 

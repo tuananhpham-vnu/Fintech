@@ -1,0 +1,152 @@
+{
+  "generated_at": "2026-10-18T01:55:05+07:00",
+  "rows": [
+    {
+      "case": "summary",
+      "question": "Tóm tắt hồ sơ này trong 4-5 ý.",
+      "latency_ms": 8420,
+      "answer": "Hồ sơ này là một mô phỏng tài chính cho FinTechathon 2026, liên quan đến công ty Sao Mai Demo với mã số thuế 0000000001. Công ty này đề nghị vay 300000000 VND và dự kiến thu 500000000 VND từ hợp đồng HĐ01.  Hợp đồng HĐ01 giữa Sao Mai Demo và Bình Minh Demo có giá trị 500000000 VND, được nghiệm thu bằng Biên bản NT02. Có một số điểm bất nhất trong các biên bản nghiệm thu, ví dụ NT01 và NT02 tham chiếu đến HĐ01, nhưng lại khác nhau về số biên bản.",
+      "citations": 0,
+      "verified_citations": 0,
+      "diagnostics": [
+        "INSUFFICIENT_INFORMATION"
+      ],
+      "metrics": [
+        "liabilities_to_assets",
+        "debt_to_equity",
+        "equity_ratio",
+        "balance_gap",
+        "contract_total_vnd",
+        "loan_requested_total_vnd",
+        "distinct_borrower_tax_ids"
+      ],
+      "model": "gemma3:4b"
+    },
+    {
+      "case": "finance",
+      "question": "Phân tích tình hình tài chính: đòn bẩy, cơ cấu vốn, điểm cần chú ý?",
+      "latency_ms": 21691,
+      "answer": "Phân tích tình hình tài chính của Sao Mai Demo dựa trên dữ liệu hiện có:\n\n*   **Đòn bẩy:** Tỷ số Nợ phải trả / Tổng tài sản là 0.6 và Nợ phải trả / Vốn chủ sở hữu là 1.5, cho thấy doanh nghiệp có mức nợ tương đối cao so với vốn chủ sở hữu. Điều này có thể gây rủi ro cao hơn nếu doanh nghiệp gặp khó khăn trong việc trả nợ.\n*   **Cơ cấu vốn:** Vốn chủ sở hữu chiếm tỷ lệ 40% tổng tài sản, thấp hơn so với tỷ lệ 60% nợ phải trả. Điều này cũng cho thấy cơ cấu vốn không cân đối.\n*   **Điểm cần chú ý:**\n    *   Doanh nghiệp có số MST khác nhau giữa các hồ sơ, cần làm rõ nguyên nhân.\n    *   Giá trị hợp đồng và số tiền đề nghị vay lớn, cần đánh giá khả năng thanh toán.\n    *   Biên bản nghiệm thu NT02 tham chiếu HĐ02, không phải HĐ01, cần làm rõ sự khác biệt giữa các hợp đồng.",
+      "citations": 6,
+      "verified_citations": 5,
+      "diagnostics": [
+        "UNVERIFIED_CITATION"
+      ],
+      "metrics": [
+        "liabilities_to_assets",
+        "debt_to_equity",
+        "equity_ratio"
+      ],
+      "model": "gemma3:4b"
+    },
+    {
+      "case": "conflict",
+      "question": "Có mâu thuẫn nào giữa các tài liệu không? Nghiệm thu có khớp hợp đồng HĐ01?",
+      "latency_ms": 6334,
+      "answer": "Có mâu thuẫn giữa các tài liệu. Biên bản nghiệm thu NT02 tham chiếu HĐ02, không phải HĐ01 (kiểm tra R10 phát hiện sự khác biệt này). Đồng thời, tài liệu D6 cũng ghi lại biên bản nghiệm thu NT01 tham chiếu HĐ01, gây ra sự mâu thuẫn về tài liệu nghiệm thu.",
+      "citations": 3,
+      "verified_citations": 2,
+      "diagnostics": [
+        "UNVERIFIED_CITATION"
+      ],
+      "metrics": [
+        "liabilities_to_assets",
+        "debt_to_equity",
+        "equity_ratio",
+        "balance_gap",
+        "contract_total_vnd",
+        "loan_requested_total_vnd",
+        "distinct_borrower_tax_ids"
+      ],
+      "model": "gemma3:4b"
+    },
+    {
+      "case": "absent",
+      "question": "Doanh thu năm 2025 và lợi nhuận sau thuế là bao nhiêu?",
+      "latency_ms": 6252,
+      "answer": "Không tìm thấy thông tin về doanh thu năm 2025 và lợi nhuận sau thuế trong hồ sơ. chỉ cung cấp thông tin tài chính cho kỳ kết thúc 2025-12-31 với tổng tài sản 1000, nợ phải trả 600 và vốn chủ sở hữu 400. đề nghị vay 300000000 VND và dự kiến thu 500000000 VND từ HĐ01, nhưng không có thông tin chi tiết về doanh thu và lợi nhuận.",
+      "citations": 1,
+      "verified_citations": 1,
+      "diagnostics": [
+        "INSUFFICIENT_INFORMATION"
+      ],
+      "metrics": [
+        "liabilities_to_assets",
+        "debt_to_equity",
+        "equity_ratio",
+        "balance_gap",
+        "contract_total_vnd",
+        "loan_requested_total_vnd",
+        "distinct_borrower_tax_ids"
+      ],
+      "model": "gemma3:4b"
+    },
+    {
+      "case": "scoring",
+      "question": "Hồ sơ có đủ điều kiện cấp tín dụng không? Chấm điểm giúp tôi.",
+      "latency_ms": 34574,
+      "answer": "Phân tích hồ sơ tín dụng cho Sao Mai Demo cho thấy một số điểm cần chú ý:\n\n*   **Tình hình tài chính:** Tỷ số Nợ/Tổng tài sản là 0.6 và Nợ/Vốn chủ sở hữu là 1.5, cho thấy khả năng thanh toán của doanh nghiệp có thể gặp vấn đề. Tỷ số Vốn chủ sở hữu/Tổng tài sản là 0.4, cho thấy vốn chủ sở hữu chiếm tỷ lệ nhỏ so với tổng tài sản.\n*   **Số liệu giao dịch:** Tổng giá trị hợp đồng là 500.000.000 VND và số tiền đề nghị vay là 300.000.000 VND.  Số MST khác nhau giữa bên vay (0000000001) và bên mua (0000000002) là 1, cần làm rõ.\n*   **R10:** Biên bản nghiệm thu NT02 tham chiếu HĐ02, không phải HĐ01, cần xác minh lại thông tin.",
+      "citations": 6,
+      "verified_citations": 5,
+      "diagnostics": [
+        "INSUFFICIENT_INFORMATION",
+        "UNVERIFIED_CITATION"
+      ],
+      "metrics": [
+        "liabilities_to_assets",
+        "debt_to_equity",
+        "equity_ratio",
+        "balance_gap",
+        "contract_total_vnd",
+        "loan_requested_total_vnd",
+        "distinct_borrower_tax_ids"
+      ],
+      "model": "gemma3:4b"
+    },
+    {
+      "case": "english",
+      "question": "Summarise the financial position in English.",
+      "latency_ms": 30541,
+      "answer": "The company, Sao Mai Demo, has total assets of 1000 VND and a net liability of 600 VND, resulting in equity of 400 VND. The debt-to-asset ratio is 0.6, and the equity-to-asset ratio is 0.4. The company is requesting a loan of 300000000 VND, with a projected revenue of 500000000 VND from contract HĐ01.",
+      "citations": 0,
+      "verified_citations": 0,
+      "diagnostics": [
+        "CITATION_OUT_OF_SCOPE",
+        "NO_CITATIONS"
+      ],
+      "metrics": [
+        "liabilities_to_assets",
+        "debt_to_equity",
+        "equity_ratio",
+        "balance_gap",
+        "contract_total_vnd",
+        "loan_requested_total_vnd",
+        "distinct_borrower_tax_ids"
+      ],
+      "model": "gemma3:4b"
+    },
+    {
+      "case": "chinese",
+      "question": "请用中文总结这家企业的财务状况。",
+      "latency_ms": 46920,
+      "answer": "根据提供的财务报表，企业“Sao Mai Demo”的财务状况如下：\n\n*   **资产总额：** 1000万 VND。\n*   **流动负债：** 600万 VND。\n*   **权益：** 400万 VND。\n*   **流动比率：** 0.6 (流动负债/总资产)\n*   **权益乘数：** 1.5 (流动负债/权益)\n*   **权益比率：** 0.4 (权益/总资产)\n\n此外，该企业通过HĐ01合同获得5000万 VND的合同价值，并计划于2026年11月14日收到款项。同时，该企业有两家不同的税号，分别是0000000001和0000000002。",
+      "citations": 0,
+      "verified_citations": 0,
+      "diagnostics": [
+        "CITATION_OUT_OF_SCOPE",
+        "NO_CITATIONS",
+        "UNSOURCED_NUMBER"
+      ],
+      "metrics": [
+        "liabilities_to_assets",
+        "debt_to_equity",
+        "equity_ratio",
+        "balance_gap",
+        "contract_total_vnd",
+        "loan_requested_total_vnd",
+        "distinct_borrower_tax_ids"
+      ],
+      "model": "gemma3:4b"
+    }
+  ]
+}

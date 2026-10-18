@@ -1,0 +1,19 @@
+# Dependencies and generated Next.js files
+node_modules/
+.next/
+next-env.d.ts
+*.tsbuildinfo
+public/pdfjs/
+
+# Local secrets (keep the documented template)
+.env*
+!.env.example
+
+# Generated verification output
+.reports/
+coverage/
+
+# Local deployment/editor/OS state
+.vercel/
+.DS_Store
+Thumbs.db

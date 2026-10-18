@@ -1,3 +1,32 @@
+# Technical docs only; keep unknown doc directories and attachments local.
+/docs/**
+!/docs/integration/
+!/docs/integration/**/
+!/docs/audits/
+!/docs/audits/**/
+!/docs/api-collection/
+!/docs/api-collection/**/
+!/docs/implementation/
+!/docs/acceptance/
+!/docs/acceptance/**/
+!/docs/implementation/**/
+!/docs/**/*.md
+!/docs/**/*.http
+!/docs/**/*.json
+!/docs/implementation/policies/*.json.sha256
+!/docs/implementation/evidence/mvp-v2/
+!/docs/implementation/evidence/mvp-v2/*.txt
+/docs/**/attachments/
+/docs/**/private/
+/docs/**/files/
+/docs/**/fixtures/real/
+/docs/**/fixtures/holdout/
+/docs/**/evaluation/holdout/
+/docs/**/.cache/
+/docs/**/.reports/
+/docs/**/.next/
+/docs/**/coverage/
+
 # --- Python ---
 .venv/
 venv/
@@ -12,27 +41,33 @@ dist/
 .coverage
 htmlcov/
 
-# --- Node (apps/web sau này) ---
+# --- Node (apps/web) ---
 node_modules/
 .vite/
 *.tsbuildinfo
-
-# --- Bí mật: khóa model/DB chỉ ở env phía server (SEC03) ---
-.env
-.env.*
-!.env.example
-*.pem
-*.key
 
 # --- Dữ liệu hồ sơ: không commit hồ sơ thật, holdout và gold (phần 20, 21, 24) ---
 data/
 uploads/
 storage/
+# Backend storage source is code; runtime storage and non-code files stay local.
+!/apps/api/src/storage/
+/apps/api/src/storage/*
+!/apps/api/src/storage/*.ts
 evaluation/gold*.jsonl
 evaluation/holdout/
 fixtures/holdout/
 fixtures/real/
-docs/
+
+# --- Bí mật: khóa model/DB chỉ ở env phía server (SEC03) ---
+.env*
+!.env.example
+*.pem
+*.key
+.kaggle/
+
+# Original import retained locally; apps/web is the evaluated application.
+/apps/FE Fintech/
 
 # --- Log có thể chứa dữ liệu (SEC06) ---
 *.log
@@ -43,3 +78,6 @@ logs/
 .idea/
 .DS_Store
 ~$*
+
+# Local demo models/binaries (delete the whole dir to remove)
+MODEL_DIR/

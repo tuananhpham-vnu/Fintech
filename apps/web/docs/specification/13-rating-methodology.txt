@@ -1,0 +1,127 @@
+CR-AIC-01 · Nghiên cứu cập nhật ngày 16/10/2026. Đây là kết quả nghiên cứu và thiết kế áp dụng cho AIC Rating; không phải phương pháp Moody’s được cấp phép hoặc mô hình đã được kiểm định cho SME Việt Nam.
+1. Kết luận lựa chọn
+AIC Rating phục vụ SME đánh giá nhà cung cấp và khách hàng. Cần hai lớp: (A) sức khỏe tín dụng của đối tác; (B) rủi ro giao dịch cụ thể: bán chịu/khoản phải thu, trả trước người bán và cho vay/đầu tư nợ phụ. Không lấy một hạng doanh nghiệp thay cho cả hai lớp.
+Khuyến nghị nghiên cứu: RiskCalc/EDF-X là hướng tham khảo gần doanh nghiệp tư nhân; phương pháp Moody’s Ratings theo ngành dùng để nghiên cứu business risk, financial policy và phân tích định tính. Không tự chọn Business and Consumer Services cho mọi ngành. Chưa sao chép được hệ số/ngưỡng hợp lệ; module phân tích tài liệu và chỉ số có thể làm trước, numeric rating vẫn chưa cấu hình.
+2. Nguồn chính thức và mức độ xác minh
+Nguồn
+
+Đã xác minh
+
+Giới hạn
+
+
+Moody’s methodologies and models
+
+Có phương pháp theo ngành và liên ngành; scorecard hỗ trợ nhận định chuyên môn. Trang niêm yết Business and Consumer Services ngày 21/8/2026.
+
+Niêm yết không đồng nghĩa đã đọc toàn văn hoặc phù hợp mọi SME.
+
+
+Business and Consumer Services, 471457
+
+Thông báo xếp hạng 473395 xác nhận phương pháp tháng 8/2026 được dùng.
+
+Toàn văn không truy cập được trong lượt nghiên cứu; chưa xác nhận bảng ngưỡng/trọng số hiện hành. Không dùng bảng 2021 để gắn nhãn 2026.
+
+
+Private-company analysis, 16/9/2026
+
+Nguồn dẫn EDF-X CreditGradient Model Methodology tháng 7/2026. CreditGradient là mô hình phi tuyến, dùng RiskCalc PD và các đặc trưng tài chính/quy mô/ngành/quốc gia; kết quả mô hình không phải xếp hạng chính thức.
+
+Đọc bài giải thích, chưa có toàn văn tài liệu kỹ thuật tháng 7. Không suy ra hệ số, PD Việt Nam hoặc trọng số cố định.
+
+
+EDF-X Private Credit Model, 1/10/2026
+
+Mô hình mới với dữ liệu Allvue, theo dõi sự kiện tín dụng cứng/mềm, được cung cấp qua EDF-X API.
+
+Mới hơn không có nghĩa phù hợp lõi bán chịu/trả trước SME. Chỉ nghiên cứu cho luồng đầu tư nợ phụ; chưa có API/giấy phép/dữ liệu của nhóm.
+
+
+RiskCalc financial dimensions
+
+Tài liệu công khai mô tả các nhóm profitability, leverage, liquidity, debt coverage, growth, efficiency và size.
+
+Nguồn năm 2019 là mô tả nhóm đầu vào, không phải toàn bộ phương pháp mới nhất hay scorecard SME Việt Nam.
+
+
+EDF-X Payment Model, bài 18/5/2026
+
+Thanh toán đúng hạn, biến động và quá hạn là tín hiệu từ dữ liệu giao dịch; nguồn mô tả cập nhật mô hình hàng tháng.
+
+Không chứng minh nhóm có dữ liệu đó tại Việt Nam. Không dùng ca doanh nghiệp Mỹ làm dữ liệu huấn luyện/benchmark đại diện SME Việt Nam.
+Không tuyên bố đã lấy được “một phương pháp Moody’s mới nhất cho mọi SME”. Các phiên bản/ngày trên thuộc những sản phẩm và phạm vi khác nhau.
+3. Ánh xạ sáu nhóm nghiệp vụ BA
+Sáu nhóm là cách tổ chức của BA, không phải sáu yếu tố Moody’s đã được xác nhận:
+Pháp lý: đúng pháp nhân, đại diện, hiệu lực và mâu thuẫn hồ sơ; nguồn hợp lệ và ngày kiểm tra. Đây là kiểm chứng hồ sơ, không xác thực pháp lý tuyệt đối.
+Quan hệ tín dụng: dư nợ/nghĩa vụ/bảo lãnh/bên liên quan nếu có nguồn; không giả có quyền tra CIC.
+Ngành nghề: bối cảnh ngành, tập trung khách hàng/nhà cung cấp, tính chu kỳ và năng lực thực hiện; tách fact khỏi nhận định.
+Lịch sử tín dụng/thanh toán: đúng hạn/quá hạn/tranh chấp theo bằng chứng; không đếm trùng cùng nghĩa vụ ở quan hệ tín dụng.
+Tài chính: quy mô, khả năng sinh lời, vốn/đòn bẩy, thanh khoản, trang trải nợ, tăng trưởng và hiệu quả. Công thức, điều chỉnh và dữ liệu kỳ nào được lưu rõ.
+Tài sản bảo đảm: có/không áp dụng theo giao dịch; xem chứng từ, định giá và khả năng thu hồi nếu có cơ sở. Không mặc định mọi giao dịch cần tài sản bảo đảm.
+4. Phần riêng của AIC theo giao dịch
+RECEIVABLE: số tiền bán chịu, số đã thanh toán được chứng minh, kỳ hạn, sự kiện bắt đầu tính hạn, nghiệm thu/giao hàng, tranh chấp, hạn mức do người dùng/chính sách cung cấp, tập trung exposure. Hợp đồng chưa ký là proposed; không tạo khoản phải thu thực tế.
+PREPAYMENT: số tiền dự kiến/đã ứng, mốc giao hàng/dịch vụ, điều kiện hoàn tiền, lịch sử thực hiện và bảo đảm nếu có. BCTC tốt không đủ chứng minh sẽ giao hàng đúng.
+LOAN/DEBT_INVESTMENT: giữ phạm vi phụ cho khoản vay/hợp đồng hoặc công cụ nợ do người dùng nhập; nghĩa vụ gốc/lãi, kỳ hạn, bảo đảm và thông tin bên phát hành. Không môi giới/khớp lệnh/chuyển tiền và không tự suy bảo lãnh từ việc có trái phiếu.
+Các mục này là thiết kế theo BA/owner, không gắn nhãn công thức Moody’s.
+5. Đầu ra và cách xử lý điểm
+Giữ yêu cầu đã chốt: tổng điểm/hạng khi phương pháp cho phép; điểm thành phần; điểm mạnh/yếu; nhận xét; red flags; nguồn; dữ liệu thiếu/bypass và lịch sử. Hai hồ sơ cùng 70 điểm nhưng điểm kinh doanh khác nhau phải có diễn giải khác; không tự đặt penalty/veto/giới hạn tổng điểm khi chưa có policy.
+Tách trạng thái bằng chứng, trạng thái xử lý cảnh báo, trạng thái tính điểm và quyết định kinh doanh. Bypass không làm bằng chứng thành đúng hoặc đóng issue như đã bổ sung. Thiếu BCTC/báo cáo thuế thay thế đủ dữ liệu: không chạy numeric assessment, vẫn đọc hồ sơ và nêu thiếu sót.
+Khi chưa có phương pháp: score/grade/PD = null, status=method_unconfigured; vẫn có findings và chỉ số đủ nguồn. Mock điểm chỉ ở preview có nhãn. Không tự ánh xạ điểm 0–100 sang Aaa–C hoặc phần trăm vỡ nợ.
+6. Các bước để có rating thật
+Xác định phạm vi doanh nghiệp/ngành và kỳ hạn đánh giá.
+Có toàn văn phương pháp được phép sử dụng hoặc kết nối mô hình chính thức với điều kiện phù hợp; xác minh hỗ trợ Việt Nam.
+Định nghĩa công thức/điều chỉnh/ngưỡng/trọng số/missingness, xử lý xung đột và giới hạn dùng kết quả; nếu tự thiết kế phải gọi là phương pháp nội bộ.
+Có BA/chuyên gia kiểm tra ví dụ và bộ nhãn; khóa method version trước đo.
+Kiểm định trên dữ liệu phù hợp; calibration/PD không được suy ra từ vài ca synthetic.
+Trạng thái: nghiên cứu nguồn công khai đã thực hiện; toàn văn mới nhất, quyền sử dụng, hệ số và kiểm định Việt Nam còn thiếu. Không chặn việc thiết kế hoặc code module không tính điểm vì các khoảng trống này.
+7. Chỉ số ứng viên để chuẩn bị dữ liệu — chưa là scorecard Moody’s
+Các công thức dưới đây là định nghĩa tính toán minh bạch để BA/method owner lựa chọn; không phải hệ số/ngưỡng đã trích từ bản Moody’s 2026.
+Khía cạnh
+
+Công thức ứng viên
+
+Phải ghi rõ
+
+
+Quy mô
+
+Doanh thu thuần; tổng tài sản
+
+Kỳ, đơn vị, consolidated/standalone; không so ngang ngưỡng tập đoàn với SME.
+
+
+Sinh lời
+
+Operating margin = operating profit / net sales; ROA = net income / assets theo basis được chọn
+
+Assets cuối kỳ hay bình quân phải do method quy định; không trộn hai basis.
+
+
+Vốn/đòn bẩy
+
+Equity/assets; liabilities/assets; debt/EBITDA nếu có đủ thành phần
+
+Liabilities khác interest-bearing debt; EBITDA âm/0 cần cách xử lý riêng, không diễn giải máy móc.
+
+
+Thanh khoản
+
+Current assets/current liabilities; cash/assets
+
+Restricted cash, khoản phải thu khó thu và kỳ hạn nghĩa vụ nếu có dữ liệu; không suy mất thanh khoản từ một chỉ số.
+
+
+Trang trải nợ
+
+EBIT hoặc EBITDA/interest expense theo đúng định nghĩa method
+
+Không hoán đổi EBIT/EBITDA để tạo điểm tốt. Interest0 phải có policy, không Infinity.
+
+
+Tăng trưởng/hiệu quả
+
+Sales growth; inventory/sales; các ngày thu tiền nếu đủ dữ liệu
+
+Không mặc định tăng trưởng càng cao càng tốt; thiếu opening/closing balance không bịa bình quân.
+Từng chỉ số phải lưu input/evidence/formula_id/adjustment/period; tính được chỉ số không có nghĩa đã tính được điểm hoặc PD. Nội dung này chuẩn bị cho code dữ liệu, không thay việc lấy phương pháp và kiểm định.

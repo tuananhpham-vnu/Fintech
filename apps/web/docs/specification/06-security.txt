@@ -1,0 +1,23 @@
+Bản hiện hành: AIC Rating 2.0.0 — CR-AIC-01, ngày 16/10/2026. Định vị được chủ dự án xác nhận: SME đánh giá nhà cung cấp/khách hàng cho trả trước và khoản phải thu; cho vay/đầu tư công cụ nợ là phạm vi phụ. Một role nội bộ Chuyên viên. Demo Việt Nam; giao diện en mặc định, zh-CN và vi. Đây là cập nhật thiết kế, không xác nhận code/runtime hoặc phương pháp tính điểm đã hoàn thành.
+1. Một role và nhiều ranh giới quyền
+Role sản phẩm nội bộ duy nhất: specialist (Chuyên viên). Một role không có nghĩa mọi người đọc mọi hồ sơ. Organization/case ACL được kiểm backend; người cùng role khác org/case không thấy dữ liệu.
+Respondent không là role nội bộ: link giới hạn chỉ câu hỏi của đúng đối tác/case; không xem score/notes/PDF nội bộ. Background worker và AI service là principal kỹ thuật, không role người dùng.
+2. Kiểm soát bắt buộc theo thiết kế
+Session HttpOnly/Secure/SameSite, password hash thư viện, Origin/CSRF ở mutation, finite login limits; audit không ghi secrets/token.
+Backend resolve org/member từ session, không tin organization_id/role trong payload để cấp quyền; outsiders404, không lộ tên/MST/PDF.
+Scoped link: hash token lưu DB, expires_at/revoked_at, scope question/case, rate limit, không log token. Không tự thêm signup/OTP thành yêu cầu UX đã chốt; identity assurance còn phải đặc tả trước phát hành.
+PDF giới hạn size/pages, magic/MIME, encryption/embedded checks; storage path server tạo, realpath/hash, chống traversal/SSRF. AI chỉ read-only sources.
+Content PDF/web chỉ dữ liệu, không là instruction. Không gửi hồ sơ bí mật vào web search công khai, không tự chạy lệnh/code từ tài liệu.
+Waiver/verification/correction/finalization cần actor, reason, policy, revision và audit; không cho waiver khắc phục identity giả hay BCTC thiếu để phát score.
+Method registry chỉ nhận cấu hình versioned được review; không cho client sửa weights/formula hay xuất grade khi method_unconfigured.
+Source/extract/result snapshots bất biến; changed input làm stale; export approved giữ bytes và original language.
+Internet source phải đúng pháp nhân, publisher/URL/time/verification; không đánh verified chỉ vì AI tìm được. Provider/API/data rights chưa có thì mock/disabled rõ.
+Demo synthetic hoặc data được phép, retention/export/delete có scope và audit; không hardcode secrets hoặc internal keys trong FE.
+3. Bảo mật đầu ra rating
+Điểm tổng không che red flags; ghi provisional, waived/missing và hạn chế dữ liệu. Kết quả nội bộ không gắn nhãn Moody’s-issued hoặc xác suất vỡ nợ khi chưa có model. Quyết định ghi nhận đánh giá khác thực hiện giao dịch; không tự chuyển tiền, cho vay, gửi email.
+4. Kiểm thử và báo cáo
+Dùng AIC17–AIC19 cùng concurrency/source/method tests trang03. Tất cả hiện NOT RUN đối với AIC; bảng PASS cũ giữ lịch sử.
+Security & compliance chiếm30% rubric International Track, cần nộp permission boundaries, controls thực sự kiểm, danh sách rủi ro còn mở và data/IP sources. Không thêm role trợ lý chỉ để có nhiều “permission tiers”; tiers còn thể hiện qua org/case/token/service boundaries.
+Lịch sử trước CR-AIC-01
+Nội dung dưới đây đã bị thay thế cho triển khai mới. Chỉ giữ để truy vết kỹ thuật, bằng chứng và task cũ. Các câu “hiện hành”, “bất biến”, “không thay đổi P0”, quyền reviewer/contributor, borrower, gate và phiên bản trong mục lịch sử không có ưu tiên hơn đặc tả AIC ở trên. Không nhập bundle 1.0.x rồi coi đã có AIC 2.0.0.
+Lịch sử trước 16/10/2026 — không dùng làm đặc tả AIC hiện hành

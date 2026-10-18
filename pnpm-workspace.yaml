@@ -1,0 +1,8 @@
+packages:
+  - apps/web
+  - apps/api
+
+# The imported apps/FE Fintech is retained for comparison, not a second runtime.
+# No dependency install scripts are needed; web assets have an explicit prepare step.
+allowBuilds:
+  esbuild: true

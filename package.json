@@ -1,0 +1,32 @@
+{
+  "name": "fintechathon",
+  "private": true,
+  "packageManager": "pnpm@11.22.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @fintech/web dev",
+    "dev:all": "node scripts/dev-all.cjs",
+    "dev:windows": "powershell -NoProfile -File start-dev.ps1",
+    "build": "pnpm --filter @fintech/web build",
+    "start": "pnpm --filter @fintech/web start",
+    "lint": "pnpm --filter @fintech/web lint",
+    "typecheck": "pnpm --filter @fintech/web typecheck",
+    "test": "pnpm --filter @fintech/web check:aic",
+    "check:aic": "pnpm --filter @fintech/web check:aic",
+    "format:check": "pnpm --filter @fintech/web format:check",
+    "qa:seed-pages": "pnpm --filter @fintech/web qa:seed-pages",
+    "qa:serve": "pnpm --filter @fintech/web qa:serve",
+    "api:build": "pnpm --filter @fintech/api build",
+    "api:start": "pnpm --filter @fintech/api start:dist",
+    "check:qa": "pnpm --filter @fintech/web check:qa",
+    "api:migrate": "pnpm --filter @fintech/api migrate",
+    "api:test": "pnpm --filter @fintech/api test:foundation",
+    "api:test:preparation": "pnpm api:build && node --test scripts/tests/feasibility-runner.test.cjs scripts/tests/source-checkpoint.test.cjs apps/api/test/ai-adapter-validation.cjs apps/api/test/ai-adapter-negative.cjs apps/api/test/document-storage-integrity.cjs apps/api/dist/auth/auth.helpers.test.js",
+    "api:test:adapter-service": "node scripts/check-ai-adapter-service.cjs",
+    "api:test:response-capture": "pnpm api:build && node --test apps/api/test/ai-response-capture.cjs",
+    "api:test:mvp": "pnpm api:build && node scripts/test-local-postgres.cjs --test-concurrency=1 apps/api/dist/auth/auth.helpers.test.js apps/api/test/fhi-scorer.cjs apps/api/test/foundation.integration.cjs apps/api/test/policy-exposure-migration.cjs apps/api/test/mvp-case.integration.cjs apps/api/test/mvp-counterparty.integration.cjs apps/api/test/document-retry.integration.cjs apps/api/test/documents-repository.cjs apps/api/test/mvp-workflow.integration.cjs apps/api/test/document-http.integration.cjs apps/api/test/sandbox-bootstrap.integration.cjs",
+    "check:document-drafts": "node scripts/check-document-drafts.cjs"
+  }
+}

@@ -1,0 +1,30 @@
+Bản hiện hành: AIC Rating 2.0.0 — CR-AIC-01, ngày 16/10/2026. Định vị được chủ dự án xác nhận: SME đánh giá nhà cung cấp/khách hàng cho trả trước và khoản phải thu; cho vay/đầu tư công cụ nợ là phạm vi phụ. Một role nội bộ Chuyên viên. Demo Việt Nam; giao diện en mặc định, zh-CN và vi. Đây là cập nhật thiết kế, không xác nhận code/runtime hoặc phương pháp tính điểm đã hoàn thành.
+1. Hợp đồng khái niệm AIC-2.0-DRAFT
+Đây là thiết kế mới thay borrower-centric 1.0.x. Không tuyên bố đã có schema máy đọc được.
+Organization: SME sử dụng app, sở hữu dữ liệu; id, name, tax_id, country=VN.
+User: tài khoản nhân viên, organization_id; role duy nhất specialist. Case membership vẫn giới hạn hồ sơ, không tạo role contributor.
+Counterparty: pháp nhân được đánh giá, name, tax_id dạng chuỗi, country, industry, identity_status, evidence_refs. Không trộn với Organization.
+Case: organization_id, counterparty_id, exposure_kind, lifecycle_stage proposed/active, revision, policy_version, method_version nullable. Loại RECEIVABLE/PREPAYMENT là lõi; LOAN/DEBT_INVESTMENT phụ.
+Exposure: direction, amount_vnd, term_days nullable, contract_ref nullable, obligation_scope, delivery/acceptance/payment/refund conditions, historical/claimed amounts và nguồn. Không ghi proposed exposure là khoản đã phát sinh.
+Document/Evidence/ExtractedField: lineage/version/hash, chủ thể tài liệu và role trong giao dịch, kỳ, đơn vị; physical page/quote/bbox nullable, quality/missing_reason. Không đổi raw bằng correction.
+ReviewRun/Issue/Request/Decision: rà soát bằng chứng; không đồng nghĩa rating. Specialist xác nhận, bổ sung hoặc bypass cho phép, mọi quyết định có reason và actor.
+MethodVersion/Assessment: method phạm vi/inputs/formulas/weights/missingness/version/status; result snapshot gắn revision, nguồn, policy. Numeric outputs nullable khi method chưa cấu hình.
+Questionnaire/Response/Verification: câu hỏi có version, SME direct hoặc staff_transcribed, verification độc lập origin; invitation link giới hạn scope.
+2. Nguyên tắc dữ liệu
+Tiền VND ở transport là chuỗi số nguyên không separator; tính bằng decimal/integer, DB numeric. Tỷ số là decimal string kèm formula_id, numerator/denominator, kỳ, nguồn và adjustment; mẫu số 0/âm không áp được thì unavailable với lý do, không Infinity/điểm tốt. Ngày ISO, thời điểm UTC; UI theo Asia/Ho_Chi_Minh.
+Phân biệt 0, null, not_applicable, missing, unreadable, conflicting và waived. Không lấy waiver làm verified. Thời hạn trả tiền theo hợp đồng khác dự báo thanh toán. Không có chứng từ không chứng minh chưa trả.
+Mọi evidence gắn counterparty/document/version/page; role map gồm buyer, seller, payer, payee, borrower, lender, issuer theo nghiệp vụ. Không map mặc định seller=borrower.
+UUID/ID server tạo; hash bytes bất biến; correction mới tăng case revision; assessment cũ stale theo dependencies; idempotency và optimistic concurrency bắt buộc ở mutation.
+3. Checklist và bypass
+Financial input đủ dữ liệu là hard requirement cho numeric rating. Registration/contract/acceptance/payment/collateral là required, conditional hoặc optional theo case policy; thiếu có thể cho waiver khi policy cho phép, với flag và giới hạn đánh giá. Transaction chưa có hợp đồng chỉ có thể assessed như proposed và giới hạn rõ; không chứng nhận hợp đồng đã tồn tại.
+Identity chưa xác định hoặc sai chủ thể khiến kết luận gắn pháp nhân đó unavailable; waiver không làm hết mismatch. Bypass không resolve factual issue; ghi waived trong xử lý riêng, giữ finding.
+4. Migration và đồng bộ
+borrower_name/tax_id → counterparty + role map; loan_request bắt buộc → exposure input từ người dùng có provenance; reviewer/contributor → specialist và case ACL. Không replace toàn bộ từ borrower trong loan phụ.
+Giữ semantics upload/worker/evidence/immutable export/concurrency từ baseline cũ khi không xung đột; phải phát hành contracts mới và consumer tests trước tích hợp. Các bảng cũ dưới lịch sử không là field registry hiện hành.
+Chi tiết field và null tại
+10 — Từ điển DTO & Validation — AIC 2.0; API tại
+09 — API Design & JSON Examples — AIC 2.0; storage tại
+08 — Database Design — AIC 2.0.
+Lịch sử trước CR-AIC-01
+Nội dung dưới đây đã bị thay thế cho triển khai mới. Chỉ giữ để truy vết kỹ thuật, bằng chứng và task cũ. Các câu “hiện hành”, “bất biến”, “không thay đổi P0”, quyền reviewer/contributor, borrower, gate và phiên bản trong mục lịch sử không có ưu tiên hơn đặc tả AIC ở trên. Không nhập bundle 1.0.x rồi coi đã có AIC 2.0.0.
+Lịch sử trước 16/10/2026 — không dùng làm đặc tả AIC hiện hành

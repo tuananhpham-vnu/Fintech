@@ -1,0 +1,54 @@
+Command: ../../.venv/Scripts/python.exe -m pytest -q -rs (cwd services/ai)
+Observed exit: 1
+Mode: unchanged AI code regression, synthetic models/transports; no live provider
+Sanitization: workspace/temp paths and credential/provider-token patterns only; full remaining output preserved.
+
+.............................................................s.......F.. [ 19%]
+.............sss........................................................ [ 39%]
+........................................................................ [ 59%]
+........................................................................ [ 78%]
+........................................................................ [ 98%]
+......                                                                   [100%]
+================================== FAILURES ===================================
+______________________ test_contract_extraction_grounded ______________________
+
+contracts = <runner.contracts.Contracts object at 0x0000019DAA16E0F0>
+storage = WindowsPath('C:/Users/52duc/AppData/Local/Temp/pytest-of-52ducbanh/pytest-31/test_contract_extraction_groun0/storage')
+
+    def test_contract_extraction_grounded(contracts, storage):
+        model = FakeModel(answer(contract_fields()))
+        request = extract_request(storage)
+        out = make_service(contracts, storage, model=model).extract(request)
+        assert_valid(contracts, request, out)
+        fields = by_key(out)
+        assert {k: f["value"] for k, f in fields.items()} == {
+            "contract.ref": "H\u011001", "parties.borrower.tax_id": "0000000001", "parties.counterparty.tax_id": "0000000002",
+            "contract.amount": "500000000", "contract.scope_ref": "S1", "money.currency": "VND",
+            "contract.payment_condition": CONDITION}
+        assert all(f["quality"] == "readable" and f["missing_reason"] is None and f["evidence_ids"] for f in fields.values())
+        assert fields["contract.payment_condition"]["raw_value"] == " ".join(CLAUSE)
+        assert len(out["evidence"]) == 6  # quote tr\xf9ng gi\u1eefa contract.ref v\xe0 scope_ref d\xf9ng chung evidence
+        assert all(e["precision"] == "bbox" and all(0 <= v <= 1 for v in e["bbox"]) for e in out["evidence"])
+        assert out["diagnostics"] == [] and out["classification_confident"] is True
+>       assert out["provenance"] == {"model_id": "fake-model-1", "prompt_version": "extraction-v1", "ocr_version": "none",
+                                     "schema_version": "1.0.2"}
+E       AssertionError: assert {'model_id': ...ion': '1.0.2'} == {'model_id': ...ion': '1.0.2'}
+E         
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'prompt_version': 'extraction-v2'} != {'prompt_version': 'extraction-v1'}
+E         Use -v to get more diff
+
+tests\test_extraction.py:287: AssertionError
+============================== warnings summary ===============================
+..\..\.venv\Lib\site-packages\starlette\testclient.py:40
+  <workspace>\.venv\Lib\site-packages\starlette\testclient.py:40: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+SKIPPED [1] tests\test_extraction.py:245: symlinks not permitted on this machine
+SKIPPED [1] tests\test_extraction.py:527: 07_contract_scan.pdf only exists in the handoff bundle
+SKIPPED [1] tests\test_extraction.py:527: 08_correct_record_scan.pdf only exists in the handoff bundle
+SKIPPED [1] tests\test_extraction.py:535: tesseract binary not installed
+1 failed, 361 passed, 4 skipped, 1 warning in 8.91s

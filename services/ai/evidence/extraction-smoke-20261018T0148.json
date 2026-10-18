@@ -1,0 +1,160 @@
+{
+  "generated_at": "2026-10-18T01:48:11+07:00",
+  "rows": [
+    {
+      "file": "01_registration.pdf",
+      "ok": true,
+      "latency_ms": 6524,
+      "fields_expected": 2,
+      "fields_matched": 2,
+      "mismatched": {},
+      "methods": [
+        "text"
+      ],
+      "diagnostics": [],
+      "provenance": {
+        "model_id": "gemma3:4b",
+        "prompt_version": "extraction-v2",
+        "ocr_version": "none",
+        "schema_version": "1.0.2"
+      },
+      "contract_violations": []
+    },
+    {
+      "file": "02_financials.pdf",
+      "ok": false,
+      "latency_ms": 20252,
+      "fields_expected": 9,
+      "fields_matched": 8,
+      "mismatched": {
+        "financial.unit_multiplier": {
+          "got": null,
+          "quality": "uncertain"
+        }
+      },
+      "methods": [
+        "text"
+      ],
+      "diagnostics": [
+        [
+          "UNGROUNDED_VALUE",
+          "financial.unit_multiplier"
+        ]
+      ],
+      "provenance": {
+        "model_id": "gemma3:4b",
+        "prompt_version": "extraction-v2",
+        "ocr_version": "none",
+        "schema_version": "1.0.2"
+      },
+      "contract_violations": []
+    },
+    {
+      "file": "03_loan_request.pdf",
+      "ok": true,
+      "latency_ms": 20849,
+      "fields_expected": 9,
+      "fields_matched": 9,
+      "mismatched": {},
+      "methods": [
+        "text"
+      ],
+      "diagnostics": [],
+      "provenance": {
+        "model_id": "gemma3:4b",
+        "prompt_version": "extraction-v2",
+        "ocr_version": "none",
+        "schema_version": "1.0.2"
+      },
+      "contract_violations": []
+    },
+    {
+      "file": "04_contract.pdf",
+      "ok": false,
+      "latency_ms": 42955,
+      "fields_expected": 7,
+      "fields_matched": 6,
+      "mismatched": {
+        "contract.payment_condition": {
+          "got": null,
+          "quality": "uncertain"
+        }
+      },
+      "methods": [
+        "text"
+      ],
+      "diagnostics": [
+        [
+          "UNGROUNDED_VALUE",
+          "contract.payment_condition"
+        ]
+      ],
+      "provenance": {
+        "model_id": "gemma3:4b",
+        "prompt_version": "extraction-v2",
+        "ocr_version": "none",
+        "schema_version": "1.0.2"
+      },
+      "contract_violations": []
+    },
+    {
+      "file": "05_wrong_record.pdf",
+      "ok": false,
+      "latency_ms": 57173,
+      "fields_expected": 9,
+      "fields_matched": 8,
+      "mismatched": {
+        "acceptance.scope_text": {
+          "got": null,
+          "quality": "uncertain"
+        }
+      },
+      "methods": [
+        "text"
+      ],
+      "diagnostics": [
+        [
+          "UNGROUNDED_VALUE",
+          "acceptance.scope_text"
+        ]
+      ],
+      "provenance": {
+        "model_id": "gemma3:4b",
+        "prompt_version": "extraction-v2",
+        "ocr_version": "none",
+        "schema_version": "1.0.2"
+      },
+      "contract_violations": []
+    },
+    {
+      "file": "06_correct_record.pdf",
+      "ok": false,
+      "latency_ms": 48487,
+      "fields_expected": 9,
+      "fields_matched": 8,
+      "mismatched": {
+        "acceptance.scope_text": {
+          "got": null,
+          "quality": "uncertain"
+        }
+      },
+      "methods": [
+        "text"
+      ],
+      "diagnostics": [
+        [
+          "UNGROUNDED_VALUE",
+          "acceptance.scope_text"
+        ]
+      ],
+      "provenance": {
+        "model_id": "gemma3:4b",
+        "prompt_version": "extraction-v2",
+        "ocr_version": "none",
+        "schema_version": "1.0.2"
+      },
+      "contract_violations": []
+    }
+  ],
+  "note": "Dev synthetic fixtures; gold used only to score live output after the fact."
+}

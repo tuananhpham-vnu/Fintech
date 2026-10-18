@@ -30,6 +30,8 @@ _LOCK = threading.Lock()
 
 MIN_TEXT_CHARS = 20          # ít hơn số ký tự (không tính khoảng trắng) này thì coi trang là ảnh scan
 MAX_GARBLED_RATIO = 0.3      # tỉ lệ ký tự hỏng (thiếu ToUnicode) cao thì OCR lại
+MIN_UNMAPPED_GLYPHS = 10     # glyph MuPDF không ánh xạ được Unicode: >= chừng này ...
+MAX_UNMAPPED_RATIO = 0.05    # ... và >= 5% glyph của trang -> lớp chữ nhúng hỏng, OCR lại
 MIN_UNTEXTED_IMAGE = 0.3     # ảnh chiếm >= 30% trang ...
 MIN_TEXT_SPAN = 0.15         # ... mà chữ nhúng phủ < 15% chiều cao ảnh -> thân trang là scan, OCR cả trang
 OCR_DPI = 200
@@ -63,7 +65,7 @@ class PageInfo:
     image_count: int
     needs_ocr: bool
     blank: bool
-    ocr_reason: str | None = None     # no_text | garbled | image_region
+    ocr_reason: str | None = None     # no_text | garbled | image_region | vector_content
 
 
 @dataclass
@@ -95,11 +97,31 @@ def _open(data: bytes) -> pymupdf.Document:
 
 
 def _garbled_ratio(text: str) -> float:
-    chars = [c for c in text if not c.isspace()]
+    # U+0003 is a reviewed separator; other controls remain evidence of corruption.
+    chars = [c for c in text if not c.isspace() and c != "\x03"]
     if not chars:
         return 0.0
     bad = sum(1 for c in chars if c == "�" or unicodedata.category(c) in ("Co", "Cn", "Cc"))
     return bad / len(chars)
+
+
+def _unmapped_glyphs(page: pymupdf.Page) -> tuple[int, int]:
+    """(số glyph không có Unicode, tổng glyph) theo text trace của MuPDF. Font Type0/Identity mất ToUnicode cho
+    get_text() ra chính mã glyph — trông như chữ Latin/Hán hợp lệ nên `_garbled_ratio` không bắt được — còn trace
+    báo U+FFFD. Font chuẩn (Helvetica/WinAnsi, CJK có CMap định sẵn) thiếu ToUnicode vẫn ánh xạ được, không bị tính."""
+    unmapped = total = 0
+    for span in page.get_texttrace():
+        for char in span["chars"]:
+            total += 1
+            unmapped += char[0] == 0xFFFD
+    return unmapped, total
+
+
+def _broken_text_layer(page: pymupdf.Page, text: str) -> bool:
+    if _garbled_ratio(text) > MAX_GARBLED_RATIO:
+        return True
+    unmapped, total = _unmapped_glyphs(page)
+    return unmapped >= MIN_UNMAPPED_GLYPHS and unmapped >= MAX_UNMAPPED_RATIO * total
 
 
 def _inflated_size(raw: bytes, cap: int) -> int:
@@ -163,17 +185,27 @@ def _page_info(doc: pymupdf.Document, page: pymupdf.Page, limits: Limits) -> Pag
     if len(text) > limits.max_page_text_chars:
         raise _too_large(f"Page {page.number + 1} has more than {limits.max_page_text_chars} characters of text.")
     images = len(page.get_images(full=False))
-    visible = sum(1 for c in text if not c.isspace())
+    visible = sum(1 for c in text if not c.isspace() and c != "\x03")
     reason = None
-    if images:
+    ink = False
+    if visible and _broken_text_layer(page, text):
+        reason = "garbled"  # corrupt font mappings need OCR even with no image XObjects
+    elif images:
         if visible < MIN_TEXT_CHARS:
             reason = "no_text"
-        elif _garbled_ratio(text) > MAX_GARBLED_RATIO:
-            reason = "garbled"
         elif _scan_like_image(page):
             reason = "image_region"
+    elif visible == 0:
+        # Vector outlines / inline images can paint a page without text or image
+        # XObjects. A bounded grayscale probe distinguishes ink from real blank.
+        # Apply the normal minimum-resolution/page-size guard before native render.
+        zoom = min(0.5, render_zoom(page.rect.width, page.rect.height, limits))
+        pix = page.get_pixmap(matrix=pymupdf.Matrix(zoom, zoom), colorspace=pymupdf.csGRAY, alpha=False)
+        ink = any(value < 250 for value in pix.samples)
+        if ink:
+            reason = "vector_content"
     return PageInfo(page=page.number + 1, text=text, width=float(page.rect.width), height=float(page.rect.height),
-                    image_count=images, needs_ocr=reason is not None, blank=visible == 0 and images == 0,
+                    image_count=images, needs_ocr=reason is not None, blank=visible == 0 and images == 0 and not ink,
                     ocr_reason=reason)
 
 

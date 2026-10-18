@@ -1,0 +1,2943 @@
+{
+  "purpose": "Read-only source inventory; contains hashes, not file contents. NOT a backup.",
+  "head": "8b0b7ed9e983ba4a2ea4d43f79d1816eaad7dbf0",
+  "branch": "duc",
+  "staged_paths": [
+    ".gitattributes",
+    ".gitignore",
+    "README.md",
+    "apps/README.md",
+    "apps/api/.env.example",
+    "apps/api/README.md",
+    "apps/api/migrations/0001_foundation.sql",
+    "apps/api/migrations/0002_creator_membership_policy_immutability.sql",
+    "apps/api/migrations/0003_authorization_row_locks.sql",
+    "apps/api/migrations/0004_mvp_documents.sql",
+    "apps/api/migrations/0005_mvp_policy_exposure.sql",
+    "apps/api/migrations/0006_mvp_workflows.sql",
+    "apps/api/migrations/0007_mvp_source_lock_invariants.sql",
+    "apps/api/migrations/0008_mvp_document_human_decisions.sql",
+    "apps/api/migrations/0009_mvp_issue_decisions.sql",
+    "apps/api/migrations/0010_mvp_staff_questionnaires.sql",
+    "apps/api/package.json",
+    "apps/api/src/ai-adapters/RAW-RESPONSE.md",
+    "apps/api/src/ai-adapters/README.md",
+    "apps/api/src/ai-adapters/document-ai-transport.ts",
+    "apps/api/src/ai-adapters/legacy-validation.ts",
+    "apps/api/src/ai-adapters/raw-response.ts",
+    "apps/api/src/ai-client/ai-client.service.ts",
+    "apps/api/src/app.module.ts",
+    "apps/api/src/auth/README.md",
+    "apps/api/src/auth/auth.controller.ts",
+    "apps/api/src/auth/auth.helpers.test.ts",
+    "apps/api/src/auth/index.ts",
+    "apps/api/src/auth/password.ts",
+    "apps/api/src/auth/security.ts",
+    "apps/api/src/auth/session.guard.ts",
+    "apps/api/src/auth/session.service.ts",
+    "apps/api/src/config/configuration.ts",
+    "apps/api/src/controllers/auth.controller.ts",
+    "apps/api/src/controllers/cases.controller.ts",
+    "apps/api/src/controllers/counterparties.controller.ts",
+    "apps/api/src/controllers/documents.controller.ts",
+    "apps/api/src/controllers/evidence.controller.ts",
+    "apps/api/src/controllers/jobs.controller.ts",
+    "apps/api/src/controllers/mvp-questionnaires.controller.ts",
+    "apps/api/src/controllers/mvp-workflows.controller.ts",
+    "apps/api/src/database/README.md",
+    "apps/api/src/database/bootstrap-sandbox.ts",
+    "apps/api/src/database/database.service.ts",
+    "apps/api/src/database/migrate.ts",
+    "apps/api/src/database/migration-source.ts",
+    "apps/api/src/document-storage/README.md",
+    "apps/api/src/document-storage/byte-integrity.ts",
+    "apps/api/src/document-storage/private-files.ts",
+    "apps/api/src/documents/document-decisions.service.ts",
+    "apps/api/src/documents/document-worker.ts",
+    "apps/api/src/documents/documents.controller.ts",
+    "apps/api/src/documents/evidence-projection.ts",
+    "apps/api/src/documents/ports.ts",
+    "apps/api/src/documents/postgres-document.repository.ts",
+    "apps/api/src/documents/run-worker.ts",
+    "apps/api/src/foundation/canonical.ts",
+    "apps/api/src/foundation/case-mutations.ts",
+    "apps/api/src/foundation/core.repository.ts",
+    "apps/api/src/foundation/errors.ts",
+    "apps/api/src/foundation/foundation.module.ts",
+    "apps/api/src/foundation/http.ts",
+    "apps/api/src/foundation/mvp-case.service.ts",
+    "apps/api/src/foundation/mvp-questionnaire.service.ts",
+    "apps/api/src/foundation/mvp-workflow.service.ts",
+    "apps/api/src/foundation/ports.ts",
+    "apps/api/src/foundation/validation.ts",
+    "apps/api/src/guards/public.decorator.ts",
+    "apps/api/src/guards/session-auth.guard.ts",
+    "apps/api/src/main.ts",
+    "apps/api/src/middleware/request-logging.middleware.ts",
+    "apps/api/src/prototype/README.md",
+    "apps/api/src/prototype/auth.controller.ts",
+    "apps/api/src/prototype/cases.controller.ts",
+    "apps/api/src/prototype/counterparties.controller.ts",
+    "apps/api/src/prototype/prototype.module.ts",
+    "apps/api/src/state/in-memory-db.service.ts",
+    "apps/api/src/storage/storage.service.ts",
+    "apps/api/test/ai-adapter-negative.cjs",
+    "apps/api/test/ai-adapter-validation.cjs",
+    "apps/api/test/ai-response-capture.cjs",
+    "apps/api/test/document-ai-transport.cjs",
+    "apps/api/test/document-http.integration.cjs",
+    "apps/api/test/document-storage-integrity.cjs",
+    "apps/api/test/documents-repository.cjs",
+    "apps/api/test/evidence-projection.cjs",
+    "apps/api/test/foundation.integration.cjs",
+    "apps/api/test/mvp-case.integration.cjs",
+    "apps/api/test/mvp-workflow.integration.cjs",
+    "apps/api/test/policy-exposure-migration.cjs",
+    "apps/api/test/private-files.cjs",
+    "apps/api/test/sandbox-bootstrap.integration.cjs",
+    "apps/api/tsconfig.json",
+    "apps/web/.env.example",
+    "apps/web/.gitignore",
+    "apps/web/.prettierignore",
+    "apps/web/AGENTS.md",
+    "apps/web/README.md",
+    "apps/web/docs/backend-integration.md",
+    "apps/web/docs/frontend-architecture.md",
+    "apps/web/docs/history/blueprint-1.0.2-readme.md",
+    "apps/web/docs/integration-audit.md",
+    "apps/web/docs/specification/00-overview.txt",
+    "apps/web/docs/specification/01-domain.txt",
+    "apps/web/docs/specification/02-business-rules.txt",
+    "apps/web/docs/specification/06-security.txt",
+    "apps/web/docs/specification/09-api-operations.txt",
+    "apps/web/docs/specification/10-api-contracts.txt",
+    "apps/web/docs/specification/11-product-requirements.txt",
+    "apps/web/docs/specification/12-frontend-requirements.txt",
+    "apps/web/docs/specification/13-rating-methodology.txt",
+    "apps/web/docs/specification/current-sync.md",
+    "apps/web/docs/verification.md",
+    "apps/web/next.config.mjs",
+    "apps/web/package.json",
+    "apps/web/postcss.config.mjs",
+    "apps/web/public/AIC_Rating_Logo_Web_Assets/aic-favicon.png",
+    "apps/web/public/AIC_Rating_Logo_Web_Assets/aic-favicon.svg",
+    "apps/web/public/AIC_Rating_Logo_Web_Assets/aic-logo-dark.png",
+    "apps/web/public/AIC_Rating_Logo_Web_Assets/aic-logo-dark.svg",
+    "apps/web/public/AIC_Rating_Logo_Web_Assets/aic-logo-light.png",
+    "apps/web/public/AIC_Rating_Logo_Web_Assets/aic-logo-light.svg",
+    "apps/web/public/AIC_Rating_Logo_Web_Assets/aic-symbol.png",
+    "apps/web/public/AIC_Rating_Logo_Web_Assets/aic-symbol.svg",
+    "apps/web/public/apple-icon.png",
+    "apps/web/public/favicon.ico",
+    "apps/web/public/icon-dark-32x32.png",
+    "apps/web/public/icon-light-32x32.png",
+    "apps/web/public/icon.svg",
+    "apps/web/scripts/lib/report.cjs",
+    "apps/web/scripts/prepare-pdf-assets.cjs",
+    "apps/web/scripts/qa/config.cjs",
+    "apps/web/scripts/qa/seed-pages.cjs",
+    "apps/web/scripts/qa/serve.cjs",
+    "apps/web/src/app/(auth)/login/page.tsx",
+    "apps/web/src/app/(workspace)/cases/[caseId]/page.tsx",
+    "apps/web/src/app/(workspace)/cases/page.tsx",
+    "apps/web/src/app/(workspace)/counterparties/page.tsx",
+    "apps/web/src/app/(workspace)/layout.tsx",
+    "apps/web/src/app/api/v2/[...path]/route.ts",
+    "apps/web/src/app/apple-icon.png",
+    "apps/web/src/app/error.tsx",
+    "apps/web/src/app/favicon.ico",
+    "apps/web/src/app/global-error.tsx",
+    "apps/web/src/app/icon.svg",
+    "apps/web/src/app/layout.tsx",
+    "apps/web/src/app/loading.tsx",
+    "apps/web/src/app/not-found.tsx",
+    "apps/web/src/app/page.tsx",
+    "apps/web/src/app/providers.tsx",
+    "apps/web/src/app/respondent/page.tsx",
+    "apps/web/src/components/feedback/empty.tsx",
+    "apps/web/src/components/feedback/error-notice.tsx",
+    "apps/web/src/components/feedback/loading.tsx",
+    "apps/web/src/components/feedback/success.tsx",
+    "apps/web/src/components/forms/revision-action-dialog.tsx",
+    "apps/web/src/components/layout/app-shell.tsx",
+    "apps/web/src/components/layout/back-link.tsx",
+    "apps/web/src/components/layout/brand.tsx",
+    "apps/web/src/components/layout/locale-select.tsx",
+    "apps/web/src/components/ui/leave-prompt.tsx",
+    "apps/web/src/components/ui/modal.tsx",
+    "apps/web/src/components/ui/pagination.tsx",
+    "apps/web/src/components/ui/section-heading.tsx",
+    "apps/web/src/components/ui/status.tsx",
+    "apps/web/src/features/assessments/api.ts",
+    "apps/web/src/features/assessments/components/factor-detail.tsx",
+    "apps/web/src/features/assessments/components/fhi-breakdown.tsx",
+    "apps/web/src/features/assessments/components/risk-assessment.tsx",
+    "apps/web/src/features/assessments/fhi.ts",
+    "apps/web/src/features/assessments/hooks/use-assessment.ts",
+    "apps/web/src/features/assessments/model.ts",
+    "apps/web/src/features/auth/api.ts",
+    "apps/web/src/features/auth/components/login.tsx",
+    "apps/web/src/features/auth/session-provider.tsx",
+    "apps/web/src/features/cases/api.ts",
+    "apps/web/src/features/cases/components/case-list.tsx",
+    "apps/web/src/features/cases/components/exposure-editors.tsx",
+    "apps/web/src/features/cases/components/transaction-dialog.tsx",
+    "apps/web/src/features/cases/components/transaction-overview.tsx",
+    "apps/web/src/features/cases/components/workspace.tsx",
+    "apps/web/src/features/cases/helpers/exposure-inputs.ts",
+    "apps/web/src/features/cases/helpers/exposure-text.ts",
+    "apps/web/src/features/cases/hooks/use-case-list.ts",
+    "apps/web/src/features/cases/hooks/use-case-workspace.ts",
+    "apps/web/src/features/cases/schemas.ts",
+    "apps/web/src/features/counterparties/api.ts",
+    "apps/web/src/features/counterparties/components/counterparty-dialog.tsx",
+    "apps/web/src/features/counterparties/components/counterparty-list.tsx",
+    "apps/web/src/features/counterparties/hooks/use-counterparty-list.ts",
+    "apps/web/src/features/counterparties/hooks/use-counterparty-options.ts",
+    "apps/web/src/features/documents/api.ts",
+    "apps/web/src/features/documents/components/document-classification.tsx",
+    "apps/web/src/features/documents/components/documents.tsx",
+    "apps/web/src/features/documents/components/extraction-review.tsx",
+    "apps/web/src/features/documents/components/field-correction.tsx",
+    "apps/web/src/features/documents/components/upload-dialog.tsx",
+    "apps/web/src/features/documents/schemas.ts",
+    "apps/web/src/features/evidence/api.ts",
+    "apps/web/src/features/evidence/components/pdf-view.tsx",
+    "apps/web/src/features/evidence/components/source-viewer.tsx",
+    "apps/web/src/features/evidence/types.ts",
+    "apps/web/src/features/history/api.ts",
+    "apps/web/src/features/history/components/case-history.tsx",
+    "apps/web/src/features/history/hooks/use-case-history.ts",
+    "apps/web/src/features/questionnaires/api.ts",
+    "apps/web/src/features/questionnaires/components/create-questionnaire.tsx",
+    "apps/web/src/features/questionnaires/components/invitation.tsx",
+    "apps/web/src/features/questionnaires/components/non-financial-information.tsx",
+    "apps/web/src/features/questionnaires/components/respondent-form.tsx",
+    "apps/web/src/features/questionnaires/components/staff-response.tsx",
+    "apps/web/src/features/questionnaires/components/verification.tsx",
+    "apps/web/src/features/questionnaires/schemas.ts",
+    "apps/web/src/features/requests/api.ts",
+    "apps/web/src/features/requests/components/request-draft.tsx",
+    "apps/web/src/features/requests/components/requests-history.tsx",
+    "apps/web/src/features/review/api.ts",
+    "apps/web/src/features/review/components/document-review.tsx",
+    "apps/web/src/features/review/components/issue-decision.tsx",
+    "apps/web/src/features/review/hooks/use-review-run.ts",
+    "apps/web/src/hooks/use-leave-guard.tsx",
+    "apps/web/src/hooks/use-mutation.ts",
+    "apps/web/src/hooks/use-resource.ts",
+    "apps/web/src/lib/api/client.ts",
+    "apps/web/src/lib/api/contracts.ts",
+    "apps/web/src/lib/api/decoders.ts",
+    "apps/web/src/lib/api/pending-contract.ts",
+    "apps/web/src/lib/api/proxy-policy.ts",
+    "apps/web/src/lib/auth/session-context.ts",
+    "apps/web/src/lib/domain/cases.ts",
+    "apps/web/src/lib/i18n/locale-provider.tsx",
+    "apps/web/src/lib/i18n/messages.ts",
+    "apps/web/src/lib/utils/format.ts",
+    "apps/web/src/lib/utils/money.ts",
+    "apps/web/src/lib/utils/navigation.ts",
+    "apps/web/src/styles/base.css",
+    "apps/web/src/styles/index.css",
+    "apps/web/src/styles/theme.css",
+    "apps/web/src/styles/workspace.css",
+    "apps/web/tests/architecture/boundaries.cjs",
+    "apps/web/tests/e2e/README.md",
+    "apps/web/tests/fixtures/aic-api.cjs",
+    "apps/web/tests/fixtures/pdf/acceptance-wrong.pdf",
+    "apps/web/tests/fixtures/pdf/acceptance.pdf",
+    "apps/web/tests/fixtures/pdf/contract.pdf",
+    "apps/web/tests/fixtures/pdf/financials.pdf",
+    "apps/web/tests/fixtures/pdf/loan_request.pdf",
+    "apps/web/tests/fixtures/pdf/registration-0000000001.pdf",
+    "apps/web/tests/fixtures/pdf/registration-0000000002.pdf",
+    "apps/web/tests/fixtures/pdf/registration-DEMO-0001.pdf",
+    "apps/web/tests/fixtures/pdf/registration.pdf",
+    "apps/web/tests/helpers/register-typescript.cjs",
+    "apps/web/tests/integration/api-contracts.cjs",
+    "apps/web/tests/integration/qa-flow.cjs",
+    "apps/web/tests/unit/business-inputs.test.cjs",
+    "apps/web/tests/unit/exposure-inputs.test.cjs",
+    "apps/web/tests/unit/response-validation.test.cjs",
+    "apps/web/tsconfig.json",
+    "docs/api-collection/README.md",
+    "docs/api-collection/aic-rating-v2.http",
+    "docs/audits/AIC-BE-CONTRACT-AUDIT.md",
+    "docs/audits/CODEX-PRODUCTION-READINESS.md",
+    "docs/implementation/BACKEND-DOCUMENT-PREPARATION-REPORT.md",
+    "docs/implementation/BACKEND-PHASE-1-REPORT.md",
+    "docs/implementation/BACKEND-PHASE-2-INCREMENTAL.md",
+    "docs/implementation/BACKEND-PHASE-2-PREPARATION.md",
+    "docs/implementation/DOCUMENT-SLICE-CONTRACT-DRAFT.md",
+    "docs/implementation/MVP-EXECUTION-REPORT.md",
+    "docs/implementation/MVP-OWNER-DECISIONS.md",
+    "docs/implementation/MVP-SANDBOX-README.md",
+    "docs/implementation/NOTION-CURRENT-STATE-HANDOFF.md",
+    "docs/implementation/PHASE-1-CONTRACT-FREEZE.md",
+    "docs/implementation/PHASE-2-DECISIONS.md",
+    "docs/implementation/PHASE-2-GIT-CHECKPOINT.md",
+    "docs/implementation/PHASE-2-REGRESSION-RUNBOOK.md",
+    "docs/implementation/WHITESPACE-CLEANUP-EVIDENCE.md",
+    "docs/implementation/drafts/case-policy.draft.json",
+    "docs/implementation/drafts/exposure.examples.draft.json",
+    "docs/implementation/drafts/exposure.schema.draft.json",
+    "docs/implementation/phase-2-source-inventory.json",
+    "docs/implementation/policies/AIC-MVP-SANDBOX-2026-10-17.1.json",
+    "docs/implementation/policies/AIC-MVP-SANDBOX-2026-10-17.1.json.sha256",
+    "docs/integration/CODEX-BACKEND-HANDOFF.md",
+    "docs/integration/FE-BE-AI-FEASIBILITY.md",
+    "docs/integration/PARALLEL-AGENT-EXECUTION.md",
+    "docs/integration/subagent-ai-report.md",
+    "docs/integration/subagent-be-report.md",
+    "docs/integration/subagent-fe-report.md",
+    "package.json",
+    "packages/contracts/aic-foundation/README.md",
+    "packages/contracts/aic-foundation/SHA256SUMS",
+    "packages/contracts/aic-foundation/VERSION",
+    "packages/contracts/aic-foundation/openapi.json",
+    "packages/contracts/aic-foundation/schemas.json",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
+    "scripts/check-ai-adapter-service.cjs",
+    "scripts/check-document-drafts.cjs",
+    "scripts/check-regression-prerequisites.cjs",
+    "scripts/create-private-cache.ps1",
+    "scripts/feasibility-results.cjs",
+    "scripts/generate-foundation-contract.cjs",
+    "scripts/prepare-source-checkpoint.cjs",
+    "scripts/sandbox-runtime-grants.sql",
+    "scripts/source-checkpoint-inventory.cjs",
+    "scripts/test-e2e-feasibility.cjs",
+    "scripts/test-local-postgres.cjs",
+    "scripts/tests/feasibility-runner.test.cjs",
+    "scripts/tests/source-checkpoint.test.cjs",
+    "tests/fixtures/synthetic/corrupted.pdf",
+    "tests/fixtures/synthetic/invalid_payloads.json",
+    "tests/fixtures/synthetic/prepayment_case.json",
+    "tests/fixtures/synthetic/receivable_case.json",
+    "tests/fixtures/synthetic/valid_synthetic.pdf"
+  ],
+  "count": 431,
+  "untracked_count": 43,
+  "files": [
+    {
+      "path": ".gitattributes",
+      "git": "tracked",
+      "bytes": 328,
+      "sha256": "26a64b199ba97bef071cea7055af3bd1e87676fbfb3d17d05faf972e3696540b"
+    },
+    {
+      "path": ".gitignore",
+      "git": "tracked",
+      "bytes": 1602,
+      "sha256": "ba2294493286c65e6925ddd87d8db7575c4a665f75024fae0967e69133a0792c"
+    },
+    {
+      "path": "AIC_REFACTOR_PLAN.md",
+      "git": "untracked",
+      "bytes": 2814,
+      "sha256": "416a02e0912944cac04e79509d23db8517511c5595e10b1c5616a28dd4872e42"
+    },
+    {
+      "path": "README.md",
+      "git": "tracked",
+      "bytes": 6430,
+      "sha256": "922ab24e818c23eb949c9f32e1c7eabd4b995c3ecd56b802b7484238bcfbb550"
+    },
+    {
+      "path": "apps/README.md",
+      "git": "tracked",
+      "bytes": 1849,
+      "sha256": "d0f37ed70c3a5ef1867de97fae8a96e57d3570df29d84d60453b0b92e33082e9"
+    },
+    {
+      "path": "apps/api/.env.example",
+      "git": "tracked",
+      "bytes": 1428,
+      "sha256": "92fb6eee790e5777811ea808ea1a8442b8a56c56d9a6e4e805c529a29d9c148a"
+    },
+    {
+      "path": "apps/api/README.md",
+      "git": "tracked",
+      "bytes": 7245,
+      "sha256": "67db5c4fed20120acc2f0c923a916e1c566adb6c7ac290d180f7472027fa7cf2"
+    },
+    {
+      "path": "apps/api/migrations/0001_foundation.sql",
+      "git": "tracked",
+      "bytes": 9535,
+      "sha256": "cae14003f457ad36b7924d3403fb704009803ef4f9eb560301d75abb692b5ea3"
+    },
+    {
+      "path": "apps/api/migrations/0002_creator_membership_policy_immutability.sql",
+      "git": "tracked",
+      "bytes": 1180,
+      "sha256": "ab115c07b4d19b1c682f774bdf40deff856f27813ee82e873157226006d850ca"
+    },
+    {
+      "path": "apps/api/migrations/0003_authorization_row_locks.sql",
+      "git": "tracked",
+      "bytes": 1980,
+      "sha256": "fd3875be26b888048eda3353b7a815d56c2494d0b2931d9622964e1a457066b3"
+    },
+    {
+      "path": "apps/api/migrations/0004_mvp_documents.sql",
+      "git": "tracked",
+      "bytes": 8793,
+      "sha256": "4bfd8a99b8470e2d26c7a1fd10ca833354b6a970e196a26adca6fb7bd97351bf"
+    },
+    {
+      "path": "apps/api/migrations/0005_mvp_policy_exposure.sql",
+      "git": "tracked",
+      "bytes": 8016,
+      "sha256": "af3b6a4df130e76a0a6278b84f6099b4c7bd598f9c8a827622137f794ce49e5a"
+    },
+    {
+      "path": "apps/api/migrations/0006_mvp_workflows.sql",
+      "git": "tracked",
+      "bytes": 10647,
+      "sha256": "90897fea2ba0043ffb5d54139a16e4421be797253a945ce5f04de85bc556dd65"
+    },
+    {
+      "path": "apps/api/migrations/0007_mvp_source_lock_invariants.sql",
+      "git": "tracked",
+      "bytes": 1022,
+      "sha256": "7226542c384e71fa0f3a43b847ed3a97219e026fa80d2c17c9d68419af4ab9f2"
+    },
+    {
+      "path": "apps/api/migrations/0008_mvp_document_human_decisions.sql",
+      "git": "tracked",
+      "bytes": 1292,
+      "sha256": "bb94da098d4499d35dda3fed0c40e846109c989e21770a20457ef910ab6aafc2"
+    },
+    {
+      "path": "apps/api/migrations/0009_mvp_issue_decisions.sql",
+      "git": "tracked",
+      "bytes": 1321,
+      "sha256": "785bfafa2bd9d34f2cfef78ba626ce73e7bd0e523715a52ab35f9c2dfa47675b"
+    },
+    {
+      "path": "apps/api/migrations/0010_mvp_staff_questionnaires.sql",
+      "git": "tracked",
+      "bytes": 4101,
+      "sha256": "8d6b783c617cfd9056d6ac0ad7df2c011af5dbac391d24f7848ad4e2f0003715"
+    },
+    {
+      "path": "apps/api/migrations/0011_mvp_counterparty_versions.sql",
+      "git": "untracked",
+      "bytes": 919,
+      "sha256": "e8d69da38cc46e46f24d2e67f9c8f7c5a9402e1c3df9e4b9647b18589d0a90f5"
+    },
+    {
+      "path": "apps/api/migrations/0012_mvp_native_capabilities.sql",
+      "git": "untracked",
+      "bytes": 5178,
+      "sha256": "de669eec3d15544d745ebd310ec61658b4853f520d712a7c02813b8c467e8f2c"
+    },
+    {
+      "path": "apps/api/migrations/0013_mvp_questionnaire_source_bindings.sql",
+      "git": "untracked",
+      "bytes": 2606,
+      "sha256": "49e9dd7b26bccf161486a3d89836c45d0ebba51f6baa47493ee9a1593f577c87"
+    },
+    {
+      "path": "apps/api/migrations/0014_mvp_financial_registry.sql",
+      "git": "untracked",
+      "bytes": 3799,
+      "sha256": "87b0f4555b785fe6ae3b7f0872c175b771f110d5053ebd0f16b3eb90771eaa77"
+    },
+    {
+      "path": "apps/api/migrations/0015_mvp_field_verification.sql",
+      "git": "untracked",
+      "bytes": 241,
+      "sha256": "38a4915c2cc84619deac901238d89126caa50364cf0a7a0d1f9fb35f279ee160"
+    },
+    {
+      "path": "apps/api/migrations/0016_mvp_source_payload_null_guards.sql",
+      "git": "untracked",
+      "bytes": 1034,
+      "sha256": "7618e88ec507f84eff6842e62fec43d70a608ffcddf43cc659c32948af5d9aa1"
+    },
+    {
+      "path": "apps/api/migrations/0017_mvp_questionnaire_source_tuple.sql",
+      "git": "untracked",
+      "bytes": 608,
+      "sha256": "ad81e77d41cd9b06d0f501795e5baf60aa236cd290cfcbb06441528e120a0dd5"
+    },
+    {
+      "path": "apps/api/package.json",
+      "git": "tracked",
+      "bytes": 928,
+      "sha256": "43decfde4f6a968fd1f885395d098a6fbef6bec50744d333b8bb8b4f8816704b"
+    },
+    {
+      "path": "apps/api/src/ai-adapters/RAW-RESPONSE.md",
+      "git": "tracked",
+      "bytes": 6295,
+      "sha256": "fe0eb9295abef3bf9e01c5c43c2209b2ecc76696c4c3ca2d0ec2922e05fe6a36"
+    },
+    {
+      "path": "apps/api/src/ai-adapters/README.md",
+      "git": "tracked",
+      "bytes": 4329,
+      "sha256": "169b7dff2aedfc1e678702cf867ab98674761375f6a6a028031c4d422b71dd24"
+    },
+    {
+      "path": "apps/api/src/ai-adapters/document-ai-transport.ts",
+      "git": "tracked",
+      "bytes": 12870,
+      "sha256": "d3dd2d267d72889abf7eae271cbb011fdb097ecafaf1351d02308ded54e0135b"
+    },
+    {
+      "path": "apps/api/src/ai-adapters/legacy-validation.ts",
+      "git": "tracked",
+      "bytes": 9384,
+      "sha256": "f0ee3758459dc4dbe000c4e699cc36b7a92a38296138493c879b7e30d2f755f6"
+    },
+    {
+      "path": "apps/api/src/ai-adapters/raw-response.ts",
+      "git": "tracked",
+      "bytes": 6094,
+      "sha256": "d8300a75d17459d7127ffa3ef46b6cccb5c440a72a83354e8214d92c08c75c4d"
+    },
+    {
+      "path": "apps/api/src/ai-client/ai-client.service.ts",
+      "git": "tracked",
+      "bytes": 5306,
+      "sha256": "d59501908386414087485f0970d92df1341fcc9efa7b2438ddcf08f75a45e2ae"
+    },
+    {
+      "path": "apps/api/src/app.module.ts",
+      "git": "tracked",
+      "bytes": 474,
+      "sha256": "b4daabb9ec2a28785a7c90041ceebfcf60a480329233c0ebbc0a62eaa3e002d1"
+    },
+    {
+      "path": "apps/api/src/auth/README.md",
+      "git": "tracked",
+      "bytes": 7070,
+      "sha256": "90a87efbfe601a363c2bf04f10844f4e5184a81a57d8d52ea05a15ef5faaf3bd"
+    },
+    {
+      "path": "apps/api/src/auth/auth.controller.ts",
+      "git": "tracked",
+      "bytes": 2506,
+      "sha256": "50e26d28374f2d8979e7a578c543276cc5562cd9e7e495fdd8771c3c3b29805a"
+    },
+    {
+      "path": "apps/api/src/auth/auth.helpers.test.ts",
+      "git": "tracked",
+      "bytes": 9052,
+      "sha256": "3fa57cb68a74732e4086171030bc1d9d1d5b8e96fe26c6c4773d4d51c3a41fe2"
+    },
+    {
+      "path": "apps/api/src/auth/index.ts",
+      "git": "tracked",
+      "bytes": 647,
+      "sha256": "81714b7cb78f41c3933788ea0b0c991323d1f466f08f596afd479d77ad8efa77"
+    },
+    {
+      "path": "apps/api/src/auth/password.ts",
+      "git": "tracked",
+      "bytes": 2379,
+      "sha256": "e481dc386c90ece197cbfc226c1728129ace4368ebfcc9440c7293983c07e9df"
+    },
+    {
+      "path": "apps/api/src/auth/security.ts",
+      "git": "tracked",
+      "bytes": 5635,
+      "sha256": "7cd208cd8041b5a9d0d84ac21a611327f74d3db37eafc48c716231ad09d562e5"
+    },
+    {
+      "path": "apps/api/src/auth/session.guard.ts",
+      "git": "tracked",
+      "bytes": 1700,
+      "sha256": "0be15e5b12b4c6cc69d6863762e4cb7fdaaeb3f9eaacb5d71eb3691bd8e3a630"
+    },
+    {
+      "path": "apps/api/src/auth/session.service.ts",
+      "git": "tracked",
+      "bytes": 7918,
+      "sha256": "5b82f51868387fc0fd065316bd4f5023f843d43ccbb02fb824f87265a5d03559"
+    },
+    {
+      "path": "apps/api/src/config/configuration.ts",
+      "git": "tracked",
+      "bytes": 5819,
+      "sha256": "a90399f05e68df3aa71708bd92b7c60473d50aa29d062587367b8592004544be"
+    },
+    {
+      "path": "apps/api/src/controllers/auth.controller.ts",
+      "git": "tracked",
+      "bytes": 142,
+      "sha256": "ab38827c7467b0ff6f2e18e2d29d5d425774f19c2fc71484f0c741cf415d5018"
+    },
+    {
+      "path": "apps/api/src/controllers/cases.controller.ts",
+      "git": "tracked",
+      "bytes": 3553,
+      "sha256": "b95f2086d04bd57599c1eafe953cea2ffe26b42c62363346ef1bf7950f81cf75"
+    },
+    {
+      "path": "apps/api/src/controllers/counterparties.controller.ts",
+      "git": "tracked",
+      "bytes": 1703,
+      "sha256": "a0cb0959b4f38fddb119bc6dd9e6bcc71c16544cd4c2613e19f15e5737302db1"
+    },
+    {
+      "path": "apps/api/src/controllers/documents.controller.ts",
+      "git": "tracked",
+      "bytes": 1702,
+      "sha256": "183dab9adb5ac5a41efd186007d580ffc3e64abbe335e43b7527d1fbea48707d"
+    },
+    {
+      "path": "apps/api/src/controllers/evidence.controller.ts",
+      "git": "tracked",
+      "bytes": 505,
+      "sha256": "5407d440828b1c140a8f89b2d71609e39b8aab77b722d08ac789b0e90151fe74"
+    },
+    {
+      "path": "apps/api/src/controllers/jobs.controller.ts",
+      "git": "tracked",
+      "bytes": 490,
+      "sha256": "6b287c3f3f1d41e9cc036f287b82e029f36150cb7fbe3f0998521a39e83055a2"
+    },
+    {
+      "path": "apps/api/src/controllers/mvp-capabilities.controller.ts",
+      "git": "untracked",
+      "bytes": 2194,
+      "sha256": "4c10621d19c35b74adc787d4a109ae10ce22d8c0f5197b96c8ee45e0c0a778af"
+    },
+    {
+      "path": "apps/api/src/controllers/mvp-financial.controller.ts",
+      "git": "untracked",
+      "bytes": 1412,
+      "sha256": "d71aa2fd842905b3a13eaacdb39b9cb9cf865590ebcf3e0110e553bbef02f148"
+    },
+    {
+      "path": "apps/api/src/controllers/mvp-questionnaires.controller.ts",
+      "git": "tracked",
+      "bytes": 1472,
+      "sha256": "bb3a41d533c4da81779ff2dfee8aa7c1498324b4b122f24c9fcc591abaa38c05"
+    },
+    {
+      "path": "apps/api/src/controllers/mvp-workflows.controller.ts",
+      "git": "tracked",
+      "bytes": 3742,
+      "sha256": "9b90b9a8bb3f04bb2ee55615a0bcd24248f7063cd971f6b981b95d6567d98f10"
+    },
+    {
+      "path": "apps/api/src/database/README.md",
+      "git": "tracked",
+      "bytes": 24194,
+      "sha256": "415856dc181af14f0519d89b71b33d02b531d249443ef7f247ddbb0e4241df62"
+    },
+    {
+      "path": "apps/api/src/database/bootstrap-sandbox.ts",
+      "git": "tracked",
+      "bytes": 4242,
+      "sha256": "106407069b4abf91c306deecd7c0ecae7768afb78c1ac2cad13dcc1aafbefeb0"
+    },
+    {
+      "path": "apps/api/src/database/database.service.ts",
+      "git": "tracked",
+      "bytes": 3341,
+      "sha256": "6c154d65217038225e30fba606c5cb6289e0496034b2377fd37ef6eee400c77c"
+    },
+    {
+      "path": "apps/api/src/database/migrate.ts",
+      "git": "tracked",
+      "bytes": 4792,
+      "sha256": "a7ed778c9bce56ef9d774c87eb63a72190f8c2cd8fa6ed0a540c3b31f0f27d8d"
+    },
+    {
+      "path": "apps/api/src/database/migration-source.ts",
+      "git": "tracked",
+      "bytes": 355,
+      "sha256": "7d8a8b11b2efb8738a7a3848787ae0f6becabbc1e71390e342446e989ff00980"
+    },
+    {
+      "path": "apps/api/src/document-storage/README.md",
+      "git": "tracked",
+      "bytes": 5588,
+      "sha256": "4ead246e0bb766f3c466da05b9c3c31ff8aa23cebe1bc8b0e8bb5dcc72e4020a"
+    },
+    {
+      "path": "apps/api/src/document-storage/byte-integrity.ts",
+      "git": "tracked",
+      "bytes": 4045,
+      "sha256": "7f3fd04d64d3761b5afceea32abd9c57b6ab62ea6369fb0d348c66111b76f074"
+    },
+    {
+      "path": "apps/api/src/document-storage/private-files.ts",
+      "git": "tracked",
+      "bytes": 15074,
+      "sha256": "68898b9d999f632ee0e2a19414dc8ce7f9c73fe6edf3280bc66520cef5541e08"
+    },
+    {
+      "path": "apps/api/src/documents/document-decisions.service.ts",
+      "git": "tracked",
+      "bytes": 8434,
+      "sha256": "1417f4ad25c7b458840f5511eba0e18946434ed07fa1c2af9a27e4ddf7f33581"
+    },
+    {
+      "path": "apps/api/src/documents/document-retry.service.ts",
+      "git": "untracked",
+      "bytes": 1694,
+      "sha256": "b343d3200cbcad9592ad0cd06181b6fca7ca6fa6db7ea7c65725251eb81283da"
+    },
+    {
+      "path": "apps/api/src/documents/document-worker.ts",
+      "git": "tracked",
+      "bytes": 3197,
+      "sha256": "bc5f13306ecf5e2fafa5dd21c10c30822cf02035273c219ef30f820e209c30c4"
+    },
+    {
+      "path": "apps/api/src/documents/documents.controller.ts",
+      "git": "tracked",
+      "bytes": 8416,
+      "sha256": "7929177a505571b9ccb59c9f534e21aa6b1800dfc54e01f458e03a3f19b9322c"
+    },
+    {
+      "path": "apps/api/src/documents/evidence-projection.ts",
+      "git": "tracked",
+      "bytes": 8081,
+      "sha256": "678448f3daa0eadfbb1559ff96d1baa824bc3c000815fda059c5fb2177fbf4a2"
+    },
+    {
+      "path": "apps/api/src/documents/ports.ts",
+      "git": "tracked",
+      "bytes": 5050,
+      "sha256": "6fdc2c98c9e1580d7820fd7c2fa20b50ae0e5db2e77f8ad485d7044a33e4f7c4"
+    },
+    {
+      "path": "apps/api/src/documents/postgres-document.repository.ts",
+      "git": "tracked",
+      "bytes": 40256,
+      "sha256": "04f8a3e7e6c62dd20e54e541fc8665afa862f5c00cffee8c7353a71bf6c854a5"
+    },
+    {
+      "path": "apps/api/src/documents/run-worker.ts",
+      "git": "tracked",
+      "bytes": 2204,
+      "sha256": "dfda22fce3c675e477a965c7dc1b27ecff7f201a59f9c5499e4b6ccde1472a45"
+    },
+    {
+      "path": "apps/api/src/financial/decimal.ts",
+      "git": "untracked",
+      "bytes": 4719,
+      "sha256": "8629b3680661b8ccb996a5f6dc6c20447deb57e47134c37a3ce39c8924b974dc"
+    },
+    {
+      "path": "apps/api/src/financial/fhi-method.ts",
+      "git": "untracked",
+      "bytes": 6905,
+      "sha256": "8519737b2906cb3c502e15ee7776548e40461936c23e0c58b0565c7f6e2ced34"
+    },
+    {
+      "path": "apps/api/src/financial/fhi-scorer.ts",
+      "git": "untracked",
+      "bytes": 20193,
+      "sha256": "493e62fda5472597becbb1383fa94a261b1114390e9239047bd0bcc728764ae8"
+    },
+    {
+      "path": "apps/api/src/financial/financial-registry.service.ts",
+      "git": "untracked",
+      "bytes": 21915,
+      "sha256": "be866a13132bbd2f4c7997f2232c949dbf718060281963511e6e2691265b760e"
+    },
+    {
+      "path": "apps/api/src/foundation/canonical.ts",
+      "git": "tracked",
+      "bytes": 899,
+      "sha256": "2e344bd7f3d731c4cedaf42129635c636fe17ef54d5c83140e2b96426edf4c6b"
+    },
+    {
+      "path": "apps/api/src/foundation/case-mutations.ts",
+      "git": "tracked",
+      "bytes": 5107,
+      "sha256": "a8089be75033efac1404edb3166d1771f2d5f99996526074cd48fcc1e5fe7506"
+    },
+    {
+      "path": "apps/api/src/foundation/core.repository.ts",
+      "git": "tracked",
+      "bytes": 6916,
+      "sha256": "23db6760632e3dc537cba67bdde68a84b95b6a5761ff51c767bdf039fde94bf2"
+    },
+    {
+      "path": "apps/api/src/foundation/errors.ts",
+      "git": "tracked",
+      "bytes": 352,
+      "sha256": "1d0ecef759a87a121c1e0a89a3ef258b7f353441bb67a762ed1ad44c89ec7169"
+    },
+    {
+      "path": "apps/api/src/foundation/foundation.module.ts",
+      "git": "tracked",
+      "bytes": 4464,
+      "sha256": "36efad173dc64aa858c1614b1650e30050cbaf5114d7c38ba90d60280ac3830f"
+    },
+    {
+      "path": "apps/api/src/foundation/http.ts",
+      "git": "tracked",
+      "bytes": 2244,
+      "sha256": "8acc04b96865be16e27b6b5b87cdccfa9291f63857dde109f5f917dcbc1078fa"
+    },
+    {
+      "path": "apps/api/src/foundation/mvp-capability.service.ts",
+      "git": "untracked",
+      "bytes": 19473,
+      "sha256": "8a7b561d06cc6feb2e3160a7c3cf613986b306f31a6264c4c983807d6b123272"
+    },
+    {
+      "path": "apps/api/src/foundation/mvp-case.service.ts",
+      "git": "tracked",
+      "bytes": 22886,
+      "sha256": "22fe6acacc1e317f70b8b7504b5d8a79d245077923d2e6da68ec6601fb5b4442"
+    },
+    {
+      "path": "apps/api/src/foundation/mvp-counterparty.service.ts",
+      "git": "untracked",
+      "bytes": 9396,
+      "sha256": "46abf14a3c14417ecf1027dd6594df72e9b9ef3524b67649af90a9b1c9a4909c"
+    },
+    {
+      "path": "apps/api/src/foundation/mvp-questionnaire.service.ts",
+      "git": "tracked",
+      "bytes": 17774,
+      "sha256": "f529d60e2b1dc846f52da7ad2b00b383f9f4cf6b329d1a8f219de6cdde2aea2d"
+    },
+    {
+      "path": "apps/api/src/foundation/mvp-workflow.service.ts",
+      "git": "tracked",
+      "bytes": 46041,
+      "sha256": "af2946ce8c125b2a4850dcb0cfed81bbbb5a6d006fd836d31ac21dd418df4719"
+    },
+    {
+      "path": "apps/api/src/foundation/ports.ts",
+      "git": "tracked",
+      "bytes": 1287,
+      "sha256": "c56d595b3e74c33f82f30226dfcdeea07d210209b5603a76e659c243c9e10a10"
+    },
+    {
+      "path": "apps/api/src/foundation/validation.ts",
+      "git": "tracked",
+      "bytes": 4064,
+      "sha256": "105da4050e3530477bdd29eb13a5a4720442937c397428ce70b15150520ff309"
+    },
+    {
+      "path": "apps/api/src/guards/public.decorator.ts",
+      "git": "tracked",
+      "bytes": 147,
+      "sha256": "1bfaea1d3914bf6e6fa2299add426e60520e3862187506c13c6adae05317501c"
+    },
+    {
+      "path": "apps/api/src/guards/session-auth.guard.ts",
+      "git": "tracked",
+      "bytes": 1442,
+      "sha256": "e878d8286432066b9d8923e12747f0241d4c5a68a2b3f723d8c817003d0504f7"
+    },
+    {
+      "path": "apps/api/src/main.ts",
+      "git": "tracked",
+      "bytes": 1824,
+      "sha256": "1e672e83a7c645932d0dbc5153c84aa4e9b006ea2c3b63731cc3a339b360831c"
+    },
+    {
+      "path": "apps/api/src/middleware/request-logging.middleware.ts",
+      "git": "tracked",
+      "bytes": 818,
+      "sha256": "94bd63d8546980b115230808674f6570d4690cfe16bec4100ece4e27ca38705e"
+    },
+    {
+      "path": "apps/api/src/prototype/README.md",
+      "git": "tracked",
+      "bytes": 7422,
+      "sha256": "b2ab567670b0a8e785c32ddcea4ceede77dac20889a3a31073fd6f11752e7e28"
+    },
+    {
+      "path": "apps/api/src/prototype/auth.controller.ts",
+      "git": "tracked",
+      "bytes": 1872,
+      "sha256": "0ff0ebebf7c3de4d251a59fade1dbe416829b0575e29b56bb4093fe00baf73bb"
+    },
+    {
+      "path": "apps/api/src/prototype/cases.controller.ts",
+      "git": "tracked",
+      "bytes": 9491,
+      "sha256": "5f77b626c5e7435da32d41321d578035765dd2ee6bb12ec8ad8cb643d0114972"
+    },
+    {
+      "path": "apps/api/src/prototype/counterparties.controller.ts",
+      "git": "tracked",
+      "bytes": 636,
+      "sha256": "e60d57fc713e4a4ba165389c7c7ebab84734d28c90b32ad1edb404e2281d1aa1"
+    },
+    {
+      "path": "apps/api/src/prototype/prototype.module.ts",
+      "git": "tracked",
+      "bytes": 1429,
+      "sha256": "ef817f0e33379de71a5a6bd25e6bd446d2e3fe87d23784781ea021f7f939d0ed"
+    },
+    {
+      "path": "apps/api/src/state/in-memory-db.service.ts",
+      "git": "tracked",
+      "bytes": 8109,
+      "sha256": "a5f7f6b27dc323494a765f733de761cb6f30c4f386c573a3394332c02539f722"
+    },
+    {
+      "path": "apps/api/src/storage/storage.service.ts",
+      "git": "tracked",
+      "bytes": 2480,
+      "sha256": "53a0aefe0756ef98a3253eaab53f3856fcdad220e409e47cf4e0d8e063b421c5"
+    },
+    {
+      "path": "apps/api/test/ai-adapter-negative.cjs",
+      "git": "tracked",
+      "bytes": 14491,
+      "sha256": "a554d236e088f07b566695b7f61ec9d5ffa413c258b8bbc1e0e464b7395e974a"
+    },
+    {
+      "path": "apps/api/test/ai-adapter-validation.cjs",
+      "git": "tracked",
+      "bytes": 15983,
+      "sha256": "795b590e4b7e10376134b5b0a14b8677542c751350812cd8df5a606ec988d428"
+    },
+    {
+      "path": "apps/api/test/ai-response-capture.cjs",
+      "git": "tracked",
+      "bytes": 20410,
+      "sha256": "f167ef668fc704c8012aa6e9858d7fad29be98c3033f196cea6eb92a0c353d67"
+    },
+    {
+      "path": "apps/api/test/document-ai-transport.cjs",
+      "git": "tracked",
+      "bytes": 22252,
+      "sha256": "458b094d5ce1852945ebd0d9ab794ded99a120aacc14718fbe6e1fcd706564ec"
+    },
+    {
+      "path": "apps/api/test/document-http.integration.cjs",
+      "git": "tracked",
+      "bytes": 35902,
+      "sha256": "056fd7fe848ed385e3d27d6a4f54a8dbea089c88d648217867498b41eee56cb2"
+    },
+    {
+      "path": "apps/api/test/document-retry.integration.cjs",
+      "git": "untracked",
+      "bytes": 27836,
+      "sha256": "ce1b8957f84606dd55674a0591fb9c106fb37577a014c3638b03c6cf31b2fb88"
+    },
+    {
+      "path": "apps/api/test/document-storage-integrity.cjs",
+      "git": "tracked",
+      "bytes": 10142,
+      "sha256": "ab8c68449473a94115290a12dfd81b8c011353169331beaa03575200d7236a6d"
+    },
+    {
+      "path": "apps/api/test/documents-repository.cjs",
+      "git": "tracked",
+      "bytes": 30217,
+      "sha256": "00581d447bf036551dd867c543fb7541174b5669eb18c7ea79422d95d36a29d3"
+    },
+    {
+      "path": "apps/api/test/evidence-projection.cjs",
+      "git": "tracked",
+      "bytes": 19017,
+      "sha256": "c2a9fff694b82534aba07c677945593de6ad45f6370dd989c999847790b6c213"
+    },
+    {
+      "path": "apps/api/test/fhi-scorer.cjs",
+      "git": "untracked",
+      "bytes": 7372,
+      "sha256": "b4961e86567007c71f146a61cb2cc9d4aeedd2bc2382e8b71322856f6fea3b59"
+    },
+    {
+      "path": "apps/api/test/foundation.integration.cjs",
+      "git": "tracked",
+      "bytes": 35513,
+      "sha256": "a764e53af421bd299203ac9cabf9f82561912cacaf49c47723589e71a2d67e47"
+    },
+    {
+      "path": "apps/api/test/mvp-case.integration.cjs",
+      "git": "tracked",
+      "bytes": 49165,
+      "sha256": "b6e1b08725b8afa34fab04986f31576a8768cea1188cf095323c0a6d7f352bec"
+    },
+    {
+      "path": "apps/api/test/mvp-counterparty.integration.cjs",
+      "git": "untracked",
+      "bytes": 29953,
+      "sha256": "24691b50fbf0a0e72472513b73d0ead75da6b5156a7c6dbc293f6d90ced5e209"
+    },
+    {
+      "path": "apps/api/test/mvp-workflow.integration.cjs",
+      "git": "tracked",
+      "bytes": 75146,
+      "sha256": "ca32038e9973d6541c14486b076d5eccc4046824a77348438eb9a917081d653c"
+    },
+    {
+      "path": "apps/api/test/policy-exposure-migration.cjs",
+      "git": "tracked",
+      "bytes": 20768,
+      "sha256": "4781f0723b298a097b387b339f3306efe20174580fdbcf620f9709e5738b2097"
+    },
+    {
+      "path": "apps/api/test/private-files.cjs",
+      "git": "tracked",
+      "bytes": 27519,
+      "sha256": "6de325f9ea8e1d360d785eab0561532c0ab56eaf2b3c2c057da9bddd7d3fda83"
+    },
+    {
+      "path": "apps/api/test/sandbox-bootstrap.integration.cjs",
+      "git": "tracked",
+      "bytes": 3919,
+      "sha256": "3d656483765815306bee5e8cdf9f841c362fdebd337c4aab7144f6445f8a9333"
+    },
+    {
+      "path": "apps/api/tsconfig.json",
+      "git": "tracked",
+      "bytes": 573,
+      "sha256": "b157408ff146e596f1a89f993fbbe2b05e2fa9ba4ec0fbc5b48bdb7f52e3eb98"
+    },
+    {
+      "path": "apps/web/.env.example",
+      "git": "tracked",
+      "bytes": 329,
+      "sha256": "69259c9f099565c397353d92d300ee049590c12e5ac6a1c19477f5d7fee3c851"
+    },
+    {
+      "path": "apps/web/.gitignore",
+      "git": "tracked",
+      "bytes": 292,
+      "sha256": "4b0931425e0f3f566828d39420c149288d8d8a9a6440b588de51b7be6377807d"
+    },
+    {
+      "path": "apps/web/.prettierignore",
+      "git": "tracked",
+      "bytes": 68,
+      "sha256": "078804d4cfc6866954770731efa4a8f9857a42a33f9ad967b465f5a6685142de"
+    },
+    {
+      "path": "apps/web/AGENTS.md",
+      "git": "tracked",
+      "bytes": 679,
+      "sha256": "063098f6cb31bb44c6f8fbea25b3876de7ee1e5f7d00a50dbab506f6415eb7f0"
+    },
+    {
+      "path": "apps/web/README.md",
+      "git": "tracked",
+      "bytes": 4434,
+      "sha256": "4bf736425531f0382b02298ab10ba8fe8591025dbf079d96c8fd7796c30660c5"
+    },
+    {
+      "path": "apps/web/docs/backend-integration.md",
+      "git": "tracked",
+      "bytes": 15079,
+      "sha256": "4738b7537ad278972c87826b013257fd5a617038322d01bd9312d2cd8bfa1b3a"
+    },
+    {
+      "path": "apps/web/docs/frontend-architecture.md",
+      "git": "tracked",
+      "bytes": 8393,
+      "sha256": "ccc5602423357263c617998489d704add79321b8ad3cc527d63131eeb7c95082"
+    },
+    {
+      "path": "apps/web/docs/history/blueprint-1.0.2-readme.md",
+      "git": "tracked",
+      "bytes": 3844,
+      "sha256": "47f2c1222e31e3034b7522c59612e592b4d8eca3f3e61fc33b265c1c9d66d6b3"
+    },
+    {
+      "path": "apps/web/docs/integration-audit.md",
+      "git": "tracked",
+      "bytes": 9751,
+      "sha256": "54e60f598e44d40a5349271d7ae1c2abfdf83cd5e2ce32ec94c97e6820d71179"
+    },
+    {
+      "path": "apps/web/docs/specification/00-overview.txt",
+      "git": "tracked",
+      "bytes": 6088,
+      "sha256": "d6c80f5f903ea7bc48a3298e6b54957f4c892fd66acf9b3394cd94004fe18ad6"
+    },
+    {
+      "path": "apps/web/docs/specification/01-domain.txt",
+      "git": "tracked",
+      "bytes": 5231,
+      "sha256": "c4bb0182f42c6f89ee1742b13e8469da7cdc29e0b783b705f88df8da11e2a0dd"
+    },
+    {
+      "path": "apps/web/docs/specification/02-business-rules.txt",
+      "git": "tracked",
+      "bytes": 6223,
+      "sha256": "316dc41af0ff5dc29d26edaf935cbc0ab5f7aacab40b4ac92ec2a07a29ad9c6e"
+    },
+    {
+      "path": "apps/web/docs/specification/06-security.txt",
+      "git": "tracked",
+      "bytes": 4072,
+      "sha256": "4a03f33eff6f51fad640630c51f4d99bf7121e07b54524aaadfbb451317b4ee6"
+    },
+    {
+      "path": "apps/web/docs/specification/09-api-operations.txt",
+      "git": "tracked",
+      "bytes": 8115,
+      "sha256": "a586c492e12bcd62514a83f98191253bfca6c1f9ce2889d045864db9370d744a"
+    },
+    {
+      "path": "apps/web/docs/specification/10-api-contracts.txt",
+      "git": "tracked",
+      "bytes": 8343,
+      "sha256": "b4fb285375174e8f462d13f9bed781c0e82a7f225f15bb14e3d83a0586293f63"
+    },
+    {
+      "path": "apps/web/docs/specification/11-product-requirements.txt",
+      "git": "tracked",
+      "bytes": 6042,
+      "sha256": "1b659d6a34017fa2e2c3c82f87d6b6160e09482de404c869621ce23c2fd34de6"
+    },
+    {
+      "path": "apps/web/docs/specification/12-frontend-requirements.txt",
+      "git": "tracked",
+      "bytes": 4506,
+      "sha256": "77b81d93ed78125092ec509bd2b5635a9d0bd6cab9f0ab12eeeddf44d35aeed0"
+    },
+    {
+      "path": "apps/web/docs/specification/13-rating-methodology.txt",
+      "git": "tracked",
+      "bytes": 9463,
+      "sha256": "5797656ad79ed7dc8db7eaf23a076ac44b7acf9958f2c80d42fba65bd155bce8"
+    },
+    {
+      "path": "apps/web/docs/specification/current-sync.md",
+      "git": "tracked",
+      "bytes": 2392,
+      "sha256": "ddfdbc03f6ad5c52ba980ae073ec9ffaa5d93d41f273c22e7283b40d720d696b"
+    },
+    {
+      "path": "apps/web/docs/verification.md",
+      "git": "tracked",
+      "bytes": 8035,
+      "sha256": "8c1f7fd41b800593157e999f01c2dc62f5af54766797a3987c1093610f2b1050"
+    },
+    {
+      "path": "apps/web/next.config.mjs",
+      "git": "tracked",
+      "bytes": 717,
+      "sha256": "805f0bff66fc4140768a275f1ca462c8dbd1f9b05751e8bed62ab13d0b763efe"
+    },
+    {
+      "path": "apps/web/package.json",
+      "git": "tracked",
+      "bytes": 1612,
+      "sha256": "6c763607f6b65f60dce1816976a6d21c602b2f8cad462fb4b907862ab005811f"
+    },
+    {
+      "path": "apps/web/postcss.config.mjs",
+      "git": "tracked",
+      "bytes": 144,
+      "sha256": "54b5708e687b8c9ecc8dbeebf29801dbec1213f890c5e018d7ca9c1541a6f7e3"
+    },
+    {
+      "path": "apps/web/public/AIC_Rating_Logo_Web_Assets/aic-favicon.svg",
+      "git": "tracked",
+      "bytes": 648,
+      "sha256": "4d7a06ca1fe984fe4e4d7a9fa51c577892f8309162095fa46e1cdda8c12a016f"
+    },
+    {
+      "path": "apps/web/public/AIC_Rating_Logo_Web_Assets/aic-logo-dark.svg",
+      "git": "tracked",
+      "bytes": 3049,
+      "sha256": "014406264636e686a449db28146bfa55acb23f78e437ccbd10a84c0bffa618e8"
+    },
+    {
+      "path": "apps/web/public/AIC_Rating_Logo_Web_Assets/aic-logo-light.svg",
+      "git": "tracked",
+      "bytes": 3049,
+      "sha256": "655b2835c6c828a40952cb973973d0de2d0cb8a3e7ecee360ef39a6fb741f730"
+    },
+    {
+      "path": "apps/web/public/AIC_Rating_Logo_Web_Assets/aic-symbol.svg",
+      "git": "tracked",
+      "bytes": 569,
+      "sha256": "1b05924f10eebbca8f0904ea2bb7dee90670df48bc1916595d0803b99dc2b2f3"
+    },
+    {
+      "path": "apps/web/public/icon.svg",
+      "git": "tracked",
+      "bytes": 648,
+      "sha256": "4d7a06ca1fe984fe4e4d7a9fa51c577892f8309162095fa46e1cdda8c12a016f"
+    },
+    {
+      "path": "apps/web/scripts/lib/report.cjs",
+      "git": "tracked",
+      "bytes": 463,
+      "sha256": "b2502d28627705eb83fb374b15f541057f03ff1678814eeae3d1664841ccbc23"
+    },
+    {
+      "path": "apps/web/scripts/prepare-pdf-assets.cjs",
+      "git": "tracked",
+      "bytes": 644,
+      "sha256": "27d868ec41ebc03b6f5fc81b9d919d419ac261b61083b0eaa5ec797a7086a6a2"
+    },
+    {
+      "path": "apps/web/scripts/qa/config.cjs",
+      "git": "tracked",
+      "bytes": 552,
+      "sha256": "eff3e7ee2181b7f0987563cf3b779740ad3d996fe7ff9a02c0381d2500b2283a"
+    },
+    {
+      "path": "apps/web/scripts/qa/seed-pages.cjs",
+      "git": "tracked",
+      "bytes": 2107,
+      "sha256": "1362bfc7c8a516f751215729e178abc93e4f5d364a0bf61c034e1225b39da871"
+    },
+    {
+      "path": "apps/web/scripts/qa/serve.cjs",
+      "git": "tracked",
+      "bytes": 24592,
+      "sha256": "d57be40f62b8de2c2b01cf95464095bde6252578fe34f84fc095779129be066f"
+    },
+    {
+      "path": "apps/web/src/app/(auth)/login/page.tsx",
+      "git": "tracked",
+      "bytes": 111,
+      "sha256": "75205f18b6dac8725a3ac5d18436816bd80bc32e992c9b347e799ef27e1bdec3"
+    },
+    {
+      "path": "apps/web/src/app/(workspace)/cases/[caseId]/page.tsx",
+      "git": "tracked",
+      "bytes": 244,
+      "sha256": "d1bc2804f0745985ee3fbae30598031f21d4da373429a6b28f82f936bdac3521"
+    },
+    {
+      "path": "apps/web/src/app/(workspace)/cases/page.tsx",
+      "git": "tracked",
+      "bytes": 122,
+      "sha256": "cb39c1d8eee537be7eec89208adbc37141d38278a7488a51871f1804fb6d5f52"
+    },
+    {
+      "path": "apps/web/src/app/(workspace)/counterparties/page.tsx",
+      "git": "tracked",
+      "bytes": 141,
+      "sha256": "bc693e978d159cbc3e914c7959e9d199320a8b7a35928150078a077e3a063163"
+    },
+    {
+      "path": "apps/web/src/app/(workspace)/layout.tsx",
+      "git": "tracked",
+      "bytes": 302,
+      "sha256": "d4daaca671a6fec4e4b3c722c1c0e98e29861889734606e35495488c33999782"
+    },
+    {
+      "path": "apps/web/src/app/api/v2/[...path]/route.ts",
+      "git": "tracked",
+      "bytes": 4761,
+      "sha256": "aa1b5902479996fd47f291e4ac034e26b6817fdac1769f8a227a443e89f0ffd9"
+    },
+    {
+      "path": "apps/web/src/app/error.tsx",
+      "git": "tracked",
+      "bytes": 324,
+      "sha256": "fc224b6183d47e067f98e3f663b638fb925fb9cd801be951d75989716afe676e"
+    },
+    {
+      "path": "apps/web/src/app/global-error.tsx",
+      "git": "tracked",
+      "bytes": 404,
+      "sha256": "bb2c3794143deef714eede7b37522d9cd1082d53a993813ae199166146229202"
+    },
+    {
+      "path": "apps/web/src/app/icon.svg",
+      "git": "tracked",
+      "bytes": 648,
+      "sha256": "4d7a06ca1fe984fe4e4d7a9fa51c577892f8309162095fa46e1cdda8c12a016f"
+    },
+    {
+      "path": "apps/web/src/app/layout.tsx",
+      "git": "tracked",
+      "bytes": 1186,
+      "sha256": "80dead939ef2c4409d370bd533f81e6aa611753a8c462d32a8eaa00a72e088aa"
+    },
+    {
+      "path": "apps/web/src/app/loading.tsx",
+      "git": "tracked",
+      "bytes": 119,
+      "sha256": "5985f9b36405d869d76805b426ef4cb4b1088028ecccb038e9f4f089249056f0"
+    },
+    {
+      "path": "apps/web/src/app/not-found.tsx",
+      "git": "tracked",
+      "bytes": 397,
+      "sha256": "3295b70639086a92482bce00c8deeb0d3e4866c0a47cd9ce67763b82a10790fa"
+    },
+    {
+      "path": "apps/web/src/app/page.tsx",
+      "git": "tracked",
+      "bytes": 99,
+      "sha256": "a868b366802e2d98ba2d58ff486b3a080a29472ecd7341a5303a76004c6dcf27"
+    },
+    {
+      "path": "apps/web/src/app/providers.tsx",
+      "git": "tracked",
+      "bytes": 361,
+      "sha256": "052520989b4d27632295db5473b8cdb287eff237026079fb4146b4430dec1dec"
+    },
+    {
+      "path": "apps/web/src/app/respondent/page.tsx",
+      "git": "tracked",
+      "bytes": 149,
+      "sha256": "1e3e47f07471db9f19717a8971857b994b727beea550a488021565513f76b48b"
+    },
+    {
+      "path": "apps/web/src/components/feedback/empty.tsx",
+      "git": "tracked",
+      "bytes": 393,
+      "sha256": "9f466b8e640d9746b62a7e789de234e8e178b97558c410a6fd9cd8e0bb258152"
+    },
+    {
+      "path": "apps/web/src/components/feedback/error-notice.tsx",
+      "git": "tracked",
+      "bytes": 1793,
+      "sha256": "f065330433856e71a37b450cf45a8705049ccddae437c78e75258957b1ee545d"
+    },
+    {
+      "path": "apps/web/src/components/feedback/loading.tsx",
+      "git": "tracked",
+      "bytes": 315,
+      "sha256": "f2dde0a2b09ed3df9b6fd3d0c6daf928b36d5a116cc42c0283c81188a280ff78"
+    },
+    {
+      "path": "apps/web/src/components/feedback/success.tsx",
+      "git": "tracked",
+      "bytes": 333,
+      "sha256": "c1995db26ccf4391bcad3ddfd1c46cfa2c73962cba018097293cafc6f3a9af4a"
+    },
+    {
+      "path": "apps/web/src/components/forms/revision-action-dialog.tsx",
+      "git": "tracked",
+      "bytes": 3436,
+      "sha256": "ca5fa67312a2eb45befa14426d6bb119d838461879d4a8582fde1745323d5890"
+    },
+    {
+      "path": "apps/web/src/components/layout/app-shell.tsx",
+      "git": "tracked",
+      "bytes": 4100,
+      "sha256": "e726a7df3dbd3ffc5c8cadf36a02e69d7b1c8a44977a4bce4e87b47156b74115"
+    },
+    {
+      "path": "apps/web/src/components/layout/back-link.tsx",
+      "git": "tracked",
+      "bytes": 319,
+      "sha256": "a218a4ec8f5c91ea97eb022ed05679b7a612003f72bdf7955df7132bbdd35e7c"
+    },
+    {
+      "path": "apps/web/src/components/layout/brand.tsx",
+      "git": "tracked",
+      "bytes": 706,
+      "sha256": "2850575d5df1f6ca1d6915e7608628fb237da2cbf2a89eb7db8594edb36fc576"
+    },
+    {
+      "path": "apps/web/src/components/layout/locale-select.tsx",
+      "git": "tracked",
+      "bytes": 590,
+      "sha256": "8f83cbf889931ff6de08f963d2076bd6242f9c24c3d1aa4d5750ed1220111fcc"
+    },
+    {
+      "path": "apps/web/src/components/ui/leave-prompt.tsx",
+      "git": "tracked",
+      "bytes": 920,
+      "sha256": "fd1919fa77b021942b2d7e539c5f0763adb1d921ff8bce746c5600233d621a50"
+    },
+    {
+      "path": "apps/web/src/components/ui/modal.tsx",
+      "git": "tracked",
+      "bytes": 1533,
+      "sha256": "1adcf2d33124127459cca2f697ab17717a8198cf17aa99f2f02064352ca9a137"
+    },
+    {
+      "path": "apps/web/src/components/ui/pagination.tsx",
+      "git": "tracked",
+      "bytes": 609,
+      "sha256": "96966c187a667601181d1adff7cc2d569ed3b89c4f030f7102eb7d31002c68ac"
+    },
+    {
+      "path": "apps/web/src/components/ui/section-heading.tsx",
+      "git": "tracked",
+      "bytes": 377,
+      "sha256": "1199eebf4bd847e6eaf5910bd923fbeb038a10afbe43e51a75fa44fa9230f100"
+    },
+    {
+      "path": "apps/web/src/components/ui/status.tsx",
+      "git": "tracked",
+      "bytes": 676,
+      "sha256": "8fb11db9e08c1638b6149d425643bdb5bcbb137736369f12181f28a70809faca"
+    },
+    {
+      "path": "apps/web/src/features/assessments/api.ts",
+      "git": "tracked",
+      "bytes": 1018,
+      "sha256": "aaf506e71d62409a9698385fb96ad0011b85801629b598630f37de0d8622d36a"
+    },
+    {
+      "path": "apps/web/src/features/assessments/components/factor-detail.tsx",
+      "git": "tracked",
+      "bytes": 1238,
+      "sha256": "c806a527f31f0774149d37b7f2174e79bc7c8acbcb2a9fcd593937f1026117b0"
+    },
+    {
+      "path": "apps/web/src/features/assessments/components/fhi-breakdown.tsx",
+      "git": "tracked",
+      "bytes": 3083,
+      "sha256": "22b7225814f9bca467d38543f0a06d378ce1f7f5ff0181358e15e543c8e4a84d"
+    },
+    {
+      "path": "apps/web/src/features/assessments/components/risk-assessment.tsx",
+      "git": "tracked",
+      "bytes": 9862,
+      "sha256": "0e2814dbb3bcb117800e12e12966bcb3b1f2e5131087ff7bad765b4db02022b5"
+    },
+    {
+      "path": "apps/web/src/features/assessments/fhi.ts",
+      "git": "tracked",
+      "bytes": 1631,
+      "sha256": "a652fd5070a88adcd5809ea7d4cd4728d8d58bdcf7eedb4fc4f8b09a8ec66620"
+    },
+    {
+      "path": "apps/web/src/features/assessments/hooks/use-assessment.ts",
+      "git": "tracked",
+      "bytes": 1099,
+      "sha256": "2e33f1126da1a4447c40526535b6b3164a5da395fac2e0a3147255f946050884"
+    },
+    {
+      "path": "apps/web/src/features/assessments/model.ts",
+      "git": "tracked",
+      "bytes": 1102,
+      "sha256": "8f78f87334b7cbefd05fa93a3a015a606f4e61ac2f020a69b25d149cdbe9f619"
+    },
+    {
+      "path": "apps/web/src/features/auth/api.ts",
+      "git": "tracked",
+      "bytes": 456,
+      "sha256": "50f4ac4c49721dc7c601d8599e103bbe73c8c086c59d998c7a77e2d091671bd1"
+    },
+    {
+      "path": "apps/web/src/features/auth/components/login.tsx",
+      "git": "tracked",
+      "bytes": 5144,
+      "sha256": "21811ddfb6a7cf06e1d0a22f121bfac81660782677e03edb3fae872460556a06"
+    },
+    {
+      "path": "apps/web/src/features/auth/session-provider.tsx",
+      "git": "tracked",
+      "bytes": 2993,
+      "sha256": "18ddd18e69ebff4ea03f8eb37a92bcaf66b9d856efe95f4b9b909183c2e67f55"
+    },
+    {
+      "path": "apps/web/src/features/cases/api.ts",
+      "git": "tracked",
+      "bytes": 882,
+      "sha256": "145bf147e51fdd7ade86610402c8434fc063a92594f22352ec24ab402cec4493"
+    },
+    {
+      "path": "apps/web/src/features/cases/components/case-list.tsx",
+      "git": "tracked",
+      "bytes": 4635,
+      "sha256": "fbc64a2d3ca86eeb161a38cce4e982e18d1b8a711f3bb8a09232900274ae83b9"
+    },
+    {
+      "path": "apps/web/src/features/cases/components/exposure-editors.tsx",
+      "git": "tracked",
+      "bytes": 18717,
+      "sha256": "6c01e9a1de5e53ca30cfaf49a8eff000e47bbfbffe57067bd12447097c9b28b0"
+    },
+    {
+      "path": "apps/web/src/features/cases/components/transaction-dialog.tsx",
+      "git": "tracked",
+      "bytes": 12065,
+      "sha256": "70d59344059fb28e8be0f62b1d278d6e55d16021e4470ac4df19434d753eb160"
+    },
+    {
+      "path": "apps/web/src/features/cases/components/transaction-overview.tsx",
+      "git": "tracked",
+      "bytes": 1484,
+      "sha256": "e975892025558b50070eab5dd8304ba566aa72a05fcdbb7770dc9b57cf3e6291"
+    },
+    {
+      "path": "apps/web/src/features/cases/components/workspace.tsx",
+      "git": "tracked",
+      "bytes": 8998,
+      "sha256": "4d352e88e7fa900719f73d97dce1cce354e272efbbfc1949834ac790a125dd21"
+    },
+    {
+      "path": "apps/web/src/features/cases/helpers/exposure-inputs.ts",
+      "git": "tracked",
+      "bytes": 12137,
+      "sha256": "dee12eadbdb5c409eff73f56e7d14a2b3d7396b0068834febc3f94911dda270d"
+    },
+    {
+      "path": "apps/web/src/features/cases/helpers/exposure-text.ts",
+      "git": "tracked",
+      "bytes": 4518,
+      "sha256": "075a388f3d734d32ecc77d7e746ad9d73635d0ee651151004d8af27afe193286"
+    },
+    {
+      "path": "apps/web/src/features/cases/hooks/use-case-list.ts",
+      "git": "tracked",
+      "bytes": 1767,
+      "sha256": "65bf043431bd24007536f9115b081f67a3618d3a1fd1b8e219a1ac1470567b87"
+    },
+    {
+      "path": "apps/web/src/features/cases/hooks/use-case-workspace.ts",
+      "git": "tracked",
+      "bytes": 1929,
+      "sha256": "478e70057dfca667333b896da52c0435b50c588c584d27ee55d6420ae5e43100"
+    },
+    {
+      "path": "apps/web/src/features/cases/schemas.ts",
+      "git": "tracked",
+      "bytes": 2887,
+      "sha256": "1a1260b1ec243c480ee58a4fc5df29c5b21802bf22bd43201eb6810448880d59"
+    },
+    {
+      "path": "apps/web/src/features/counterparties/api.ts",
+      "git": "tracked",
+      "bytes": 1923,
+      "sha256": "572039607dbf26a43220e96f624556b76e728ab6df0bd44d5b18618f939d6281"
+    },
+    {
+      "path": "apps/web/src/features/counterparties/components/counterparty-dialog.tsx",
+      "git": "tracked",
+      "bytes": 8300,
+      "sha256": "425e9ad8931ed3ce0a11e064280124a566116d998f6da0d5a5f5b3cd80e13fd8"
+    },
+    {
+      "path": "apps/web/src/features/counterparties/components/counterparty-list.tsx",
+      "git": "tracked",
+      "bytes": 3317,
+      "sha256": "920e4fa5985b6f2bf8535d07ab4fa88d715599b08b6eb77e7f72a6056a2c5c77"
+    },
+    {
+      "path": "apps/web/src/features/counterparties/hooks/use-counterparty-list.ts",
+      "git": "tracked",
+      "bytes": 799,
+      "sha256": "72c347e62f915a0963c958bca7707bdad79c42da469389b30345941fcc11ecdf"
+    },
+    {
+      "path": "apps/web/src/features/counterparties/hooks/use-counterparty-options.ts",
+      "git": "tracked",
+      "bytes": 766,
+      "sha256": "3fdfc01d00fd36c69ab9277b13819d27384cb65483e213e9b52ddbeb55c8c125"
+    },
+    {
+      "path": "apps/web/src/features/documents/api.ts",
+      "git": "tracked",
+      "bytes": 2612,
+      "sha256": "f223833c905c1d819ade3d63a48b942d442f68ed7f28751f7688094110896023"
+    },
+    {
+      "path": "apps/web/src/features/documents/components/document-classification.tsx",
+      "git": "tracked",
+      "bytes": 2857,
+      "sha256": "2b98a25d4da86646f092d932b330a95980703b7389c8645b3f69add2b54a1ee8"
+    },
+    {
+      "path": "apps/web/src/features/documents/components/documents.tsx",
+      "git": "tracked",
+      "bytes": 5544,
+      "sha256": "591b08bf3db6869d4749d251712e0e58f14376ae62c027d6f16603508ee28356"
+    },
+    {
+      "path": "apps/web/src/features/documents/components/extraction-review.tsx",
+      "git": "tracked",
+      "bytes": 4396,
+      "sha256": "f18a7cabb689fad8ba6ef7e092c2e95b41f0ce43edadbefd8358ae16baa7ab29"
+    },
+    {
+      "path": "apps/web/src/features/documents/components/field-correction.tsx",
+      "git": "tracked",
+      "bytes": 2397,
+      "sha256": "75916737c7fb152c12be7f9a904ae6f212077cb5d36a9e1648378571e08978d2"
+    },
+    {
+      "path": "apps/web/src/features/documents/components/upload-dialog.tsx",
+      "git": "tracked",
+      "bytes": 5860,
+      "sha256": "4cdca08b8d11b6dedbd63b8f44934e329ac66dd7d77e1fa93a6f98dfb4d7e7a0"
+    },
+    {
+      "path": "apps/web/src/features/documents/schemas.ts",
+      "git": "tracked",
+      "bytes": 1353,
+      "sha256": "405b9e9006ea2a249671a124e54b7fa45c49b5a4a3d6b8fd08d33cfbb7b94337"
+    },
+    {
+      "path": "apps/web/src/features/evidence/api.ts",
+      "git": "tracked",
+      "bytes": 436,
+      "sha256": "af0349ae9b8607fb9a5b12cbd5f6c006b57398d49de9b707f78032d98bc0ad19"
+    },
+    {
+      "path": "apps/web/src/features/evidence/components/pdf-view.tsx",
+      "git": "tracked",
+      "bytes": 3282,
+      "sha256": "b2680b9a9a346cae9f678ddfd07553e2171cda42d7c43352ccb85245461dfc28"
+    },
+    {
+      "path": "apps/web/src/features/evidence/components/source-viewer.tsx",
+      "git": "tracked",
+      "bytes": 3661,
+      "sha256": "49f81fa214cd7a6d44f18f8a240645903c7d2abe039c521a425d922b93cfc73e"
+    },
+    {
+      "path": "apps/web/src/features/evidence/types.ts",
+      "git": "tracked",
+      "bytes": 123,
+      "sha256": "e3c2f1a75081f6f92054c69391b20d8f714fcb073256713c613278b9f069ac60"
+    },
+    {
+      "path": "apps/web/src/features/financial/api.ts",
+      "git": "untracked",
+      "bytes": 8118,
+      "sha256": "d9182258b1c430189f4ce90f441071161382814166aabbe4a6ed7f4415867743"
+    },
+    {
+      "path": "apps/web/src/features/financial/components/financial-registry.tsx",
+      "git": "untracked",
+      "bytes": 22421,
+      "sha256": "0f516481949d30a7419407bad7a0e606d51a63bcad181590f4bc20f8f5e520a1"
+    },
+    {
+      "path": "apps/web/src/features/history/api.ts",
+      "git": "tracked",
+      "bytes": 392,
+      "sha256": "3cd1a21900ccefa4a3f6cf151139c3e4c20469258309b5576299c23f2cd31190"
+    },
+    {
+      "path": "apps/web/src/features/history/components/case-history.tsx",
+      "git": "tracked",
+      "bytes": 2234,
+      "sha256": "c6ac8c519b89c0239e2f86fd8e1488ddd7e0fc83567b3d8742b7212c112bddf3"
+    },
+    {
+      "path": "apps/web/src/features/history/hooks/use-case-history.ts",
+      "git": "tracked",
+      "bytes": 730,
+      "sha256": "45b0ec1b204473786794b9dbe62b149f10c515b21dc05f2011614fc0b144977b"
+    },
+    {
+      "path": "apps/web/src/features/questionnaires/api.ts",
+      "git": "tracked",
+      "bytes": 8290,
+      "sha256": "f8a84df96b7b53211ae28eb37223bd3543c5de9ea04e09935ef538c5cc0985e0"
+    },
+    {
+      "path": "apps/web/src/features/questionnaires/components/create-questionnaire.tsx",
+      "git": "tracked",
+      "bytes": 1256,
+      "sha256": "80fca350acc37cdb4623b18fcbf1eac038647119162639b1c8072e879bbb8bac"
+    },
+    {
+      "path": "apps/web/src/features/questionnaires/components/invitation.tsx",
+      "git": "tracked",
+      "bytes": 5152,
+      "sha256": "9a0b2ebf3ace2581ae9d21176c85b30e42a1d2b26942d6853582a7becaf03b2b"
+    },
+    {
+      "path": "apps/web/src/features/questionnaires/components/non-financial-information.tsx",
+      "git": "tracked",
+      "bytes": 4818,
+      "sha256": "43b1f5c09c1fc2e6913540f77614df8c1046f46a1aa585a1d5e86e2acfd3df8a"
+    },
+    {
+      "path": "apps/web/src/features/questionnaires/components/respondent-form.tsx",
+      "git": "tracked",
+      "bytes": 9552,
+      "sha256": "aff11ab427cc4530fb99ce960c06e1334827959123b40e4c9930f1a43cbd5f08"
+    },
+    {
+      "path": "apps/web/src/features/questionnaires/components/staff-response.tsx",
+      "git": "tracked",
+      "bytes": 3769,
+      "sha256": "b9a0fb0c2f84a7e3842476d8d020e6f178a3c1d96a856bc69cdfc5d6c0e104ba"
+    },
+    {
+      "path": "apps/web/src/features/questionnaires/components/verification.tsx",
+      "git": "tracked",
+      "bytes": 2715,
+      "sha256": "7484adef2ffc0d9d926e73f991925cc92123d5b1dba3881754431244440c5687"
+    },
+    {
+      "path": "apps/web/src/features/questionnaires/native-copy.ts",
+      "git": "untracked",
+      "bytes": 2158,
+      "sha256": "3129e5ece943970435e9561139a005ac3d5c24617d17c8bc3c2eddeb2ba6aaca"
+    },
+    {
+      "path": "apps/web/src/features/questionnaires/schemas.ts",
+      "git": "tracked",
+      "bytes": 1407,
+      "sha256": "3dbc33c285b05c3d8c9212cb7ddce72c75ffd47a661570b32f4ab44e184945eb"
+    },
+    {
+      "path": "apps/web/src/features/requests/api.ts",
+      "git": "tracked",
+      "bytes": 1202,
+      "sha256": "ba245d7d9720b0a319bac54adf3e2f82d65e7f2c85322e9f4f98854a4a4ba8bd"
+    },
+    {
+      "path": "apps/web/src/features/requests/components/request-draft.tsx",
+      "git": "tracked",
+      "bytes": 4188,
+      "sha256": "f74486adc2455122d1f4ff1cd5ec3fd5e9e41b325327d933f3dd1fc3cfffcb66"
+    },
+    {
+      "path": "apps/web/src/features/requests/components/requests-history.tsx",
+      "git": "tracked",
+      "bytes": 5953,
+      "sha256": "979616ad530384ce5ceb79d3187ada3f3df38c00426bf5fca61a658c27459668"
+    },
+    {
+      "path": "apps/web/src/features/review/api.ts",
+      "git": "tracked",
+      "bytes": 1337,
+      "sha256": "93981ed45ec97a99d45a771b4070b99d68b6567279c14294c6a3de9c91413a68"
+    },
+    {
+      "path": "apps/web/src/features/review/components/document-review.tsx",
+      "git": "tracked",
+      "bytes": 8857,
+      "sha256": "c480599320b6a235a89f1094ec9a9e499641eda118340d3cafb3279345890ee5"
+    },
+    {
+      "path": "apps/web/src/features/review/components/issue-decision.tsx",
+      "git": "tracked",
+      "bytes": 1991,
+      "sha256": "863044a150dcb14a377bf7979c051f1cf908fe8281f357a51ff5cbfc081a5c05"
+    },
+    {
+      "path": "apps/web/src/features/review/hooks/use-review-run.ts",
+      "git": "tracked",
+      "bytes": 1120,
+      "sha256": "420b4205a30ac3f958982cff678c3b6de4a91eaad993339287c4044442dbd618"
+    },
+    {
+      "path": "apps/web/src/hooks/use-leave-guard.tsx",
+      "git": "tracked",
+      "bytes": 1428,
+      "sha256": "76d0cfec114d2e4a3f129b32be91523b0863f2f3e0cca5c0d998c04ee960ef47"
+    },
+    {
+      "path": "apps/web/src/hooks/use-mutation.ts",
+      "git": "tracked",
+      "bytes": 836,
+      "sha256": "b8393b84ef8ad0dad397ea037b68b0d9e39c0e222c2a158f6edf57a48ff910cd"
+    },
+    {
+      "path": "apps/web/src/hooks/use-resource.ts",
+      "git": "tracked",
+      "bytes": 2465,
+      "sha256": "3a2bc391c1233c211755c1df563fc1cf178f03d660310ccb07f8f5ba79c2b6c2"
+    },
+    {
+      "path": "apps/web/src/lib/api/client.ts",
+      "git": "tracked",
+      "bytes": 4278,
+      "sha256": "1313fc864bc8e40efa89346cb4202e6056af75a19535f147cf12d69ce9a57563"
+    },
+    {
+      "path": "apps/web/src/lib/api/contracts.ts",
+      "git": "tracked",
+      "bytes": 9028,
+      "sha256": "2cfbf335360a4bdf3da9eaa50ec5599cb2f5fe579163f7e59d9bfcf3766fdaf6"
+    },
+    {
+      "path": "apps/web/src/lib/api/decoders.ts",
+      "git": "tracked",
+      "bytes": 14483,
+      "sha256": "a60e1d9963d694920c02db8262a53897efdabbaeb3ef0784df067615ba9f6026"
+    },
+    {
+      "path": "apps/web/src/lib/api/proxy-policy.ts",
+      "git": "tracked",
+      "bytes": 2092,
+      "sha256": "7bb66ea34c69a6eda4c40ef2dbfca4401612cf991d9190460a201cefd2046359"
+    },
+    {
+      "path": "apps/web/src/lib/auth/session-context.ts",
+      "git": "tracked",
+      "bytes": 609,
+      "sha256": "bebc373211b738e6b5cd736adb984887f261329590f91c7129caa292149d192a"
+    },
+    {
+      "path": "apps/web/src/lib/domain/cases.ts",
+      "git": "tracked",
+      "bytes": 449,
+      "sha256": "ba31dcae770dd0dbb103988021372c18ec560ef871d5280af0d4d3e1552bc02c"
+    },
+    {
+      "path": "apps/web/src/lib/i18n/locale-provider.tsx",
+      "git": "tracked",
+      "bytes": 1326,
+      "sha256": "56ac467804bd3199396d5f4a2a4a15a998171d53d5ee8afcb0e584fa0d37655e"
+    },
+    {
+      "path": "apps/web/src/lib/i18n/messages.ts",
+      "git": "tracked",
+      "bytes": 28922,
+      "sha256": "c9427d929132fe590fa1dbecd8c6f2cfcb3c3a200032de8e193a7134420c448f"
+    },
+    {
+      "path": "apps/web/src/lib/utils/format.ts",
+      "git": "tracked",
+      "bytes": 551,
+      "sha256": "ee3b141f0b6685241876ba75132011f673d74a263b7ee06f23eb152327151bcb"
+    },
+    {
+      "path": "apps/web/src/lib/utils/money.ts",
+      "git": "tracked",
+      "bytes": 478,
+      "sha256": "ee5a1bc6d0c53e85264779e65c0ac7d12c89990123d2566603408937249c3619"
+    },
+    {
+      "path": "apps/web/src/lib/utils/navigation.ts",
+      "git": "tracked",
+      "bytes": 169,
+      "sha256": "55b0727192cd1d2f6901f5f1696e1f444db8f755fa9f69b5a6d699787d3663ff"
+    },
+    {
+      "path": "apps/web/src/styles/base.css",
+      "git": "tracked",
+      "bytes": 31690,
+      "sha256": "e97f2b2104a85e8e3a246d8b11fb48c855af892ad3fa6667435941698f848e22"
+    },
+    {
+      "path": "apps/web/src/styles/index.css",
+      "git": "tracked",
+      "bytes": 109,
+      "sha256": "c8da49d4db9e2f425cdf335864a5203944a572f7f7cfe3d53ce0d5d083565625"
+    },
+    {
+      "path": "apps/web/src/styles/theme.css",
+      "git": "tracked",
+      "bytes": 10365,
+      "sha256": "29a71e28b0705c4689a643f6b12d2135586a0a64fb7332244838ba10cc09a1ab"
+    },
+    {
+      "path": "apps/web/src/styles/workspace.css",
+      "git": "tracked",
+      "bytes": 11858,
+      "sha256": "f135cd6ce502732ec4fd93f794099464fe5c82acfc31988628c54be06b165abe"
+    },
+    {
+      "path": "apps/web/tests/architecture/boundaries.cjs",
+      "git": "tracked",
+      "bytes": 5867,
+      "sha256": "a6eb393fbd86aba68341f1a53c621de847bf1da664f97fb5751197fdc16cbdb2"
+    },
+    {
+      "path": "apps/web/tests/e2e/README.md",
+      "git": "tracked",
+      "bytes": 2646,
+      "sha256": "78e23007ae021839e3c8200c65674dfb855b41a68f82f098eaf5adadf3bd3fe0"
+    },
+    {
+      "path": "apps/web/tests/fixtures/aic-api.cjs",
+      "git": "tracked",
+      "bytes": 3042,
+      "sha256": "8a5e41788b8f421cd8b15cb4a59ed535873c637ad46fe1dc6772420ede797391"
+    },
+    {
+      "path": "apps/web/tests/helpers/pending-contract.ts",
+      "git": "untracked",
+      "bytes": 355,
+      "sha256": "64a3cbdc006a6dc4b74ed9801dd8933dc2a1565155e800417ee8a71a43fcfc77"
+    },
+    {
+      "path": "apps/web/tests/helpers/register-typescript.cjs",
+      "git": "tracked",
+      "bytes": 681,
+      "sha256": "98458a3119267ab5f5134a708b7312f33f67fb1a6dc9875630e253678526abc2"
+    },
+    {
+      "path": "apps/web/tests/integration/api-contracts.cjs",
+      "git": "tracked",
+      "bytes": 14021,
+      "sha256": "b200c8a791a883996080d51a6bd4aa32991fdd619b2cbba6ca39c60b2bd9a9af"
+    },
+    {
+      "path": "apps/web/tests/integration/qa-flow.cjs",
+      "git": "tracked",
+      "bytes": 11420,
+      "sha256": "cc22b201036fdc053d1a9afddf95a339ecec04970c08f11c0244639f86908cee"
+    },
+    {
+      "path": "apps/web/tests/unit/business-inputs.test.cjs",
+      "git": "tracked",
+      "bytes": 6451,
+      "sha256": "07f973918707e2bc427f4d99ed60908f5d42698ffe5e29cda6cfa656b9bf2d35"
+    },
+    {
+      "path": "apps/web/tests/unit/counterparty-inputs.test.cjs",
+      "git": "untracked",
+      "bytes": 1642,
+      "sha256": "83750db6af9f059355fe830575809a0af26b44d2e5d3b7691bf5d08cfcabfc09"
+    },
+    {
+      "path": "apps/web/tests/unit/document-retry.test.cjs",
+      "git": "untracked",
+      "bytes": 3846,
+      "sha256": "3882407abe693b38a36d357e857999ab8e35370e8a716a8ed9899c2a755e5233"
+    },
+    {
+      "path": "apps/web/tests/unit/exposure-inputs.test.cjs",
+      "git": "tracked",
+      "bytes": 13628,
+      "sha256": "5261f1a5942242ef95026a9bd8909f1b35f6bb7f50a4f0cc2b0aeed2f94b221a"
+    },
+    {
+      "path": "apps/web/tests/unit/native-financial.test.cjs",
+      "git": "untracked",
+      "bytes": 9517,
+      "sha256": "d797086abf1d8bcea799ad9314dd8356f29487ad644d0f1f740900fd1e6b8b3d"
+    },
+    {
+      "path": "apps/web/tests/unit/response-validation.test.cjs",
+      "git": "tracked",
+      "bytes": 9034,
+      "sha256": "34c72f4679d521f07d47b43ea6ae72624d7b25f8afbbcb9be91d1f6b45ea6281"
+    },
+    {
+      "path": "apps/web/tsconfig.json",
+      "git": "tracked",
+      "bytes": 778,
+      "sha256": "6d36907a6322a48c4ebf8ee1909ff6a823ee1031ce412559a13d04ceeb400601"
+    },
+    {
+      "path": "docs/api-collection/README.md",
+      "git": "tracked",
+      "bytes": 5740,
+      "sha256": "c79cb9ae30791be3a0936696f8dec11d84df0d371269dbc8d8dcca58b809e7de"
+    },
+    {
+      "path": "docs/api-collection/aic-rating-v2.http",
+      "git": "tracked",
+      "bytes": 8257,
+      "sha256": "eec83ecb58eef9d333973667a43278c3df7dcc4e754419f50e73c40b406f3dde"
+    },
+    {
+      "path": "docs/audits/AIC-BE-CONTRACT-AUDIT.md",
+      "git": "tracked",
+      "bytes": 54071,
+      "sha256": "80c773405e61d1a3bf09c666941d521f57ba781f14abdda59d45f8e2d018245e"
+    },
+    {
+      "path": "docs/audits/CODEX-PRODUCTION-READINESS.md",
+      "git": "tracked",
+      "bytes": 56903,
+      "sha256": "d669768cd98fcb365ba1cd74e8f726863c7927b7c9f76afa39a26a26bd873b6c"
+    },
+    {
+      "path": "docs/implementation/BACKEND-DOCUMENT-PREPARATION-REPORT.md",
+      "git": "tracked",
+      "bytes": 8988,
+      "sha256": "e81925d3ff9416059b008fe7165dda3be503bb2d284032db3eef77c1cc1498fc"
+    },
+    {
+      "path": "docs/implementation/BACKEND-PHASE-1-REPORT.md",
+      "git": "tracked",
+      "bytes": 28887,
+      "sha256": "29550e11bf0e935565c1c17cb47b233e68a0fedec17383330b79ebc705001555"
+    },
+    {
+      "path": "docs/implementation/BACKEND-PHASE-2-INCREMENTAL.md",
+      "git": "tracked",
+      "bytes": 11705,
+      "sha256": "c31f2141e02cea4855ad86ebccaade57186e98b3a4f9ecca9842c8c88331edaf"
+    },
+    {
+      "path": "docs/implementation/BACKEND-PHASE-2-PREPARATION.md",
+      "git": "tracked",
+      "bytes": 11913,
+      "sha256": "03814325f7ff77eb4f8bf5058a1fa91934d3e8e1c2ec8b04e1414673ae564405"
+    },
+    {
+      "path": "docs/implementation/DOCUMENT-SLICE-CONTRACT-DRAFT.md",
+      "git": "tracked",
+      "bytes": 32845,
+      "sha256": "27d9dcbf6e418e1e651b9765d71c1098dafe40a832b5c9fe2f3e33a9ab5ef3cd"
+    },
+    {
+      "path": "docs/implementation/FHI-ENGINE-REFERENCE.md",
+      "git": "untracked",
+      "bytes": 3594,
+      "sha256": "b79a1099db17342318e7652532d46102f848dfb3f0f7619fbe960c1250b27553"
+    },
+    {
+      "path": "docs/implementation/MVP-EXECUTION-REPORT.md",
+      "git": "tracked",
+      "bytes": 23666,
+      "sha256": "9ff29f7eea671de02cb0869ad7313bda89f5f15784a96e0940a405d3da7d6c24"
+    },
+    {
+      "path": "docs/implementation/MVP-FEATURE-MATRIX.md",
+      "git": "untracked",
+      "bytes": 11305,
+      "sha256": "2c1b583732ba75952d7a5e32add1a9e4ae4d7a71a5146739cac7c79b3beb1423"
+    },
+    {
+      "path": "docs/implementation/MVP-OWNER-DECISIONS.md",
+      "git": "tracked",
+      "bytes": 6933,
+      "sha256": "9a62f2af354b2f55531e1ab14f2888d410aad32401bfc814d01b7b53efc578d5"
+    },
+    {
+      "path": "docs/implementation/MVP-REVIEW-HANDOFF.md",
+      "git": "untracked",
+      "bytes": 8036,
+      "sha256": "e8d3cf6feca4682654b9d4104c6a083dd534efb24a6580e09d031620db1ed7ff"
+    },
+    {
+      "path": "docs/implementation/MVP-SANDBOX-README.md",
+      "git": "tracked",
+      "bytes": 16698,
+      "sha256": "10b601cf0c3b38a013243cb0f60c1a6b8d985f63c1177baa4d859f08269e9966"
+    },
+    {
+      "path": "docs/implementation/NOTION-CURRENT-STATE-HANDOFF.md",
+      "git": "tracked",
+      "bytes": 29351,
+      "sha256": "8b54d9b7559bcbb70a308d3edea7dd725ef06af2326b8d60ac9ce05483f89a4d"
+    },
+    {
+      "path": "docs/implementation/PHASE-1-CONTRACT-FREEZE.md",
+      "git": "tracked",
+      "bytes": 7443,
+      "sha256": "623946416176af33ae8bef06f27f8a1602622cee6a132a8e1e040e46b0b6e98f"
+    },
+    {
+      "path": "docs/implementation/PHASE-2-DECISIONS.md",
+      "git": "tracked",
+      "bytes": 22048,
+      "sha256": "67f8fa4917c7466af706fdbd4715953ed521cbbc5da07383039c68af7ca056db"
+    },
+    {
+      "path": "docs/implementation/PHASE-2-GIT-CHECKPOINT.md",
+      "git": "tracked",
+      "bytes": 8825,
+      "sha256": "fc183d7776cf0237283346da676e79e6990180a656d63b3c786d8555b75af043"
+    },
+    {
+      "path": "docs/implementation/PHASE-2-REGRESSION-RUNBOOK.md",
+      "git": "tracked",
+      "bytes": 22223,
+      "sha256": "4b21592e65c2cbb16805e823aad80bf11d94fbe4d8a9f77bc52e28e870da5471"
+    },
+    {
+      "path": "docs/implementation/WHITESPACE-CLEANUP-EVIDENCE.md",
+      "git": "tracked",
+      "bytes": 11243,
+      "sha256": "a8c41bb8f11dd64223ad9194e0fae716144f2285faf5ed1d8a3ca00687f873f6"
+    },
+    {
+      "path": "docs/implementation/drafts/case-policy.draft.json",
+      "git": "tracked",
+      "bytes": 6031,
+      "sha256": "b21ea6636695802c16afc4dbe58421ba9328456bed03e4bd6275912670ea00cc"
+    },
+    {
+      "path": "docs/implementation/drafts/exposure.examples.draft.json",
+      "git": "tracked",
+      "bytes": 8774,
+      "sha256": "3fe291ac28ba5949e92b2d758cd9f2141006e2469accc4354fe3e398e0bbd8ff"
+    },
+    {
+      "path": "docs/implementation/drafts/exposure.schema.draft.json",
+      "git": "tracked",
+      "bytes": 7690,
+      "sha256": "3270a67736ace721c25ea0e92c848df490a1b82452b6dc85f91626f296ad52a3"
+    },
+    {
+      "path": "docs/implementation/evidence/mvp-v2/ai-regression.txt",
+      "git": "untracked",
+      "bytes": 3818,
+      "sha256": "8b89540ab070f496389f3d55c95291965d4ccb7b9dd35aa1e4c20a29b68bd6c2"
+    },
+    {
+      "path": "docs/implementation/evidence/mvp-v2/backend.txt",
+      "git": "untracked",
+      "bytes": 21969,
+      "sha256": "d02ebd813995fdb1a5adef7ea1c843be2193aadf9e80f233a1980993effb012c"
+    },
+    {
+      "path": "docs/implementation/evidence/mvp-v2/boundary.txt",
+      "git": "untracked",
+      "bytes": 23116,
+      "sha256": "226c4265dad3455fae09485a8863122fa88e0388b820ac13e1ee89e793ff6381"
+    },
+    {
+      "path": "docs/implementation/evidence/mvp-v2/frontend.txt",
+      "git": "untracked",
+      "bytes": 6114,
+      "sha256": "a533cdbe4d4be6a016f35dbb48c8080b498da3e6488eb703405a8e5536210e23"
+    },
+    {
+      "path": "docs/implementation/evidence/mvp-v2/legacy-preflight.txt",
+      "git": "untracked",
+      "bytes": 3159,
+      "sha256": "e2aea3b5e650b9768f2c63ceccb07892db4406295b21f9dba665e0151b3a58f3"
+    },
+    {
+      "path": "docs/implementation/evidence/mvp-v2/release-snapshot.txt",
+      "git": "untracked",
+      "bytes": 913,
+      "sha256": "e8559a69256fb5b7d2bf416b90b75e1477887662eb6915eb40caf83551fa8c8d"
+    },
+    {
+      "path": "docs/implementation/evidence/mvp-v2/results.json",
+      "git": "untracked",
+      "bytes": 3673,
+      "sha256": "398790f9977713552099bc08a1784ace66dc7b75f0f0223e53832a7076b4b042"
+    },
+    {
+      "path": "docs/implementation/evidence/mvp-v2/web-build.txt",
+      "git": "untracked",
+      "bytes": 1151,
+      "sha256": "74fabdb43c1c4e3b70457168b92a37fba54e4e52257da3c35690594bab0f8db1"
+    },
+    {
+      "path": "docs/implementation/policies/AIC-MVP-SANDBOX-2026-10-17.1.json",
+      "git": "tracked",
+      "bytes": 5344,
+      "sha256": "a44ddb99a84ad585b30e54dc86b90e398967cc24a9f9e1771f2f705ed04c0633"
+    },
+    {
+      "path": "docs/implementation/policies/AIC-MVP-SANDBOX-2026-10-17.1.json.sha256",
+      "git": "tracked",
+      "bytes": 100,
+      "sha256": "51c3f0ebd58c17f376e04e5267fbc4527ea8eed4d4b44f9342d3eb235c4b8ed9"
+    },
+    {
+      "path": "docs/implementation/requirements/AIC_MVP_Complete_Remaining_Features_v2.md",
+      "git": "untracked",
+      "bytes": 30222,
+      "sha256": "e32071117acaa01586b438de59fcccb65f3079f310f200b63596acb9ab507207"
+    },
+    {
+      "path": "docs/integration/CODEX-BACKEND-HANDOFF.md",
+      "git": "tracked",
+      "bytes": 25744,
+      "sha256": "85a775ae4e63db712d5bbfdaaf582045db96a97fd31c634d669545b94943a9fa"
+    },
+    {
+      "path": "docs/integration/FE-BE-AI-FEASIBILITY.md",
+      "git": "tracked",
+      "bytes": 21509,
+      "sha256": "bc14ac03f705fb2c628c30a99b4f2254ffaf3810fdc4ce0bfa18e55f42afc496"
+    },
+    {
+      "path": "docs/integration/PARALLEL-AGENT-EXECUTION.md",
+      "git": "tracked",
+      "bytes": 16130,
+      "sha256": "9270c1ec56e1e70dee9d869f9d1a4f65942a8316959a98a1b4d44144ad166ddd"
+    },
+    {
+      "path": "docs/integration/subagent-ai-report.md",
+      "git": "tracked",
+      "bytes": 19389,
+      "sha256": "f3c54acca988e85aa6ab0ad13a01e1bd079b429b6f43ac59659fbbb96dc4f440"
+    },
+    {
+      "path": "docs/integration/subagent-be-report.md",
+      "git": "tracked",
+      "bytes": 33804,
+      "sha256": "e23ae16ec226bd9acc8860ae403319da88abef9953c7913a788f51025369a814"
+    },
+    {
+      "path": "docs/integration/subagent-fe-report.md",
+      "git": "tracked",
+      "bytes": 19043,
+      "sha256": "b4f3c5fb3d2b5131306b47a474f3295f29ed20cb0d8f23e24e09a902469f88b7"
+    },
+    {
+      "path": "package.json",
+      "git": "tracked",
+      "bytes": 2083,
+      "sha256": "119f17c3e5d02b27ce46f561e54c1834a432302af05b19a3032c2fb22a03a5cc"
+    },
+    {
+      "path": "packages/README.md",
+      "git": "tracked",
+      "bytes": 379,
+      "sha256": "b015b12bbc2d4c96ceb9ef5e9258a494583703919515c5eb53db2c4d93bff5d0"
+    },
+    {
+      "path": "packages/contracts/README.md",
+      "git": "tracked",
+      "bytes": 1276,
+      "sha256": "83af3d3a55b708fb891ad0a5bf3c7a434f4871f707aa5777b049cecf2376f414"
+    },
+    {
+      "path": "packages/contracts/SHA256SUMS",
+      "git": "tracked",
+      "bytes": 502,
+      "sha256": "480a302b06912c3545a25d0a6c28745de480c7f4d3caa782ee1202e687069e4b"
+    },
+    {
+      "path": "packages/contracts/VERSION",
+      "git": "tracked",
+      "bytes": 6,
+      "sha256": "9fd28642d3aca191e5c7fc2383cfd6fabb2aac8743f029dabb8989ac584e31bc"
+    },
+    {
+      "path": "packages/contracts/aic-foundation/README.md",
+      "git": "tracked",
+      "bytes": 3698,
+      "sha256": "68b1a3a5cd1047ae9715db7d0aac9e7e1f0ed098e994cfb311b14e9892ff9316"
+    },
+    {
+      "path": "packages/contracts/aic-foundation/SHA256SUMS",
+      "git": "tracked",
+      "bytes": 312,
+      "sha256": "35f361c1f2d2e3ae1a9692b735aba6ce13e1e0bfa4b963033eca360e12daf6e7"
+    },
+    {
+      "path": "packages/contracts/aic-foundation/VERSION",
+      "git": "tracked",
+      "bytes": 18,
+      "sha256": "7a614e36a33b12bae6bf2e61a50f18895c6a17c4dcd256796c3f9f20acd2157d"
+    },
+    {
+      "path": "packages/contracts/aic-foundation/examples.json",
+      "git": "untracked",
+      "bytes": 2883,
+      "sha256": "30e9c8fe735656108556817b5e09ff20c033099e6ea5994a6c180494dd241c0a"
+    },
+    {
+      "path": "packages/contracts/aic-foundation/openapi.json",
+      "git": "tracked",
+      "bytes": 75760,
+      "sha256": "8931945d62a5ffd01b63d6228c73aa4ff65351aa6420826fb201326e23d5d07f"
+    },
+    {
+      "path": "packages/contracts/aic-foundation/schemas.json",
+      "git": "tracked",
+      "bytes": 88884,
+      "sha256": "b563503315db7fdb95e348f43a031f4160aa7ed0c77a67493f940a8a3e5849f3"
+    },
+    {
+      "path": "packages/contracts/examples.json",
+      "git": "tracked",
+      "bytes": 276544,
+      "sha256": "ee8a7cb94e862b1a2bf4539f0c8f4e49b9adbd3afb1fb7aff96fa34612ce3b06"
+    },
+    {
+      "path": "packages/contracts/field-registry.json",
+      "git": "tracked",
+      "bytes": 6198,
+      "sha256": "5d8720bd825c8a0189d8e13c12c49ecf0756671b3929e49a63da2709ba68a181"
+    },
+    {
+      "path": "packages/contracts/fixtures/SHA256SUMS",
+      "git": "tracked",
+      "bytes": 763,
+      "sha256": "e2d4b7c73686db669c4065bb52c2ddddc39b1944018f84ce1dfefc117e7fa4fa"
+    },
+    {
+      "path": "packages/contracts/fixtures/extraction-gold.json",
+      "git": "tracked",
+      "bytes": 35355,
+      "sha256": "3df70ac3138ae1e25c525d3ce7db236ee8483a9e1bb9a9fb05ef70a4f77a1e1f"
+    },
+    {
+      "path": "packages/contracts/fixtures/golden-cases.json",
+      "git": "tracked",
+      "bytes": 148762,
+      "sha256": "acc9621ad2d82c1f7566c7365b0bcbd39e4e3b947458fb298f0637a7a71d0007"
+    },
+    {
+      "path": "packages/contracts/fixtures/manifest.json",
+      "git": "tracked",
+      "bytes": 2631,
+      "sha256": "cca26a302502bdec8d1d1484e86fa2150459d5bb474715fcc203e7425000b0a9"
+    },
+    {
+      "path": "packages/contracts/internal-openapi.json",
+      "git": "tracked",
+      "bytes": 71979,
+      "sha256": "c21d161147ef536c7bcfd4ed8728b1280e0e108b23104d0f8a2c0c6cb693d3dc"
+    },
+    {
+      "path": "packages/contracts/openapi.json",
+      "git": "tracked",
+      "bytes": 100647,
+      "sha256": "62de0bdb3fce46074233de0e353d867fdbf35b38a8efd5d86a3a44f0737595b4"
+    },
+    {
+      "path": "packages/contracts/schemas.json",
+      "git": "tracked",
+      "bytes": 62115,
+      "sha256": "01489a7f64f904fed66fce67b5cdfa55a9a3647989b6f0072a7c0d94e4fe4d49"
+    },
+    {
+      "path": "packages/contracts/validation-vectors.json",
+      "git": "tracked",
+      "bytes": 7641,
+      "sha256": "2b6a377e0382e30c5f9d0338c5549b6a0d023cb4ecda2d3dc5db02fd8c55bb0e"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "git": "tracked",
+      "bytes": 94460,
+      "sha256": "1da9cb07c31477e9d01700064b3d8dc6ff960ee9bd4a957aaa39300e91c3db7e"
+    },
+    {
+      "path": "pnpm-workspace.yaml",
+      "git": "tracked",
+      "bytes": 233,
+      "sha256": "202b7fb0614ef66d3665602aebcc245ad4eb28eb6350cc769adc547f997b393c"
+    },
+    {
+      "path": "render.yaml",
+      "git": "tracked",
+      "bytes": 1758,
+      "sha256": "922934134568bfd76ca4ab8877b30c222b929a230118d55fa0e49c0d5950235e"
+    },
+    {
+      "path": "scripts/check-ai-adapter-service.cjs",
+      "git": "tracked",
+      "bytes": 5968,
+      "sha256": "d41210d6332a2fc6330332e06542a0598b5e3a65a7920ef2245cdd7bf1d3a275"
+    },
+    {
+      "path": "scripts/check-document-drafts.cjs",
+      "git": "tracked",
+      "bytes": 4264,
+      "sha256": "a8679c5095fe65164beacc8188246f4cb37bb8cc46b92b054152fc1035ba522d"
+    },
+    {
+      "path": "scripts/check-regression-prerequisites.cjs",
+      "git": "tracked",
+      "bytes": 14658,
+      "sha256": "9c75e563706338749387274baf56851fe64bd292c9dab8b79d3a76d793a6ccdf"
+    },
+    {
+      "path": "scripts/create-private-cache.ps1",
+      "git": "tracked",
+      "bytes": 1264,
+      "sha256": "56550292612105823f2641bc196a1853bbc878933faddf0fa339722c601f2ab1"
+    },
+    {
+      "path": "scripts/create-review-snapshot.cjs",
+      "git": "untracked",
+      "bytes": 7763,
+      "sha256": "fd76bed5d8181b7dfd95f5b1d89e9042229eecabe7960399e29148d7d80b9c80"
+    },
+    {
+      "path": "scripts/feasibility-results.cjs",
+      "git": "tracked",
+      "bytes": 1521,
+      "sha256": "fc3306d7c746ba82a9c63aa00094bc648c34a0e8ab97375efb037a7f621ff7b9"
+    },
+    {
+      "path": "scripts/generate-foundation-contract.cjs",
+      "git": "tracked",
+      "bytes": 41351,
+      "sha256": "b51e78030708624504ee00c4b31af01e05ee861056508170e302c7b03bb75d6c"
+    },
+    {
+      "path": "scripts/prepare-source-checkpoint.cjs",
+      "git": "tracked",
+      "bytes": 7358,
+      "sha256": "d80447a048e46381636e4a41d402b4ba802c50c388b98ea40bbf107ffe97ae53"
+    },
+    {
+      "path": "scripts/sandbox-runtime-grants.sql",
+      "git": "tracked",
+      "bytes": 2907,
+      "sha256": "b5280dc91f420d8bde2c8529259baea0594bf61c54015947c77ec4900a3e1653"
+    },
+    {
+      "path": "scripts/source-checkpoint-inventory.cjs",
+      "git": "tracked",
+      "bytes": 2920,
+      "sha256": "5e5162f9ec85bee7b5e7a87ab331ae4e74982a297f80c884c926f5066fcbb3a8"
+    },
+    {
+      "path": "scripts/test-e2e-feasibility.cjs",
+      "git": "tracked",
+      "bytes": 39508,
+      "sha256": "86af6107a27644622333f4d9bc081cf094692221679192008cea97b4bf4bc30e"
+    },
+    {
+      "path": "scripts/test-local-postgres.cjs",
+      "git": "tracked",
+      "bytes": 3058,
+      "sha256": "051673908e0185115074d506ee92d87ec026f2583a3e1d2037570c9a3873fb9b"
+    },
+    {
+      "path": "scripts/tests/feasibility-runner.test.cjs",
+      "git": "tracked",
+      "bytes": 4310,
+      "sha256": "5cb9bc1b88a8f652e731ade5190dee7d886cfd0b478481cf08332bafb1a75656"
+    },
+    {
+      "path": "scripts/tests/foundation-release.test.cjs",
+      "git": "untracked",
+      "bytes": 3509,
+      "sha256": "2fbefc1ad428e183a736f8ddd9ec138c21a2c772b61fe733411160f796174484"
+    },
+    {
+      "path": "scripts/tests/review-snapshot.test.cjs",
+      "git": "untracked",
+      "bytes": 1728,
+      "sha256": "0cd901f31977b61f24d604e280bbc13ada4184ed9656cc0a40806a6e175359b5"
+    },
+    {
+      "path": "scripts/tests/source-checkpoint.test.cjs",
+      "git": "tracked",
+      "bytes": 2401,
+      "sha256": "ac69bbefd06e4d54934060a505933080260a915c6a971d4b8a4cc5d8e549ea1e"
+    },
+    {
+      "path": "services/README.md",
+      "git": "tracked",
+      "bytes": 543,
+      "sha256": "9c3011a4f808731e7caca91c924b619f92d8977663c39e36cfde7eb95f869d19"
+    },
+    {
+      "path": "services/ai/README.md",
+      "git": "tracked",
+      "bytes": 12501,
+      "sha256": "92a738aece92559e5276b2b4823a00ccb7e7d92635400d344d99ef5fc1f7f11a"
+    },
+    {
+      "path": "services/ai/evaluation/__init__.py",
+      "git": "tracked",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "services/ai/evaluation/adversarial-expected.json",
+      "git": "tracked",
+      "bytes": 5349,
+      "sha256": "8fa02aba44f1a152f4999c2ff247c35020160dec3d78ce3be1dd2e0979745cd4"
+    },
+    {
+      "path": "services/ai/evaluation/compare.py",
+      "git": "tracked",
+      "bytes": 3965,
+      "sha256": "9b6ab1fa7049367a7e223499e3e06a1fe6d469f344da7cbf16882b2eb034cb2f"
+    },
+    {
+      "path": "services/ai/evidence/T13b-report.json",
+      "git": "tracked",
+      "bytes": 15233,
+      "sha256": "0658c6055ed798133b42d0a8e7d43b9cbaf99ed4ea034f3d6cd8adc9267f1f1c"
+    },
+    {
+      "path": "services/ai/evidence/evaluator-outputs/G01-missing-acceptance.input.json",
+      "git": "tracked",
+      "bytes": 31023,
+      "sha256": "199ec1b4a641405bb8642ae795d811529abb58707857bebdfda1c6e8db0b0002"
+    },
+    {
+      "path": "services/ai/evidence/evaluator-outputs/G01-missing-acceptance.output.json",
+      "git": "tracked",
+      "bytes": 4544,
+      "sha256": "af79e4df075976ed94abaee57d7486b2efa7148ceb727ef8568305563c91a486"
+    },
+    {
+      "path": "services/ai/evidence/evaluator-outputs/G02-wrong-contract.input.json",
+      "git": "tracked",
+      "bytes": 42114,
+      "sha256": "486d483e7bb61c50d9ece8e1e22fdbd30aefcd491c6bb7473e64c77421391c48"
+    },
+    {
+      "path": "services/ai/evidence/evaluator-outputs/G02-wrong-contract.output.json",
+      "git": "tracked",
+      "bytes": 4586,
+      "sha256": "307b12e5cb75f15efc6ed91dc5fbc91674569457ca9fdce72f88beff9bc8c49f"
+    },
+    {
+      "path": "services/ai/evidence/evaluator-outputs/G03-candidate.input.json",
+      "git": "tracked",
+      "bytes": 51009,
+      "sha256": "a0721420740f84e6b118874bf7f408a8e6aae998f036933eb440a2d7e175eb86"
+    },
+    {
+      "path": "services/ai/evidence/evaluator-outputs/G03-candidate.output.json",
+      "git": "tracked",
+      "bytes": 5372,
+      "sha256": "964c9e5dbcc9d49ae223832312e8e839f0d11fbd6992e79d2c9ed2e14f7b5fa6"
+    },
+    {
+      "path": "services/ai/evidence/evaluator-outputs/partial-acceptance-200m.input.json",
+      "git": "tracked",
+      "bytes": 50882,
+      "sha256": "7c6d5994804d71cb37bc7622f1aa296f35a400e4e1e19e954eb66a5ef618d3b6"
+    },
+    {
+      "path": "services/ai/evidence/evaluator-outputs/partial-acceptance-200m.output.json",
+      "git": "tracked",
+      "bytes": 5418,
+      "sha256": "34539edc7dc14c521b8ae2bdfbf620f434453310994a72f844d7fa4002c10ff1"
+    },
+    {
+      "path": "services/ai/evidence/evaluator-outputs/received-partial-payment-200m.input.json",
+      "git": "tracked",
+      "bytes": 58805,
+      "sha256": "aac32c0de0bbcaaf6d1f997c5747a25a7018036ca2951da6840b23ebd5b6fcda"
+    },
+    {
+      "path": "services/ai/evidence/evaluator-outputs/received-partial-payment-200m.output.json",
+      "git": "tracked",
+      "bytes": 8213,
+      "sha256": "3f48648367035b103bffc27631a033f1cb57f6ab010c13c294cd4f2ed55e2779"
+    },
+    {
+      "path": "services/ai/evidence/evaluator-outputs/unknown-foreign-currency.input.json",
+      "git": "tracked",
+      "bytes": 42050,
+      "sha256": "3cba4cc00761d5a7b7320428fcb19e0f7e08ab75e77cd003bf21a10892c3b98a"
+    },
+    {
+      "path": "services/ai/evidence/evaluator-outputs/unknown-foreign-currency.output.json",
+      "git": "tracked",
+      "bytes": 4696,
+      "sha256": "95c2a88639e2afecfc8386499661da082b9e73c91cb9f26c6b0700e0f0692d84"
+    },
+    {
+      "path": "services/ai/evidence/g0-t-report.json",
+      "git": "tracked",
+      "bytes": 4891,
+      "sha256": "7475c26bb295a5ba54baa47d942281b5654d20b7a567fa806e65e6c75eb147b6"
+    },
+    {
+      "path": "services/ai/evidence/hybrid-smoke-20261013T1827.json",
+      "git": "tracked",
+      "bytes": 1950,
+      "sha256": "a007b44c4826d4bca1af8748cc9dbdccf0c93f16e3cfaa7fb70070f0db010676"
+    },
+    {
+      "path": "services/ai/evidence/spike-NOT-RUN-20261013T1744.json",
+      "git": "tracked",
+      "bytes": 286,
+      "sha256": "912b1c16be68cbe27c8af78850c5bd6757022c3eae18d9ea659f511b96f2e813"
+    },
+    {
+      "path": "services/ai/evidence/spike-gemini-3.1-flash-lite-20261013T1811.json",
+      "git": "tracked",
+      "bytes": 17083,
+      "sha256": "6872a3de17a15fa29f0d400080faf200a25fe4a63bb169ecac1e8aff5e2fcbeb"
+    },
+    {
+      "path": "services/ai/evidence/spike-gemini-3.1-flash-lite-20261013T1813.json",
+      "git": "tracked",
+      "bytes": 17904,
+      "sha256": "ae8d3a90f8b961ffe852afb9b7a2f1de4f3b0cac7bfb897afa6284a5b461446e"
+    },
+    {
+      "path": "services/ai/evidence/spike-gemini-3.1-flash-lite-20261013T1815.json",
+      "git": "tracked",
+      "bytes": 18302,
+      "sha256": "17732437a71c367b6729f7cec6176092e182ab4d8e897abd460a430f1a204fca"
+    },
+    {
+      "path": "services/ai/evidence/spike-gemini-3.1-flash-lite-20261013T1817.json",
+      "git": "tracked",
+      "bytes": 17816,
+      "sha256": "a38a8c2bc067d4edbe1b740a58c86ff4e8d960da19c495f2f83e62d3a5f2472e"
+    },
+    {
+      "path": "services/ai/extraction/__init__.py",
+      "git": "tracked",
+      "bytes": 6394,
+      "sha256": "3abcf68aff9b077c27b0d156f30d23b7e64f059f3564527ceeb602747cc8ee0b"
+    },
+    {
+      "path": "services/ai/extraction/conditions.py",
+      "git": "tracked",
+      "bytes": 5872,
+      "sha256": "6f565f60c0d2f39549946b4082bd1395ba4bb81b1450fbfac58051e8c17125be"
+    },
+    {
+      "path": "services/ai/extraction/extractor.py",
+      "git": "tracked",
+      "bytes": 25469,
+      "sha256": "626b82f86640b8aac33489a7eb9c13bd1ceb0731d9d6410d9dfb2d70fa3e8e6d"
+    },
+    {
+      "path": "services/ai/extraction/grounding.py",
+      "git": "tracked",
+      "bytes": 27587,
+      "sha256": "25a9d9f43dca66d0f90197ae2116dc554411d71f48c61cb03dc319c30681fddb"
+    },
+    {
+      "path": "services/ai/extraction/llm.py",
+      "git": "tracked",
+      "bytes": 4419,
+      "sha256": "3087cf57283c899443d91f826b7c7053cdc91008353fd8b1b368ae50c2c9ca4f"
+    },
+    {
+      "path": "services/ai/extraction/ocr.py",
+      "git": "tracked",
+      "bytes": 4230,
+      "sha256": "bce562d37fc5130620561de93f6ebc880cf6887289af3890882e5ddc930f11b8"
+    },
+    {
+      "path": "services/ai/extraction/pdf.py",
+      "git": "tracked",
+      "bytes": 12906,
+      "sha256": "8fee6ebe85b74c6b5bae5f506c37f077c986697cc9695703b5a9f5b2ba964409"
+    },
+    {
+      "path": "services/ai/extraction/storage.py",
+      "git": "tracked",
+      "bytes": 2754,
+      "sha256": "0e849e8b82982d928aabb38f693863a3c6a8b9ec120f96a5fe09533e11d11626"
+    },
+    {
+      "path": "services/ai/extraction/trace.py",
+      "git": "tracked",
+      "bytes": 4895,
+      "sha256": "54130c10a35fd145546ee52ded0e6ac2b2d92113f7f77fe4d2cd7d34fdfffcc4"
+    },
+    {
+      "path": "services/ai/linking/__init__.py",
+      "git": "tracked",
+      "bytes": 5226,
+      "sha256": "651fd76586d2705afe9fa0f259aeaeff781dc0b95412a11c2eec05a2acb879f3"
+    },
+    {
+      "path": "services/ai/normalize/__init__.py",
+      "git": "tracked",
+      "bytes": 2454,
+      "sha256": "0efeee429f47d1a8b8945c27e88686e60d14a521be0982ae274ceb2695fe08a9"
+    },
+    {
+      "path": "services/ai/providers/__init__.py",
+      "git": "tracked",
+      "bytes": 117,
+      "sha256": "f0baeaf1219a29a585cfc27b3403aaa828b4b0d739c7b665301281bbbfd04914"
+    },
+    {
+      "path": "services/ai/providers/gemini.py",
+      "git": "tracked",
+      "bytes": 6786,
+      "sha256": "82c02d7a7d7621ce6eb296518724a68bb53e07050fd9ca935000e698d95c9992"
+    },
+    {
+      "path": "services/ai/providers/semantic.py",
+      "git": "tracked",
+      "bytes": 6806,
+      "sha256": "bcc2751dcc77a561ae4d9d90942ec55b79a2851267495496b91c73a5744656d5"
+    },
+    {
+      "path": "services/ai/pyproject.toml",
+      "git": "tracked",
+      "bytes": 1067,
+      "sha256": "3253dbdef5f175df923d0035ade0218137162da8cb2dc5803e2358a7813bb7a9"
+    },
+    {
+      "path": "services/ai/rules/__init__.py",
+      "git": "tracked",
+      "bytes": 6081,
+      "sha256": "a78ef7127a42b7157aebd2c41a166ba1e631ad477e3e09d579e0974880a6d1c0"
+    },
+    {
+      "path": "services/ai/rules/acceptance.py",
+      "git": "tracked",
+      "bytes": 12866,
+      "sha256": "16f12c335f1149f6419ca21475d7b7c3b608c08bee8178460d9344b8420c558c"
+    },
+    {
+      "path": "services/ai/rules/common.py",
+      "git": "tracked",
+      "bytes": 2895,
+      "sha256": "704a5908ed1ae88d33d897be539249ffca968de93091768c6f7b55f139c5aeea"
+    },
+    {
+      "path": "services/ai/rules/hard_cases.py",
+      "git": "tracked",
+      "bytes": 8420,
+      "sha256": "084eead49fdfaf703d8f1427d8b17e133ff4478a544275dbcb8025dba1e51a6c"
+    },
+    {
+      "path": "services/ai/rules/r01.py",
+      "git": "tracked",
+      "bytes": 2894,
+      "sha256": "412b105fb2e37158a78a5f72ca124692c7653c63f09d16228c7f1b92a21b7baa"
+    },
+    {
+      "path": "services/ai/rules/r02.py",
+      "git": "tracked",
+      "bytes": 4061,
+      "sha256": "5b6bdbcefd8c13830d32d52b8c40267a8b931569e311f310bfe5f9b4e43449a5"
+    },
+    {
+      "path": "services/ai/rules/r09.py",
+      "git": "tracked",
+      "bytes": 6587,
+      "sha256": "61b9b34395b0bc1761909995949e65e19e604459d5eeeeb58eafcdc23efa080e"
+    },
+    {
+      "path": "services/ai/rules/receipt.py",
+      "git": "tracked",
+      "bytes": 4436,
+      "sha256": "91fbb6f4036c7f8976cf747f6fdbbde0907805e03c9bc62a6cda0e70bbdce9df"
+    },
+    {
+      "path": "services/ai/runner/__init__.py",
+      "git": "tracked",
+      "bytes": 123,
+      "sha256": "f53700ebe7b7d8017b2237290811457a2b2f054df1573ec3480779a638b574ab"
+    },
+    {
+      "path": "services/ai/runner/__main__.py",
+      "git": "tracked",
+      "bytes": 2808,
+      "sha256": "328c8bcce41ca5753eb3845589cabcea2d63204a245935ec6243811849a0a5a2"
+    },
+    {
+      "path": "services/ai/runner/app.py",
+      "git": "tracked",
+      "bytes": 6403,
+      "sha256": "a1de3776f74015ac0f5113d6cf833b3943d702171d9881827e2c29ab65e7cb5c"
+    },
+    {
+      "path": "services/ai/runner/backends.py",
+      "git": "tracked",
+      "bytes": 4717,
+      "sha256": "f0a2a969ef1f7dabc2ee9cd5fab70a39aa868dd8786cd96257c1703a6c30c1ef"
+    },
+    {
+      "path": "services/ai/runner/config.py",
+      "git": "tracked",
+      "bytes": 2429,
+      "sha256": "77552bb33376819ed5b5dba27ce7be5475317133c9291798ba32bb7708406b3c"
+    },
+    {
+      "path": "services/ai/runner/console/index.html",
+      "git": "tracked",
+      "bytes": 34816,
+      "sha256": "d9d805db97c0bb593d73cad837fd038a25c05e2c2bea216b57edaae5e6b319e1"
+    },
+    {
+      "path": "services/ai/runner/console/presets.json",
+      "git": "tracked",
+      "bytes": 453662,
+      "sha256": "8decddf7bb6ad247ce6e20d497adaa7c7469f4ac140f5b6d6d601a22fd96e62e"
+    },
+    {
+      "path": "services/ai/runner/contracts.py",
+      "git": "tracked",
+      "bytes": 3444,
+      "sha256": "300facf10c18da2cc21da3390ef068bba3c591d0c36f7030d2d23d64f928acb0"
+    },
+    {
+      "path": "services/ai/runner/dto.py",
+      "git": "tracked",
+      "bytes": 22193,
+      "sha256": "0f38953f428b1fe7159d51e1adb06757ae8f7889226b826ed3ffb484537fc0f7"
+    },
+    {
+      "path": "services/ai/runner/errors.py",
+      "git": "tracked",
+      "bytes": 1242,
+      "sha256": "8f56a32cb15dbfdb8cfb81a54728399b25c212941628019be14f468af49e9137"
+    },
+    {
+      "path": "services/ai/runner/guards.py",
+      "git": "tracked",
+      "bytes": 5482,
+      "sha256": "4ef59970bde762abeaf744989d764d3f545b2d42537c16f89175c3afcd8556d8"
+    },
+    {
+      "path": "services/ai/scripts/build_console_presets.py",
+      "git": "tracked",
+      "bytes": 7011,
+      "sha256": "9315a967725c77bdad48f558a9a1a2f01950b5a3876ad4dbde83c211e61ac902"
+    },
+    {
+      "path": "services/ai/scripts/export_evaluator_outputs.py",
+      "git": "tracked",
+      "bytes": 2832,
+      "sha256": "415be6b1f3e326d40e98f49772d9948ae3088759ea4fd787f53435699434b6bf"
+    },
+    {
+      "path": "services/ai/scripts/extraction_smoke.py",
+      "git": "tracked",
+      "bytes": 4940,
+      "sha256": "30210af0ffd4da39059903e1d2246d5b3dd5dd018054dad9877d21be8ccd95eb"
+    },
+    {
+      "path": "services/ai/scripts/g0_consumer_check.py",
+      "git": "tracked",
+      "bytes": 9886,
+      "sha256": "8f0f32c64c5a320d3c95a203fc46ae93f870b6cbb4bdb3ca10c7f16c48a7cc8f"
+    },
+    {
+      "path": "services/ai/scripts/gen_dto.sh",
+      "git": "tracked",
+      "bytes": 782,
+      "sha256": "bd4a134ae186efe93b552a3c14e0e2bb032a637760554f810c5f8d92ed22c289"
+    },
+    {
+      "path": "services/ai/scripts/hybrid_smoke.py",
+      "git": "tracked",
+      "bytes": 4373,
+      "sha256": "facb2c6efdf10c740115dbff1ae522b56eef63b4a7e30e4da79430c0dc960b52"
+    },
+    {
+      "path": "services/ai/scripts/provider_spike.py",
+      "git": "tracked",
+      "bytes": 7468,
+      "sha256": "dd264b795da7821ce3d5f8852f32280368e93c7118b006f4b15059dd35a100c4"
+    },
+    {
+      "path": "services/ai/scripts/task_evidence.py",
+      "git": "tracked",
+      "bytes": 3005,
+      "sha256": "e201d72d33c4ca79ba5c4c8b4cd93fd38a80c25bd637ee123abaf313a89f7d54"
+    },
+    {
+      "path": "services/ai/tests/__init__.py",
+      "git": "tracked",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "services/ai/tests/conftest.py",
+      "git": "tracked",
+      "bytes": 1793,
+      "sha256": "8737e4dff83dc988fa9e8d461a32d350da1e3f51e458766243e0a8839a14bdd0"
+    },
+    {
+      "path": "services/ai/tests/snapshots.py",
+      "git": "tracked",
+      "bytes": 5369,
+      "sha256": "1abe10d504ae73fa3411767d2fee48731b8244f374a549ba74adc5a62358767e"
+    },
+    {
+      "path": "services/ai/tests/test_app.py",
+      "git": "tracked",
+      "bytes": 7044,
+      "sha256": "4c064b7847c0f175a883b4d868ed6a9f13b958c1bb75fe7e64e39ea1ecf3a36d"
+    },
+    {
+      "path": "services/ai/tests/test_contracts.py",
+      "git": "tracked",
+      "bytes": 2738,
+      "sha256": "f469abfad11ce5fcaf1c239942e7cb67d2961bbbaa00b64eb11bb648fd0af50e"
+    },
+    {
+      "path": "services/ai/tests/test_extraction.py",
+      "git": "tracked",
+      "bytes": 38769,
+      "sha256": "737bebbed56d30e72abd67baebba21755d739691959708bc9942793f3e9d3e76"
+    },
+    {
+      "path": "services/ai/tests/test_extraction_correctness.py",
+      "git": "tracked",
+      "bytes": 15198,
+      "sha256": "5b6ccd81e73fec9c66390d32919b9bcba70ac6bd62e696cfced3336b1bc2cc50"
+    },
+    {
+      "path": "services/ai/tests/test_extraction_correctness_r2.py",
+      "git": "tracked",
+      "bytes": 11192,
+      "sha256": "edad373ad8839186c632404d69539aa47a03b9deb17ac5b568e852018c4c5ecd"
+    },
+    {
+      "path": "services/ai/tests/test_extraction_robustness.py",
+      "git": "tracked",
+      "bytes": 18163,
+      "sha256": "79c97489fb6dcc70f7dca618d181a4808bc6be2c61741a5de6cbbea94378a80c"
+    },
+    {
+      "path": "services/ai/tests/test_extraction_roles.py",
+      "git": "tracked",
+      "bytes": 8594,
+      "sha256": "f0aaae248ce02f2ac8b62b858ce42c639c03c8e6441436de95267baffe766a1c"
+    },
+    {
+      "path": "services/ai/tests/test_extraction_trace.py",
+      "git": "tracked",
+      "bytes": 5825,
+      "sha256": "e3a8a45694e99d4f801f4723ae88273e962069499f7648cff1a6fe8b73fa8121"
+    },
+    {
+      "path": "services/ai/tests/test_hybrid_hitl.py",
+      "git": "tracked",
+      "bytes": 6839,
+      "sha256": "3d9cb03140cd39b8ef041953f512648bb78762598d5c000a285ea3c7b6eb0567"
+    },
+    {
+      "path": "services/ai/tests/test_m2_m3_trust_boundary.py",
+      "git": "tracked",
+      "bytes": 10049,
+      "sha256": "675691ac06ca6008ba3c1a65c7f8209514fe71d0e7ce5b8a2eaa990d2cf8e820"
+    },
+    {
+      "path": "services/ai/tests/test_providers.py",
+      "git": "tracked",
+      "bytes": 4627,
+      "sha256": "dca13e2bbc628fa40aa307387d2bea309f1fbf9c1c49c4d2f7049dbd48394eec"
+    },
+    {
+      "path": "services/ai/tests/test_rules.py",
+      "git": "tracked",
+      "bytes": 12052,
+      "sha256": "486a0b7a41c50d8056b39e0cd8309046ee7a685cf7497ace2c3a042376c7375b"
+    },
+    {
+      "path": "tests/fixtures/synthetic/invalid_payloads.json",
+      "git": "tracked",
+      "bytes": 5557,
+      "sha256": "919d7563adbecc5f3e70960140b990ccc1d763b3f3ac9ea84e89e10c9d8500ba"
+    },
+    {
+      "path": "tests/fixtures/synthetic/prepayment_case.json",
+      "git": "tracked",
+      "bytes": 2215,
+      "sha256": "d18b72e81e7fff4e95db1b818c2bdb4c9a3c8ca60af222a4bd109bc934d68ccb"
+    },
+    {
+      "path": "tests/fixtures/synthetic/receivable_case.json",
+      "git": "tracked",
+      "bytes": 2176,
+      "sha256": "a580c8ef5dc42b81867ab9945d093cd73a92083338dd861894d380158b7074e3"
+    }
+  ],
+  "excluded_paths": [
+    "apps/web/public/AIC_Rating_Logo_Web_Assets.zip",
+    "apps/web/public/AIC_Rating_Logo_Web_Assets/aic-favicon.png",
+    "apps/web/public/AIC_Rating_Logo_Web_Assets/aic-logo-dark.png",
+    "apps/web/public/AIC_Rating_Logo_Web_Assets/aic-logo-light.png",
+    "apps/web/public/AIC_Rating_Logo_Web_Assets/aic-symbol.png",
+    "apps/web/public/apple-icon.png",
+    "apps/web/public/favicon.ico",
+    "apps/web/public/icon-dark-32x32.png",
+    "apps/web/public/icon-light-32x32.png",
+    "apps/web/src/app/apple-icon.png",
+    "apps/web/src/app/favicon.ico",
+    "apps/web/src/lib/api/pending-contract.ts",
+    "apps/web/tests/fixtures/pdf/acceptance-wrong.pdf",
+    "apps/web/tests/fixtures/pdf/acceptance.pdf",
+    "apps/web/tests/fixtures/pdf/contract.pdf",
+    "apps/web/tests/fixtures/pdf/financials.pdf",
+    "apps/web/tests/fixtures/pdf/loan_request.pdf",
+    "apps/web/tests/fixtures/pdf/registration-0000000001.pdf",
+    "apps/web/tests/fixtures/pdf/registration-0000000002.pdf",
+    "apps/web/tests/fixtures/pdf/registration-DEMO-0001.pdf",
+    "apps/web/tests/fixtures/pdf/registration.pdf",
+    "packages/contracts/fixtures/01_registration.pdf",
+    "packages/contracts/fixtures/02_financials.pdf",
+    "packages/contracts/fixtures/03_loan_request.pdf",
+    "packages/contracts/fixtures/04_contract.pdf",
+    "packages/contracts/fixtures/05_wrong_record.pdf",
+    "packages/contracts/fixtures/06_correct_record.pdf",
+    "services/ai/evidence/T13b-junit.xml",
+    "tests/fixtures/synthetic/corrupted.pdf",
+    "tests/fixtures/synthetic/valid_synthetic.pdf"
+  ]
+}

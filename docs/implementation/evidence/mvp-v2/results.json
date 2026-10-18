@@ -1,0 +1,100 @@
+{
+  "recorded_at": "2026-10-17T02:21:09.420Z",
+  "node": "v24.12.0",
+  "platform": "win32",
+  "branch": "duc",
+  "contract": "0.4.0-mvp-sandbox",
+  "no_aggregate_overlap_count": true,
+  "browser": "NOT_RUN_OWNER_STACK_ABSENT",
+  "live_model": "NOT_RUN",
+  "canonical30": "NOT_RUN_ARTIFACT_UNAVAILABLE",
+  "independent_review": "NOT_RUN",
+  "checks": [
+    {
+      "name": "backend",
+      "command": "pnpm api:test:mvp",
+      "exit": 0,
+      "mode": "real PostgreSQL18 + real Nest/FastAPI native inspect/private storage; synthetic labelled AI publication; pure engine",
+      "counts": {
+        "tests": 196,
+        "pass": 196,
+        "fail": 0,
+        "skip": 0
+      },
+      "log": "backend.txt",
+      "sha256": "d02ebd813995fdb1a5adef7ea1c843be2193aadf9e80f233a1980993effb012c"
+    },
+    {
+      "name": "frontend",
+      "command": "pnpm check:aic; pnpm typecheck; pnpm lint",
+      "exit": 0,
+      "mode": "consumer mocked fetch / unit / architecture / compile / format",
+      "counts": {
+        "unit_pass": 34,
+        "consumer_pass": 18,
+        "architecture_modules": 11
+      },
+      "log": "frontend.txt",
+      "sha256": "a533cdbe4d4be6a016f35dbb48c8080b498da3e6488eb703405a8e5536210e23"
+    },
+    {
+      "name": "web-build",
+      "command": "pnpm build",
+      "exit": 0,
+      "mode": "Next production compilation only; no app server/browser",
+      "counts": {},
+      "log": "web-build.txt",
+      "sha256": "74fabdb43c1c4e3b70457168b92a37fba54e4e52257da3c35690594bab0f8db1"
+    },
+    {
+      "name": "boundary",
+      "command": "node --test scripts/tests/feasibility-runner.test.cjs scripts/tests/source-checkpoint.test.cjs scripts/tests/review-snapshot.test.cjs scripts/tests/foundation-release.test.cjs apps/api/test/ai-adapter-validation.cjs apps/api/test/ai-adapter-negative.cjs apps/api/test/ai-response-capture.cjs apps/api/test/document-storage-integrity.cjs apps/api/test/private-files.cjs apps/api/test/document-ai-transport.cjs apps/api/test/evidence-projection.cjs",
+      "exit": 0,
+      "mode": "unit / real filesystem / loopback synthetic HTTP / no live model",
+      "counts": {
+        "tests": 278,
+        "pass": 274,
+        "fail": 0,
+        "skip": 4
+      },
+      "log": "boundary.txt",
+      "sha256": "226c4265dad3455fae09485a8863122fa88e0388b820ac13e1ee89e793ff6381"
+    },
+    {
+      "name": "ai-regression",
+      "command": "../../.venv/Scripts/python.exe -m pytest -q -rs (cwd services/ai)",
+      "exit": 1,
+      "mode": "unchanged AI code regression, synthetic models/transports; no live provider",
+      "counts": {
+        "pass": 361,
+        "fail": 1,
+        "skip": 4
+      },
+      "log": "ai-regression.txt",
+      "sha256": "8b89540ab070f496389f3d55c95291965d4ccb7b9dd35aa1e4c20a29b68bd6c2"
+    },
+    {
+      "name": "legacy-preflight",
+      "command": "node scripts/check-regression-prerequisites.cjs",
+      "exit": 1,
+      "mode": "historical25-test prototype preflight only; current loopback listener observations, not MVP startup advice",
+      "counts": {},
+      "log": "legacy-preflight.txt",
+      "sha256": "e2aea3b5e650b9768f2c63ceccb07892db4406295b21f9dba665e0151b3a58f3"
+    },
+    {
+      "name": "release-snapshot",
+      "command": "node --test scripts/tests/foundation-release.test.cjs scripts/tests/review-snapshot.test.cjs",
+      "exit": 0,
+      "mode": "current release examples/security/checksums + snapshot tamper/path unit",
+      "counts": {
+        "tests": 5,
+        "pass": 5,
+        "fail": 0,
+        "skip": 0
+      },
+      "log": "release-snapshot.txt",
+      "sha256": "e8559a69256fb5b7d2bf416b90b75e1477887662eb6915eb40caf83551fa8c8d"
+    }
+  ]
+}

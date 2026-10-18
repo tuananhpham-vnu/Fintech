@@ -1,0 +1,141 @@
+{
+  "$schema_description": "Synthetic invalid payloads designed for negative testing, schema boundary checking, and contract verification.",
+  "cases": [
+    {
+      "id": "INSPECT_MISSING_SCHEMA_VERSION",
+      "target_service": "FastAPI (AI Runner)",
+      "target_endpoint": "POST /internal/v1/inspect",
+      "description": "Payload lacks mandatory schema_version property",
+      "expected_http_status": 422,
+      "expected_error_code": "INVALID_REQUEST",
+      "payload": {
+        "storage_key": "staging/test_doc.pdf",
+        "sha256": "40481e93648bf454ddeffce4dd6af211c617161c8712ecefa1c8549483617262"
+      }
+    },
+    {
+      "id": "INSPECT_MALFORMED_SHA256",
+      "target_service": "FastAPI (AI Runner)",
+      "target_endpoint": "POST /internal/v1/inspect",
+      "description": "SHA-256 does not match 64 lowercase hex character pattern ^[a-f0-9]{64}$",
+      "expected_http_status": 422,
+      "expected_error_code": "INVALID_REQUEST",
+      "payload": {
+        "schema_version": "1.0.2",
+        "storage_key": "staging/test_doc.pdf",
+        "sha256": "INVALID_NON_HEX_SHA256_STRING"
+      }
+    },
+    {
+      "id": "EXTRACT_MISSING_DOCUMENT_ID",
+      "target_service": "FastAPI (AI Runner)",
+      "target_endpoint": "POST /internal/v1/extract",
+      "description": "ExtractionInput lacks required UUID document_id",
+      "expected_http_status": 422,
+      "expected_error_code": "INVALID_REQUEST",
+      "payload": {
+        "schema_version": "1.0.2",
+        "case_id": "a06adf0c-7110-51f6-86ad-4b4b903c3e9e",
+        "type": "contract",
+        "storage_key": "staging/test_doc.pdf",
+        "sha256": "40481e93648bf454ddeffce4dd6af211c617161c8712ecefa1c8549483617262"
+      }
+    },
+    {
+      "id": "EXTRACT_UNSUPPORTED_DOC_TYPE",
+      "target_service": "FastAPI (AI Runner)",
+      "target_endpoint": "POST /internal/v1/extract",
+      "description": "Document type is not one of the registered schema doc types",
+      "expected_http_status": 422,
+      "expected_error_code": "INVALID_REQUEST",
+      "payload": {
+        "schema_version": "1.0.2",
+        "document_id": "d1000000-0000-4000-8000-000000000001",
+        "case_id": "a06adf0c-7110-51f6-86ad-4b4b903c3e9e",
+        "type": "unregistered_custom_type",
+        "storage_key": "staging/test_doc.pdf",
+        "sha256": "40481e93648bf454ddeffce4dd6af211c617161c8712ecefa1c8549483617262"
+      }
+    },
+    {
+      "id": "EVALUATE_MISSING_SNAPSHOT",
+      "target_service": "FastAPI (AI Runner)",
+      "target_endpoint": "POST /internal/v1/evaluate",
+      "description": "EvaluationInput lacks required snapshot object containing case and documents",
+      "expected_http_status": 422,
+      "expected_error_code": "INVALID_REQUEST",
+      "payload": {
+        "schema_version": "1.0.2",
+        "run_id": "fa402f70-1ccb-5589-80e7-17c6bd102415",
+        "case_id": "a06adf0c-7110-51f6-86ad-4b4b903c3e9e",
+        "case_revision": 1,
+        "snapshot_hash": "1fc979d0d8c2efb82286ae7421b2bc72cdcd7dcf037c9335cdd26ee49146ae08"
+      }
+    },
+    {
+      "id": "AUTH_LOGIN_EMPTY_CREDENTIALS",
+      "target_service": "NestJS (API Gateway)",
+      "target_endpoint": "POST /api/v2/auth/login",
+      "description": "Login request body is missing username and password fields",
+      "expected_http_status": 400,
+      "expected_error_code": "INVALID_CREDENTIALS",
+      "payload": {}
+    },
+    {
+      "id": "CASE_CREATE_MISMATCHED_ROLES",
+      "target_service": "NestJS / Frontend Validator",
+      "target_endpoint": "POST /api/v2/cases",
+      "description": "RECEIVABLE exposure must have organization_role=seller and counterparty_role=buyer; inverted roles must fail validation",
+      "expected_http_status": 400,
+      "expected_error_code": "INVALID_ROLE_PAIR",
+      "payload": {
+        "counterparty_id": "00000000-0000-4000-8000-000000000001",
+        "exposure_kind": "RECEIVABLE",
+        "lifecycle_stage": "proposed",
+        "exposure": {
+          "amount_vnd": "500000000",
+          "term_days": 30,
+          "organization_role": "buyer",
+          "counterparty_role": "seller",
+          "contract_ref": "INVALID-PAIR-01",
+          "conditions": [],
+          "source_origin": "staff_entered"
+        }
+      }
+    },
+    {
+      "id": "CASE_CREATE_INVALID_AMOUNT_FORMAT",
+      "target_service": "NestJS / Frontend Validator",
+      "target_endpoint": "POST /api/v2/cases",
+      "description": "amount_vnd must match ^[1-9]\\d*$ (positive integer string without commas, dots, or negative signs)",
+      "expected_http_status": 400,
+      "expected_error_code": "INVALID_AMOUNT_FORMAT",
+      "payload": {
+        "counterparty_id": "00000000-0000-4000-8000-000000000001",
+        "exposure_kind": "RECEIVABLE",
+        "lifecycle_stage": "proposed",
+        "exposure": {
+          "amount_vnd": "-500,000,000",
+          "term_days": 30,
+          "organization_role": "seller",
+          "counterparty_role": "buyer",
+          "contract_ref": "INVALID-AMOUNT-01",
+          "conditions": [],
+          "source_origin": "staff_entered"
+        }
+      }
+    },
+    {
+      "id": "UPLOAD_CONFLICT_REVISION",
+      "target_service": "NestJS (API Gateway)",
+      "target_endpoint": "POST /api/v2/cases/:id/documents",
+      "description": "Upload document with expected_revision not matching server case revision triggers 409 REVISION_CONFLICT",
+      "expected_http_status": 409,
+      "expected_error_code": "REVISION_CONFLICT",
+      "form_fields": {
+        "expected_revision": 999,
+        "type": "contract"
+      }
+    }
+  ]
+}

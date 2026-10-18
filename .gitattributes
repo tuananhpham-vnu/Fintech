@@ -1,3 +1,6 @@
 # Contract and fixture checksums require canonical LF bytes on every platform.
 /packages/contracts/** text=auto eol=lf
 /packages/contracts/fixtures/*.pdf -text
+# Synthetic fixture bytes and PDF offsets must survive Windows checkouts intact.
+/apps/web/tests/fixtures/pdf/*.pdf binary
+/tests/fixtures/synthetic/*.pdf binary
