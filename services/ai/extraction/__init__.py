@@ -17,7 +17,10 @@ Biến môi trường (đọc lúc request đầu tiên):
   AI_EXTRACT_DEADLINE_S   budget tổng một lần extract (OCR + model + repair), mặc định 240
   AI_MAX_MODEL_CALLS      số lời gọi Gemini/OCR chạy cùng lúc trong process, mặc định 4
   AI_MAX_MODEL_QUEUE      số lời gọi được chờ slot; đầy thì 503 ngay, mặc định 16
-  OCR_ENGINE              none (mặc định tới khi có docling) | tesseract | gemini (cần ALLOW_CLOUD_LLM=true)
+  OCR_ENGINE              docling (mặc định khi có DOCLING_PYTHON, local) | tesseract | none | gemini (cần ALLOW_CLOUD_LLM)
+  DOCLING_PYTHON          python của venv cài docling (vd. MODEL_DIR/venv-docling/bin/python)
+  DOCLING_ENGINE          auto (mặc định: RapidOCR zh/en, Apple Vision vi trên macOS) | rapidocr | ocrmac
+  DOCLING_HF_HOME         thư mục model Docling (vd. MODEL_DIR/hf)
   OCR_LANG, TESSERACT_CMD cho OCR_ENGINE=tesseract (mặc định vie, `tesseract` trên PATH)
   LLM_PROVIDER            ollama (mặc định, local) | gemini (cần ALLOW_CLOUD_LLM=true)
   LLM_MODEL, OLLAMA_URL   mặc định gemma3:4b, http://127.0.0.1:11434
@@ -44,9 +47,12 @@ class Config:
     max_bytes: int = DEFAULT_MAX_BYTES
     max_pages: int = 10
     deadline_s: float = 240.0
-    ocr_engine: str = "none"          # P2: docling local; gemini chỉ khi ALLOW_CLOUD_LLM=true
+    ocr_engine: str = "none"          # docling (local) khi có DOCLING_PYTHON; gemini chỉ khi ALLOW_CLOUD_LLM=true
     ocr_lang: str = "vie"
     tesseract_cmd: str | None = None
+    docling_python: str | None = None
+    docling_engine: str = "auto"
+    docling_hf_home: str | None = None
 
     @classmethod
     def from_env(cls) -> "Config":
@@ -58,9 +64,12 @@ class Config:
                    max_bytes=int(env.get("AI_MAX_PDF_BYTES", DEFAULT_MAX_BYTES)),
                    max_pages=int(env.get("AI_MAX_PAGES", 10)),
                    deadline_s=float(env.get("AI_EXTRACT_DEADLINE_S", 240)),
-                   ocr_engine=env.get("OCR_ENGINE", "none").strip().lower(),
+                   ocr_engine=env.get("OCR_ENGINE", "docling" if env.get("DOCLING_PYTHON") else "none").strip().lower(),
                    ocr_lang=env.get("OCR_LANG", "vie"),
-                   tesseract_cmd=env.get("TESSERACT_CMD") or None)
+                   tesseract_cmd=env.get("TESSERACT_CMD") or None,
+                   docling_python=env.get("DOCLING_PYTHON") or None,
+                   docling_engine=env.get("DOCLING_ENGINE", "auto"),
+                   docling_hf_home=env.get("DOCLING_HF_HOME") or None)
 
 
 class Service:
@@ -105,7 +114,7 @@ class Service:
         from runner.contracts import Contracts
 
         from .extractor import Extractor, Settings as ExtractorSettings
-        from .ocr import GeminiOcr, TesseractOcr
+        from .ocr import DoclingOcr, GeminiOcr, TesseractOcr
 
         try:
             provider = build_provider()
@@ -116,12 +125,15 @@ class Service:
                 raise ServiceError(503, PROVIDER_UNAVAILABLE, "OCR_ENGINE=gemini needs ALLOW_CLOUD_LLM=true.")
             from providers.gemini import GeminiConfig, GeminiProvider
             ocr = GeminiOcr(GeminiProvider(GeminiConfig.from_env()))
+        elif self.config.ocr_engine == "docling":
+            ocr = DoclingOcr(self.config.docling_python or "", self.config.docling_engine,
+                             hf_home=self.config.docling_hf_home)
         elif self.config.ocr_engine == "tesseract":
             ocr = TesseractOcr(self.config.tesseract_cmd, self.config.ocr_lang)
         elif self.config.ocr_engine == "none":
             ocr = None
         else:
-            raise ServiceError(503, PROVIDER_UNAVAILABLE, "OCR_ENGINE must be gemini, tesseract or none.")
+            raise ServiceError(503, PROVIDER_UNAVAILABLE, "OCR_ENGINE must be docling, tesseract, gemini or none.")
         contracts = Contracts(Settings.from_env().contracts_dir)
         return Extractor(contracts, provider, ocr,
                          ExtractorSettings(max_pages=self.config.max_pages, deadline_s=self.config.deadline_s))
