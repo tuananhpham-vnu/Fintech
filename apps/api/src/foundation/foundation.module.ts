@@ -1,3 +1,6 @@
+import { FinancialIntakeController } from '../controllers/financial-intake.controller';
+import { FinancialIntakeService } from '../financial/financial-intake.service';
+import { FinancialReviewService } from '../financial/financial-review.service';
 import {
   DynamicModule,
   Module,
@@ -73,6 +76,7 @@ export class FoundationModule implements NestModule {
               MvpCapabilitiesController,
               MvpFinancialController,
               FinancialImportController,
+              FinancialIntakeController,
               AssessmentsController,
               CompanyHealthController,
             ]
@@ -98,6 +102,8 @@ export class FoundationModule implements NestModule {
               DocumentRetryService,
               FinancialRegistry,
               FinancialImportService,
+              FinancialIntakeService,
+              FinancialReviewService,
               AssessmentService,
               {
                 provide: DOCUMENT_REPOSITORY,

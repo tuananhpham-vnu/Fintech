@@ -44,6 +44,7 @@ DOSSIER_POLICY = ArchivePolicy(
     max_archive=32 * 1024 * 1024, max_total=64 * 1024 * 1024,
     max_entries=128, max_pdfs=64, max_depth=8, strict_metadata=True,
 )
+FINANCIAL_POLICY = DOSSIER_POLICY._replace(max_file=25_000_000)
 
 
 class ArchiveError(Exception):
@@ -222,7 +223,10 @@ def read_archive(data: bytes, policy: ArchivePolicy = LEGACY_POLICY) -> list[dic
                 name = info.orig_filename
                 item = {"entry_index": index, "entry_path": name, "byte_size": info.file_size,
                         "sha256": None, "rejection_code": None, "data": None}
-                if not name.lower().endswith(".pdf"):
+                financial = policy is FINANCIAL_POLICY
+                extension = name.lower().rsplit('.', 1)[-1]
+                supported = extension in ('pdf', 'xlsx', 'xls', 'png', 'jpg', 'jpeg') if financial else extension == 'pdf'
+                if not supported:
                     item["rejection_code"] = "ARCHIVE_UNSUPPORTED_FORMAT"
                 elif info.file_size > policy.max_file:
                     item["rejection_code"] = "DOCUMENT_TOO_LARGE"
@@ -239,7 +243,9 @@ def read_archive(data: bytes, policy: ArchivePolicy = LEGACY_POLICY) -> list[dic
                         raise ArchiveError("ARCHIVE_EXPANDED_SIZE_LIMIT")
                     if zlib.crc32(content) != info.CRC:
                         raise ArchiveError("ARCHIVE_INVALID_ZIP")
-                    if not content.startswith(b"%PDF-"):
+                    signatures = {'pdf': (b'%PDF-',), 'xlsx': (b'PK\x03\x04',), 'xls': (b'\xd0\xcf\x11\xe0',),
+                                  'png': (b'\x89PNG\r\n\x1a\n',), 'jpg': (b'\xff\xd8\xff',), 'jpeg': (b'\xff\xd8\xff',)}
+                    if not content.startswith(signatures[extension]):
                         item["rejection_code"] = "INVALID_DOCUMENT"
                     else:
                         item["sha256"] = hashlib.sha256(content).hexdigest()
@@ -255,8 +261,9 @@ def read_archive(data: bytes, policy: ArchivePolicy = LEGACY_POLICY) -> list[dic
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dossier", action="store_true", help="use the fixed bounded dossier profile")
+    parser.add_argument('--financial', action='store_true', help='accept bounded PDF, Excel and image members')
     args = parser.parse_args()
-    policy = DOSSIER_POLICY if args.dossier else LEGACY_POLICY
+    policy = FINANCIAL_POLICY if args.financial else DOSSIER_POLICY if args.dossier else LEGACY_POLICY
     try:
         items = read_archive(sys.stdin.buffer.read(policy.max_archive + 1), policy)
         print(json.dumps({"items": items}, ensure_ascii=True, separators=(",", ":")))

@@ -1,0 +1,156 @@
+{
+  "type": "object",
+  "properties": {
+    "calculations": {
+      "type": "array",
+      "maxItems": 15,
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,31}$"
+          },
+          "key": {
+            "enum": [
+              "current_assets",
+              "current_liabilities",
+              "cash",
+              "unrestricted_short_term_equivalents",
+              "trade_receivables",
+              "total_equity",
+              "total_assets",
+              "total_liabilities",
+              "interest_bearing_debt",
+              "operating_profit",
+              "depreciation_amortization",
+              "interest_expense",
+              "net_revenue",
+              "cash_from_operations",
+              "eligible_cash_and_equivalents"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "assumptions": {
+            "type": "array",
+            "maxItems": 8,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "expression": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 31,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32
+            }
+          },
+          "inputs": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 16,
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]{0,31}$"
+                },
+                "value": {
+                  "type": "string",
+                  "pattern": "^-?[0-9]{1,30}(\\.[0-9]{1,12})?$"
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 500
+                },
+                "raw_token": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "page": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 600
+                },
+                "quote": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4000
+                },
+                "period_start": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "period_end": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "basis": {
+                  "enum": [
+                    "standalone",
+                    "consolidated"
+                  ]
+                },
+                "currency": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 3
+                },
+                "unit_multiplier": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]{0,11}$"
+                },
+                "dimension": {
+                  "enum": [
+                    "money",
+                    "scalar"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "value",
+                "label",
+                "raw_token",
+                "page",
+                "quote",
+                "period_start",
+                "period_end",
+                "basis",
+                "currency",
+                "unit_multiplier",
+                "dimension"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "key",
+          "reason",
+          "assumptions",
+          "expression",
+          "inputs"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "calculations"
+  ],
+  "additionalProperties": false
+}

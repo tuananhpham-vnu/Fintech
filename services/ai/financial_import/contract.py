@@ -7,6 +7,7 @@ KEYS = (
     "interest_bearing_debt", "operating_profit", "depreciation_amortization",
     "interest_expense", "net_revenue", "cash_from_operations",
 )
+EXTRA_KEYS = ('eligible_cash_and_equivalents',)
 
 def obj(properties, required=None):
     return {"type": "object", "properties": properties,
@@ -30,8 +31,8 @@ MODEL = obj({
     "document_type": {"enum": ["financial_statement", "other"]},
     "scope": SCOPE,
     "scope_evidence": {"type": "array", "items": EVIDENCE, "minItems": 1, "maxItems": 12},
-    "facts": {"type": "array", "maxItems": 14, "items": obj({
-        "key": {"enum": list(KEYS)},
+    "facts": {"type": "array", "maxItems": 15, "items": obj({
+        "key": {"enum": list(KEYS + EXTRA_KEYS)},
         "value": {"type": "string", "pattern": r"^-?[0-9]{1,30}(\.[0-9]{1,12})?$"},
         "raw_token": {"type": "string", "minLength": 1, "maxLength": 100},
         "label": STRING,

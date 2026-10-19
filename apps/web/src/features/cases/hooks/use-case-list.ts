@@ -9,7 +9,6 @@ export function useCaseList() {
   const { status } = useSession()
   const [cursors, setCursors] = useState([''])
   const [query, setQuery] = useState('')
-  const [kind, setKind] = useState('')
   const cursor = cursors.at(-1)!,
     load = useCallback((signal: AbortSignal) => casesApi.cases(cursor, signal), [cursor]),
     rows = useResource(load, status === 'ready')
@@ -32,13 +31,11 @@ export function useCaseList() {
   )
   const names = useResource(loadNames, status === 'ready' && partyIds.length > 0)
   const visible =
-    rows.data?.items.filter(
-      (c) =>
-        (!kind || c.exposure_kind === kind || (kind === 'company_health' && c.purpose === kind)) &&
-        `${names.data?.[c.counterparty_id]?.name ?? ''} ${names.data?.[c.counterparty_id]?.tax_id ?? ''} ${c.exposure?.contract_ref ?? ''} ${c.id}`
-          .toLowerCase()
-          .includes(query.toLowerCase()),
+    rows.data?.items.filter((c) =>
+      `${names.data?.[c.counterparty_id]?.name ?? ''} ${names.data?.[c.counterparty_id]?.tax_id ?? ''} ${c.exposure?.contract_ref ?? ''} ${c.id}`
+        .toLowerCase()
+        .includes(query.toLowerCase()),
     ) ?? []
 
-  return { rows, names, visible, cursors, setCursors, query, setQuery, kind, setKind }
+  return { rows, names, visible, cursors, setCursors, query, setQuery }
 }

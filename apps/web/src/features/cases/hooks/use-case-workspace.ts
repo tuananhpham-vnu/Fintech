@@ -23,7 +23,7 @@ export function useCaseWorkspace(caseId: string) {
       (signal: AbortSignal) => counterpartiesApi.counterparty(detail!.counterparty_id, signal),
       [detail?.counterparty_id, detail?.revision],
     ),
-    party = useResource(loadParty, status === 'ready' && !!detail)
+    party = useResource(loadParty, status === 'ready' && !!detail, 0, detail?.counterparty_id)
   const reload = useCallback(() => {
     pollingStarted.current = Date.now()
     resource.reload()

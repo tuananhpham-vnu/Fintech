@@ -54,6 +54,8 @@ const definitions = {
   ...assessmentBundle.definitions,
   ...JSON.parse(fs.readFileSync(path.resolve(__dirname,
     '../../../../packages/contracts/aic-financial-import/schemas.json'), 'utf8')).definitions,
+  ...JSON.parse(fs.readFileSync(path.resolve(__dirname,
+    '../../../../packages/contracts/aic-financial-intake/schemas.json'), 'utf8')).definitions,
 };
 const ajv = new Ajv({
   strict: false,

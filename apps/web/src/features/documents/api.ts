@@ -4,20 +4,6 @@ import type {
   DocumentType,
   Job,
   Document,
-  DossierAccepted,
-  DossierArchiveSummary,
-  DossierArchive,
-  DossierArchiveList,
-  DossierMember,
-  DossierMemberSummary,
-  DossierCounters,
-  DossierIntakeState,
-  DossierProcessingState,
-  DossierMemberIntakeState,
-  DossierMemberProcessingState,
-  ExtractionSummary,
-  ExtractionSummaryField,
-  ExtractionSummaryDiagnostic,
 } from '@/lib/api/contracts'
 import {
   extraction,
@@ -173,21 +159,4 @@ function archiveReceipt(value: unknown): ArchiveReceipt {
     throw new Error('INVALID_API_RESPONSE')
   }
   return value as ArchiveReceipt
-}
-
-export type {
-  DossierAccepted,
-  DossierArchiveSummary,
-  DossierArchive,
-  DossierArchiveList,
-  DossierMember,
-  DossierMemberSummary,
-  DossierCounters,
-  DossierIntakeState,
-  DossierProcessingState,
-  DossierMemberIntakeState,
-  DossierMemberProcessingState,
-  ExtractionSummary,
-  ExtractionSummaryField,
-  ExtractionSummaryDiagnostic,
 }

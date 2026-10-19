@@ -14,7 +14,9 @@ import type {
 import { validateContract } from "../foundation/validation";
 import { projectLegacyExtraction } from "../documents/evidence-projection";
 import { Decimal } from "./decimal";
-import { countryCode, importReceipt, importSource, validImportedSource } from './financial-import-source';
+import { calculationFact, calculationMetadata } from './financial-calculations';
+import { reasoningSummary, reasoningCalculations } from './financial-reasoning';
+import { countryCode, importReceipt, importSource, validImportedSource, currentFinancialFile } from './financial-import-source';
 import { scoreFhi } from "./fhi-scorer";
 import type {
   FhiInput,
@@ -24,8 +26,12 @@ import type {
 } from "./fhi-scorer";
 import { FHI_METRICS } from "./fhi-method";
 import { activeFhiPolicy } from "./fhi-policy";
+import { accountingProfile, internationalPolicy, INTERNATIONAL_CASH_KEY } from './accounting-profiles';
+import { aggregateCaseAssessment, CASE_AGGREGATION_METHOD, type CaseAggregation } from './case-assessment';
+import { reviewIntakePeriod } from './financial-intake-review';
 import {
   financialComparisonIssues,
+  standaloneTrendEligible,
   verifiedTrendFacts,
 } from "./financial-trends";
 
@@ -66,17 +72,20 @@ export class FinancialRegistry {
           sets,
         );
         const registry = (await this.evaluateTx(tx, current, set.id)).registry;
+        const visible = current.purpose === 'company_health'
+          ? standaloneTrendEligible(set, sets) : comparison_issues.length === 0;
         const previous = rows.at(-1)?.set;
         rows.push({
           set,
+          ...(current.purpose === 'company_health' && visible ? { standalone_values: true } : {}),
           comparison_issues,
           gap_before:
             !!previous &&
             Number(set.scope.period.end_date.slice(0, 4)) -
               Number(previous.scope.period.end_date.slice(0, 4)) >
               1,
-          facts: comparison_issues.length ? [] : verifiedTrendFacts(set),
-          metrics: comparison_issues.length ? [] : registry.metrics,
+          facts: visible ? verifiedTrendFacts(set) : [],
+          metrics: visible ? registry.metrics : [],
         });
       }
       return this.output("FinancialTrendsV1", {
@@ -124,7 +133,24 @@ export class FinancialRegistry {
     reviewed: boolean,
   ): Promise<boolean> {
     if (input.kind === "manual_entry") return true;
+    if (input.kind === 'calculated') {
+      try {
+        const receipt=await importReceipt(tx,current,input.receipt_id), file=await importSource(tx,current,input.source_kind,input.source_id);
+        return current.purpose === 'company_health' && receipt.document_type === 'financial_statement' &&
+          (await currentFinancialFile(tx,current,file.id)) && file.sha256 === input.source_hash && receipt.sha256 === file.sha256 &&
+          receipt.source.id === file.id && receipt.source.kind === file.kind && !!calculationFact(receipt,input);
+      } catch(error) { if(error instanceof FoundationError && error.getStatus() === 404)return false;throw error; }
+    }
+    if (input.kind === 'statement_entry') {
+      try {
+        const receipt=await importReceipt(tx,current,input.receipt_id),file=await importSource(tx,current,input.source_kind,input.source_id);
+        return receipt.document_type==='financial_statement' && (await currentFinancialFile(tx,current,file.id)) && receipt.source.id===file.id && receipt.source.kind===input.source_kind &&
+          receipt.sha256===input.source_hash && file.sha256===input.source_hash && input.page>=1 && input.page<=file.page_count &&
+          !!input.quote.trim() && !!input.reason.trim();
+      } catch(error) {if(error instanceof FoundationError && error.getStatus()===404)return false;throw error}
+    }
     if (input.kind === 'financial_import') return validImportedSource(tx, current, input, reviewed);
+    if (current.purpose === 'company_health') return false;
     const doc = (
       await tx.query(
         `SELECT d.*,r.raw_extraction AS extraction,(l.current_document_id=d.id) AS active FROM aic.mvp_documents d
@@ -254,12 +280,29 @@ export class FinancialRegistry {
         ...(decision ? { verification_reason: decision.reason } : {}),
       });
     }
+    const metadata = structuredClone(row.metadata_json);
+    // Refresh explanatory diagnostics for old snapshots without rewriting their
+    // sealed graph, calculation result, source facts or published assessments.
+    const receiptIds = [...new Set<string>((metadata.calculations ?? [])
+      .filter((c:any)=>c.blocked_reason && c.reasoning_version).map((c:any)=>c.receipt_id))];
+    for (const receiptId of receiptIds) {
+      try {
+        const diagnostics=reasoningCalculations(await importReceipt(tx,current,receiptId));
+        for (const calculation of metadata.calculations) {
+          const updated=diagnostics.find((d:any)=>d.id===calculation.id && d.key===calculation.key);
+          if (calculation.receipt_id===receiptId && calculation.blocked_reason && updated?.blocked_details) {
+            calculation.blocked_details=updated.blocked_details;
+            calculation.reason=updated.reason;
+          }
+        }
+      } catch (error) { if (!(error instanceof FoundationError && error.getStatus()===404)) throw error; }
+    }
     return {
       read: this.output("FinancialSetRead", {
         id: row.id,
         revision: Number(row.revision),
         scope: row.scope_json,
-        metadata: row.metadata_json,
+        metadata,
         facts: output,
         created_at: iso(row.created_at),
         verification_stale: stale,
@@ -280,7 +323,7 @@ export class FinancialRegistry {
     return (await this.evaluateTx(tx, current, setId)).registry;
   }
   /** Internal exact calculation for publication; the ordinary registry remains score-free. */
-  async evaluateTx(tx: SqlClient, current: any, setId?: string) {
+  async evaluateTx(tx: SqlClient, current: any, setId?: string, caseWide = false) {
     const rows = (
       await tx.query(
         "SELECT DISTINCT ON(id) * FROM aic.mvp_financial_sets WHERE organization_id=$1 AND case_id=$2 ORDER BY id,revision DESC",
@@ -297,23 +340,26 @@ export class FinancialRegistry {
     const now = iso(
       (await tx.query("SELECT clock_timestamp() AS at")).rows[0].at,
     );
-    const policy = activeFhiPolicy(
+    const ownerCountry = countryCode((await tx.query('SELECT country FROM aic.counterparties WHERE organization_id=$1 AND id=$2',
+      [current.organization_id,current.counterparty_id])).rows[0]?.country ?? 'UNKNOWN');
+    const policy = ownerCountry === 'VN' ? activeFhiPolicy(
       this.config.fhiPolicy,
       current.organization_id,
       now,
-    );
+    ) : current.purpose === 'company_health' ? internationalPolicy(this.config,current.organization_id,now,ownerCountry) : null;
     const blockers: string[] = policy ? [] : ["FHI_METHOD_UNCONFIGURED"];
     let engine: FhiEngineResult | null = null;
     let metrics: any[] = [];
-    const selected =
-      setId === undefined
-        ? sets.length === 1
-          ? 0
-          : -1
-        : sets.findIndex((s) => s.id === setId);
+    const latestDate = sets.map(s => s.scope.period.end_date).sort().at(-1);
+    const newest = sets.filter(s => s.scope.period.end_date === latestDate);
+    // A latest year is automatic; different bases for that year require a choice.
+    let selected = setId === undefined
+      ? newest.length === 1 ? sets.indexOf(newest[0]) : -1
+      : sets.findIndex((s) => s.id === setId);
     if (setId !== undefined && selected === -1) throw notFound();
-    if (selected !== -1) {
-      const set = sets[selected],
+    const evaluateSet = async (index: number) => {
+      const blockers: string[] = [];
+      const set = sets[index],
         facts: FhiFinancialFact[] = set.facts.map((f: any) => ({
           id: f.id,
           revision: f.revision,
@@ -341,10 +387,17 @@ export class FinancialRegistry {
                 },
           ],
         }));
-      // The existing approval artifact does not validate a credit model for US/CN.
-      // International source ratios are available through financial-diagnostics.
-      if (countryCode(set.scope.country) !== 'VN') blockers.push('COUNTRY_METHOD_NOT_VALIDATED');
-      const latest = prepared[selected].decisions.at(-1);
+      if (current.purpose === 'company_health') {
+        const cp = (await tx.query('SELECT country,industry_code FROM aic.counterparties WHERE organization_id=$1 AND id=$2 FOR SHARE',
+          [current.organization_id,current.counterparty_id])).rows[0];
+        if (set.scope.industry !== (cp.industry_code ?? 'UNKNOWN') || countryCode(set.scope.country) !== countryCode(cp.country))
+          blockers.push('INVALID_SCOPE');
+      }
+      const profile = accountingProfile(set.scope);
+      if (countryCode(set.scope.country) !== 'VN' && (!profile || !policy ||
+          !('profiles' in policy) || !policy.profiles.some(p=>p.profile_id===profile.id)))
+        blockers.push('COUNTRY_METHOD_NOT_VALIDATED');
+      const latest = prepared[index].decisions.at(-1);
       const verifiedBridge = (
         keys: string[],
         kind: "quick_assets" | "ebitda",
@@ -352,7 +405,7 @@ export class FinancialRegistry {
         if (
           !latest ||
           latest.status !== "verified" ||
-          latest.source_snapshot_hash !== prepared[selected].hash ||
+          latest.source_snapshot_hash !== prepared[index].hash ||
           !keys.every((k) =>
             set.facts.some(
               (f: any) =>
@@ -389,7 +442,9 @@ export class FinancialRegistry {
         };
       };
       const quick = verifiedBridge(
-          ["cash", "unrestricted_short_term_equivalents", "trade_receivables"],
+          profile && facts.some(f=>f.key===INTERNATIONAL_CASH_KEY && f.value!==null)
+            ? [INTERNATIONAL_CASH_KEY,'trade_receivables']
+            : ["cash", "unrestricted_short_term_equivalents", "trade_receivables"],
           "quick_assets",
         ),
         ebitda = verifiedBridge(
@@ -397,6 +452,17 @@ export class FinancialRegistry {
           "ebitda",
         );
       const input: FhiInput = {
+        ...(profile ? {accounting_profile:profile} : {}),
+        ...(profile && latest?.bridge_assertions.expense_presentation_sign_reviewed===true ? {
+          reviewed_expense_magnitude_fact_ids:set.facts.filter((f:any)=>f.key==='interest_expense' &&
+            /interest expense|利息费用|利息支出/i.test(f.raw_label) && !/\bnet\b|\bpaid\b|recovery|reversal|净|支付|冲回/i.test(f.raw_label)).map((f:any)=>f.id),
+        } : {}),
+        ...(profile && latest?.bridge_assertions.source_rounding_reviewed===true && set.metadata.source_rounding
+          ? {rounding_quantums:set.metadata.source_rounding.quantums} : {}),
+        ...(profile?.country==='CN' ? {international_operating_profit_reconciled:
+          set.facts.some((f:any)=>f.key==='operating_profit' && /(?<!营业)经营利润/.test(f.raw_label)) ||
+          (latest?.bridge_assertions.international_operating_profit_reconciled===true &&
+            set.facts.some((f:any)=>f.key==='operating_profit' && f.source.kind==='calculated'))} : {}),
         statement_set: {
           id: set.id,
           revision: set.revision,
@@ -420,13 +486,32 @@ export class FinancialRegistry {
             }
           : null,
       };
-      engine = scoreFhi(input);
+      const engine = scoreFhi(input);
       if (
         set.metadata.observation_kind !== "actual" ||
         set.scope.accounting_regime === "UNKNOWN"
       )
         blockers.push("ACTUAL_KNOWN_ACCOUNTING_BASIS_REQUIRED");
-      metrics = engine.metrics.map((m) => ({
+      blockers.push(...engine.blockers.map((b) => b.code));
+      return { set, engine, blockers };
+    };
+    let aggregation: CaseAggregation | null = null;
+    let periodEngines: Awaited<ReturnType<typeof evaluateSet>>[] = [];
+    if (caseWide && current.purpose === 'company_health') {
+      for (let index = 0; index < sets.length; index++) periodEngines.push(await evaluateSet(index));
+      const bases=[...new Set(sets.map(s=>s.scope.basis))];
+      const requestedBasis = prepared.map(p=>p.decisions.at(-1)?.bridge_assertions.assessment_basis).find(Boolean);
+      const combined = aggregateCaseAssessment(periodEngines,ownerCountry!=='VN' && bases.length>1 ? requestedBasis : undefined);
+      engine = combined.engine;
+      aggregation = combined.summary;
+      blockers.push(...combined.blockers);
+      selected = -1;
+    } else if (selected !== -1) {
+      const record = await evaluateSet(selected);
+      engine = record.engine;
+      blockers.push(...record.blockers);
+    } else blockers.push(sets.length ? 'EXPLICIT_STATEMENT_SET_SELECTION_REQUIRED' : 'FINANCIAL_INPUTS_REQUIRED');
+    if (engine) metrics = engine.metrics.map((m) => ({
         metric_id: m.metric_id,
         group: m.group,
         formula_id: m.formula_id,
@@ -440,13 +525,6 @@ export class FinancialRegistry {
         flags: m.flags,
         blockers: m.blockers,
       }));
-      blockers.push(...engine.blockers.map((b) => b.code));
-    } else
-      blockers.push(
-        sets.length
-          ? "EXPLICIT_STATEMENT_SET_SELECTION_REQUIRED"
-          : "FINANCIAL_INPUTS_REQUIRED",
-      );
     const registry = this.output("FinancialRegistry", {
       sets,
       selected_set_id: selected === -1 ? null : sets[selected].id,
@@ -465,15 +543,22 @@ export class FinancialRegistry {
           : "AIC experimental method is not approved; no score or band is published.",
         "Verified entry/source fidelity does not confirm legal identity.",
         "No FX, annualization, profit proxy or weight redistribution.",
-        "Balance sheet tolerance awaits approval; only exact reconciliation is accepted by this implementation.",
+        ...(ownerCountry==='VN'
+          ? ["Balance sheet tolerance awaits approval; only exact reconciliation is accepted by this implementation."]
+          : ['International pilot: cash-flow classification follows the source standard; no calibrated cross-country credit risk or PD.',
+            'Rounding requires explicit source precision and a current human verification; otherwise exact reconciliation remains required.']),
       ],
     });
     return {
+      policy,
       registry,
       engine,
+      aggregation,
+      periodEngines,
       source_snapshot_hash: requestHash({
+        ...(aggregation ? { aggregation_method: CASE_AGGREGATION_METHOD } : {}),
         selected_set_id: registry.selected_set_id,
-        sets,
+        sets: sets.map((set,index)=>({...set,metadata:rows[index].metadata_json})),
         snapshots: prepared.map((value) => value.hash),
       }),
     };
@@ -550,7 +635,7 @@ export class FinancialRegistry {
         ).rows[0];
         const scope: FhiScope = {
           entity_id: current.counterparty_id,
-          country: cp.country,
+          country: countryCode(cp.country),
           industry: cp.industry_code ?? "UNKNOWN",
           pilot_scope: input.industry_scope,
           period: input.period,
@@ -559,6 +644,12 @@ export class FinancialRegistry {
           currency: input.currency,
           unit_multiplier: input.unit_multiplier,
         };
+        if (input.facts.some((f:any)=>f.key===INTERNATIONAL_CASH_KEY) && !accountingProfile(scope)) fail('UNSUPPORTED_FINANCIAL_FACT');
+        const industryScope = ['DISTRIBUTION_WHOLESALE_PILOT','MANUFACTURING','RETAIL','BUSINESS_SERVICES','CONSUMER_DURABLES','OTHER'].includes(cp.industry_code) ? cp.industry_code : 'UNKNOWN';
+        if (current.purpose === 'company_health' && input.industry_scope !== industryScope)
+          fail('FINANCIAL_INDUSTRY_SCOPE_MISMATCH');
+        if (input.intake_review)
+          await reviewIntakePeriod(tx,current,input,setId,prior,session.user.id,next);
         await tx.query(
           `INSERT INTO aic.mvp_financial_sets(id,revision,organization_id,case_id,scope_json,metadata_json,bridges_json,case_revision,actor_id,reason)
           VALUES($1,$2,$3,$4,$5::jsonb,$6::jsonb,'{}'::jsonb,$7,$8,$9)`,
@@ -572,6 +663,12 @@ export class FinancialRegistry {
               audit_status: input.audit_status,
               statement_version: input.statement_version,
               observation_kind: input.observation_kind,
+              ...(accountingProfile(scope) ? {accounting_profile:accountingProfile(scope)} : {}),
+              ...(prior?.metadata_json.calculations ? {calculations:prior.metadata_json.calculations} : {}),
+              ...(prior?.metadata_json.reasoning ? {reasoning:prior.metadata_json.reasoning} : {}),
+              ...(input.import_review ? {calculations:calculationMetadata(await importReceipt(tx,current,input.import_review.receipt_id))} : {}),
+              ...(input.import_review && (await importReceipt(tx,current,input.import_review.receipt_id)).reasoning ?
+                {reasoning:reasoningSummary(await importReceipt(tx,current,input.import_review.receipt_id))} : {}),
             }),
             next,
             session.user.id,
@@ -587,11 +684,34 @@ export class FinancialRegistry {
             ).rows
           : [];
         for (const fact of input.facts) {
+          if (fact.source.kind === 'calculated') {
+            const receipt=await importReceipt(tx,current,fact.source.receipt_id), candidate=calculationFact(receipt,fact.source), s=receipt.scope;
+            const before=old.find(f=>f.fact_key === fact.key)?.payload_json;
+            if(before?.raw_value != null && (before.source.kind !== 'calculated' || before.source.calculation_id !== fact.source.calculation_id || before.source.receipt_id !== fact.source.receipt_id))
+              fail('FINANCIAL_CALCULATION_TARGET_PRESENT');
+            if (!candidate || fact.key !== candidate.key || fact.raw_value !== candidate.computed_value ||
+              fact.raw_label !== 'Số tính ra: '+candidate.key || input.currency!==s.currency || input.unit_multiplier!==s.unit_multiplier ||
+              input.basis!==s.basis || input.accounting_regime!==s.accounting_regime || input.period.kind!==s.period_kind ||
+              input.period.start_date!==s.start_date || input.period.end_date!==s.end_date || input.observation_kind!=='actual')
+              fail('FINANCIAL_CALCULATION_CHANGED');
+          }
+          if(fact.source.kind==='statement_entry') {
+            const receipt=await importReceipt(tx,current,fact.source.receipt_id),s=receipt.scope;
+            if(current.purpose!=='company_health' || fact.source.fact_key!==fact.key || !receipt.missing_keys.includes(fact.key) ||
+              input.currency!==s.currency || input.unit_multiplier!==s.unit_multiplier || input.basis!==s.basis ||
+              input.accounting_regime!==s.accounting_regime || input.period.kind!==s.period_kind || input.period.start_date!==s.start_date ||
+              input.period.end_date!==s.end_date || input.observation_kind!=='actual')fail('FINANCIAL_IMPORT_VALUE_OR_SCOPE_CHANGED');
+          }
           if (fact.source.kind === 'financial_import') {
             const receipt = await importReceipt(tx,current,fact.source.receipt_id);
             const candidate = receipt.facts.find((f:any) => f.key === fact.key);
             const scope = receipt.scope;
-            if (!candidate || fact.source.fact_key !== fact.key || fact.raw_value !== candidate.value || fact.raw_label !== candidate.label ||
+            const correction = fact.source.human_correction;
+            const corrected = !!correction && current.purpose === 'company_health' && !!prior &&
+              !!correction.reason.trim() && old.some(f=>f.fact_key===fact.key &&
+                f.payload_json.source.kind==='financial_import' && f.payload_json.source.receipt_id===fact.source.receipt_id);
+            if (correction && !corrected) fail('FINANCIAL_CORRECTION_REQUIRES_EXISTING_SOURCE');
+            if (!candidate || fact.source.fact_key !== fact.key || (!corrected && fact.raw_value !== candidate.value) || fact.raw_label !== candidate.label ||
               input.currency !== scope.currency || input.unit_multiplier !== scope.unit_multiplier ||
               input.basis !== scope.basis || input.accounting_regime !== scope.accounting_regime ||
               input.period.kind !== scope.period_kind || input.period.start_date !== scope.start_date || input.period.end_date !== scope.end_date ||
@@ -631,7 +751,7 @@ export class FinancialRegistry {
                     },
                   ],
             source_origin:
-              fact.source.kind === "manual_entry"
+              ['manual_entry','statement_entry'].includes(fact.source.kind)
                 ? "staff_entered"
                 : "document",
             entered_by: session.user.id,
@@ -686,6 +806,38 @@ export class FinancialRegistry {
   async revise(session: AuthSession, id: string, key: string, body: unknown) {
     const row = await this.resource(session, id);
     return this.save(session, row.case_id, id, key, body);
+  }
+  /** One explicit human review replaces individual fact verification for company cases. */
+  async confirmAllTx(tx: SqlClient, current: any, actorId: string, next: number, bridges: any) {
+    const rows = (await tx.query(`SELECT DISTINCT ON(id) * FROM aic.mvp_financial_sets
+      WHERE organization_id=$1 AND case_id=$2 ORDER BY id,revision DESC`, [current.organization_id,current.id])).rows;
+    const cp = (await tx.query('SELECT country,industry_code FROM aic.counterparties WHERE organization_id=$1 AND id=$2 FOR SHARE',
+      [current.organization_id,current.counterparty_id])).rows[0];
+    const industryScope = ['DISTRIBUTION_WHOLESALE_PILOT','MANUFACTURING','RETAIL','BUSINESS_SERVICES','CONSUMER_DURABLES','OTHER'].includes(cp.industry_code) ? cp.industry_code : 'UNKNOWN';
+    let count = 0;
+    for (const row of rows) {
+      if(row.metadata_json.reasoning?.targets.some((t:any)=>t.status==='conflict'))fail('FINANCIAL_REASONING_CONFLICT');
+      if (row.scope_json.industry !== (cp.industry_code ?? 'UNKNOWN') || row.scope_json.pilot_scope !== industryScope)
+        fail('FINANCIAL_INDUSTRY_SCOPE_MISMATCH');
+      if (countryCode(row.scope_json.country) !== countryCode(cp.country)) fail('FINANCIAL_SCOPE_MISMATCH');
+      const facts = (await tx.query(`SELECT * FROM aic.mvp_financial_facts WHERE organization_id=$1
+        AND case_id=$2 AND set_id=$3 AND set_revision=$4 ORDER BY fact_key`, [current.organization_id,current.id,row.id,row.revision])).rows;
+      const eligible = [];
+      for (const fact of facts) {
+        if (fact.payload_json.normalized_decimal === null) continue;
+        if (fact.payload_json.source.kind === 'manual_entry' || !(await this.source(tx,current,fact.payload_json.source,false)))
+          fail('BCTC_SOURCE_REQUIRED');
+        eligible.push(fact);
+      }
+      if (!eligible.length) continue;
+      await tx.query(`INSERT INTO aic.mvp_financial_verifications(id,organization_id,case_id,set_id,set_revision,
+        fact_ids,status,bridge_assertions,source_snapshot_hash,case_revision,actor_id,reason)
+        VALUES($1,$2,$3,$4,$5,$6::jsonb,'verified',$7::jsonb,$8,$9,$10,$11)`,
+        [randomUUID(),current.organization_id,current.id,row.id,row.revision,canonicalJson(eligible.map(f=>f.id)),
+          canonicalJson(bridges),await this.snapshot(tx,current,facts),next,actorId,'Confirmed financial statements, source facts and reviewed calculations']);
+      count += eligible.length;
+    }
+    return count;
   }
   async verify(session: AuthSession, id: string, key: string, body: unknown) {
     const input = this.input("FinancialVerifyInput", body),

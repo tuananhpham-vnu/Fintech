@@ -63,14 +63,3 @@ def compare(expected: dict, actual: dict) -> list[str]:
         if set(e["evidence_ids"]) != set(a["evidence_ids"]):
             diffs.append(f"suggestion {issue_id}.evidence_ids: set differs")
     return diffs
-
-
-def text_differences(expected: dict, actual: dict) -> list[str]:
-    """Báo cáo (không làm fail) khác biệt văn bản tự do để BA xem wording."""
-    notes = []
-    act_a = {x["issue_key"]: x for x in actual["assessments"]}
-    for e in expected["assessments"]:
-        a = act_a.get(e["issue_key"])
-        if a and a["summary"] != e["summary"]:
-            notes.append(f"summary {e['issue_key']}: {a['summary']!r} vs gold {e['summary']!r}")
-    return notes

@@ -47,8 +47,8 @@ export function suggestDocumentGroup(name: string): { group: DocumentGroup; sugg
 let readers = 0
 let dossierReaders = 0
 /** No shell, temp files, environment/config reads or network in the isolated helper. */
-export async function readZipArchive(bytes: Buffer, profile: 'legacy' | 'dossier' = 'legacy'): Promise<ArchiveEntry[]> {
-  const dossier = profile === 'dossier'
+export async function readZipArchive(bytes: Buffer, profile: 'legacy' | 'dossier' | 'financial' = 'legacy'): Promise<ArchiveEntry[]> {
+  const dossier = profile !== 'legacy'
   if (dossier && dossierReaders >= 1) throw new FoundationError(503, 'ARCHIVE_READER_BUSY')
   if (readers >= 2) throw new FoundationError(503, 'ARCHIVE_READER_BUSY')
   if (bytes.length > (dossier ? 32 * 1024 * 1024 : ARCHIVE_MAX_BYTES)) throw new FoundationError(413, 'ARCHIVE_SIZE_LIMIT')
@@ -59,7 +59,7 @@ export async function readZipArchive(bytes: Buffer, profile: 'legacy' | 'dossier
     const localPython = resolve(root, '.venv', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python')
     const python = existsSync(localPython) ? localPython : process.platform === 'win32' ? 'python.exe' : 'python3'
     return await new Promise((done, reject) => {
-      const child = spawn(python, ['-I', '-B', resolve(root, 'services/ai/scripts/demo_zip_reader.py'), ...(dossier ? ['--dossier'] : [])], {
+      const child = spawn(python, ['-I', '-B', resolve(root, 'services/ai/scripts/demo_zip_reader.py'), ...(profile === 'financial' ? ['--financial'] : dossier ? ['--dossier'] : [])], {
         windowsHide: true,
         stdio: ['pipe', 'pipe', 'pipe'],
         // Deliberately exclude provider keys and application secrets.

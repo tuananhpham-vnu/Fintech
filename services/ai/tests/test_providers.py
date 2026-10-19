@@ -5,6 +5,7 @@ import httpx
 import pytest
 
 from providers.gemini import GeminiConfig, GeminiProvider, ProviderError, ProviderUnavailable
+from providers.base import ModelOutputError
 from providers.semantic import guard, interpret_payment_condition
 
 CLAUSE = ("Điều 4. Thanh toán toàn bộ trong 30 ngày lịch sau nghiệm thu S1.\n"
@@ -61,6 +62,28 @@ def test_unparseable_output_is_error():
     p, _ = provider(lambda r: httpx.Response(200, json={"candidates": [{"content": {"parts": [{"text": "not json"}]}}]}))
     with pytest.raises(ProviderError):
         p.generate_json("s", "u", {})
+
+
+@pytest.mark.parametrize('payload,code', [
+    ({'candidates': [{'finishReason': 'RECITATION'}]}, 'MODEL_OUTPUT_BLOCKED'),
+    ({'promptFeedback': {'blockReason': 'SAFETY'}}, 'MODEL_OUTPUT_BLOCKED'),
+    ({'candidates': []}, 'MODEL_OUTPUT_EMPTY'),
+    ({'candidates': [{'finishReason': 'MAX_TOKENS', 'content': {'parts': [{'text': '{}'}]}}]},
+     'MODEL_OUTPUT_TRUNCATED'),
+])
+def test_terminal_model_outputs_are_not_json_repairs_or_http_retries(payload, code):
+    calls = []
+    p, sleeps = provider(lambda r: calls.append(r) or httpx.Response(200, json=payload))
+    with pytest.raises(ModelOutputError) as error:
+        p.generate_json('s', 'u', {})
+    assert error.value.code == code
+    assert len(calls) == 1 and sleeps == []
+
+
+def test_only_final_answer_is_parsed_when_thoughts_are_returned():
+    p, _ = provider(lambda r: httpx.Response(200, json={'candidates': [{'finishReason': 'STOP',
+        'content': {'parts': [{'thought': True, 'text': 'private reasoning'}, {'text': '{"ok":true}'}]}}]}))
+    assert p.generate_json('s', 'u', {}).data == {'ok': True}
 
 
 @pytest.mark.parametrize("quote", [

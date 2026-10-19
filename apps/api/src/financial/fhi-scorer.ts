@@ -1,4 +1,5 @@
 import { Decimal, ExactValue } from './decimal'
+import { accountingProfile, INTERNATIONAL_CASH_KEY, type AccountingProfile } from './accounting-profiles'
 import {
   FHI_FACT_KEYS,
   FHI_GROUPS,
@@ -99,6 +100,11 @@ export interface FhiInput {
   facts: readonly FhiFinancialFact[]
   quick_assets_bridge: FhiQuickAssetsBridge | null
   ebitda_bridge: FhiEbitdaBridge | null
+  /** Trusted adapter metadata; it never establishes verification of a source fact. */
+  accounting_profile?: AccountingProfile
+  rounding_quantums?: Readonly<Record<string, string>>
+  international_operating_profit_reconciled?: boolean
+  reviewed_expense_magnitude_fact_ids?: readonly string[]
 }
 
 export type FhiBlockerCode =
@@ -127,6 +133,7 @@ export type FhiBlockerCode =
   | 'ZERO_INTEREST_REQUIRES_VERIFIED_ZERO_DEBT'
   | 'INVALID_FINANCIAL_BOUNDS'
   | 'BALANCE_SHEET_UNRECONCILED'
+  | 'OPERATING_PROFIT_BRIDGE_UNAVAILABLE'
 export interface FhiBlocker {
   code: FhiBlockerCode
   metric_id?: FhiMetricId
@@ -160,7 +167,7 @@ export interface FhiMetricTrace {
 export interface FhiEngineResult {
   purpose: 'engine_reference_only'
   method_id: typeof FHI_METHOD_ID
-  method_version: typeof FHI_METHOD_VERSION
+  method_version: string
   runtime: typeof FHI_RUNTIME_STATE
   scope: FhiScope | null
   metrics: FhiMetricTrace[]
@@ -323,6 +330,11 @@ function factTrace(fact: FhiFinancialFact): FhiFactTrace {
 export function scoreFhi(input: FhiInput): FhiEngineResult {
   const global: FhiBlocker[] = []
   const set = input?.statement_set
+  const requestedProfile = input?.accounting_profile
+  const knownProfile = accountingProfile(set?.scope)
+  const profile = requestedProfile && knownProfile?.id === requestedProfile.id &&
+    knownProfile.method_version === requestedProfile.method_version ? knownProfile : null
+  if (requestedProfile && !profile) global.push({code:'INVALID_SCOPE'})
   if (
     !record(input) ||
     !record(set) ||
@@ -342,7 +354,7 @@ export function scoreFhi(input: FhiInput): FhiEngineResult {
         global.push({ code: 'INVALID_FACT' })
         continue
       }
-      if (!FHI_FACT_KEYS.includes(fact.key)) {
+      if (!(FHI_FACT_KEYS as readonly string[]).includes(fact.key) && !(profile && fact.key === INTERNATIONAL_CASH_KEY)) {
         global.push({ code: 'UNSUPPORTED_FACT_KEY' })
         continue
       }
@@ -357,8 +369,15 @@ export function scoreFhi(input: FhiInput): FhiEngineResult {
 
   const metrics = FHI_METRICS.map((definition) => {
     const trace = emptyTrace(definition)
+    if (profile) trace.formula_id = `${FHI_METHOD_ID}/${profile.method_version}/${definition.id}`
+    const combinedCash = !!profile && (byKey.get(INTERNATIONAL_CASH_KEY) ?? []).some(f => f.value !== null)
     const block = (code: FhiBlockerCode, fact_key?: FhiFactKey) =>
       trace.blockers.push({ code, metric_id: definition.id, ...(fact_key ? { fact_key } : {}) })
+    if (profile?.country==='CN' && definition.required_facts.includes('operating_profit') &&
+        input.international_operating_profit_reconciled!==true) {
+      block('OPERATING_PROFIT_BRIDGE_UNAVAILABLE','operating_profit')
+      return trace
+    }
     if (global.length) {
       trace.blockers = global.map((item) => ({ ...item, metric_id: definition.id }))
       return trace
@@ -403,19 +422,28 @@ export function scoreFhi(input: FhiInput): FhiEngineResult {
       // Retain accepted source bindings only; rejected/untrusted source content is not promoted.
       if (trace.blockers.length !== before || !value) return null
       trace.source_facts.push(factTrace(fact))
+      if (profile && key==='interest_expense' && value.compare(ZERO)<0 &&
+          input.reviewed_expense_magnitude_fact_ids?.includes(fact.id)) {
+        value = ZERO.sub(value)
+        trace.flags.push('SOURCE_EXPENSE_MAGNITUDE_REVIEWED:'+fact.id)
+      }
       used.set(key, fact)
       values.set(key, value)
       if (value.compare(ZERO) < 0) trace.flags.push(`NEGATIVE_FACT:${key}`)
       return value
     }
 
-    for (const key of definition.required_facts) read(key)
+    const required = definition.id === 'AIC-M02' && combinedCash
+      ? [INTERNATIONAL_CASH_KEY, 'trade_receivables', 'current_liabilities'] as FhiFactKey[]
+      : definition.required_facts
+    for (const key of required) read(key)
     for (const key of [
       'cash',
       'unrestricted_short_term_equivalents',
       'trade_receivables',
       'interest_bearing_debt',
       'interest_expense',
+      'eligible_cash_and_equivalents',
     ] as FhiFactKey[]) {
       if (values.has(key) && values.get(key)!.compare(ZERO) < 0)
         block('INVALID_FINANCIAL_BOUNDS', key)
@@ -468,7 +496,8 @@ export function scoreFhi(input: FhiInput): FhiEngineResult {
       return true
     }
 
-    if (definition.id === 'AIC-M02') bridge(input.quick_assets_bridge, 'quick_assets', QUICK_KEYS)
+    if (definition.id === 'AIC-M02') bridge(input.quick_assets_bridge, 'quick_assets',
+      combinedCash ? [INTERNATIONAL_CASH_KEY, 'trade_receivables'] : QUICK_KEYS)
     if (definition.id === 'AIC-M04') bridge(input.ebitda_bridge, 'ebitda', EBITDA_KEYS)
     if (definition.id === 'AIC-M02') read('current_assets')
     if (definition.id === 'AIC-M03') read('total_liabilities')
@@ -483,9 +512,9 @@ export function scoreFhi(input: FhiInput): FhiEngineResult {
         denominator = value('current_liabilities')
         break
       case 'AIC-M02':
-        numerator = value('cash')
-          .add(value('unrestricted_short_term_equivalents'))
-          .add(value('trade_receivables'))
+        numerator = (combinedCash ? value(INTERNATIONAL_CASH_KEY)
+          : value('cash').add(value('unrestricted_short_term_equivalents'))).add(value('trade_receivables'))
+        if (combinedCash) trace.formula = '(eligible_cash_and_equivalents + trade_receivables) / current_liabilities'
         denominator = value('current_liabilities')
         break
       case 'AIC-M03':
@@ -529,10 +558,21 @@ export function scoreFhi(input: FhiInput): FhiEngineResult {
         .sub(value('total_liabilities').add(value('total_equity')))
         .compare(ZERO) !== 0
     ) {
-      // Production tolerance is not approved. Exact reconciliation is a safe
-      // subset; the source's 0.5% is fixture-only and is never silently enabled.
-      block('BALANCE_SHEET_UNRECONCILED')
-      return trace
+      let withinRounding = false
+      if (profile && input.rounding_quantums) {
+        try {
+          const keys = ['total_assets','total_liabilities','total_equity']
+          const quantums = keys.map(k => Decimal.parse(input.rounding_quantums![k]))
+          if (quantums.every(q => q.compare(ZERO) > 0)) {
+            const residual = value('total_assets').sub(value('total_liabilities').add(value('total_equity')))
+            const absolute = residual.compare(ZERO)<0 ? ZERO.sub(residual) : residual
+            const tolerance = quantums.reduce((s,q)=>s.add(q),ZERO).div(Decimal.parse('2'))
+            withinRounding = absolute.compare(tolerance)<=0
+          }
+        } catch { /* Absent or invalid source precision never enables a tolerance. */ }
+      }
+      if (!withinRounding) { block('BALANCE_SHEET_UNRECONCILED'); return trace }
+      trace.flags.push('BALANCE_WITHIN_SOURCE_ROUNDING')
     }
     if (definition.id === 'AIC-M04' && denominator.compare(ZERO) <= 0) {
       block('EBITDA_NON_POSITIVE')
@@ -577,7 +617,7 @@ export function scoreFhi(input: FhiInput): FhiEngineResult {
   return {
     purpose: 'engine_reference_only',
     method_id: FHI_METHOD_ID,
-    method_version: FHI_METHOD_VERSION,
+    method_version: profile?.method_version ?? FHI_METHOD_VERSION,
     runtime: FHI_RUNTIME_STATE,
     scope: validScope(set?.scope) ? structuredClone(set.scope) : null,
     metrics,

@@ -138,9 +138,3 @@ def resolve_payment_condition(view: SnapshotView, contract: Doc, semantic: Seman
                                        f"nguồn chưa được extraction xác thực ({state}) nên chỉ là gợi ý, người duyệt "
                                        f"xác nhận bằng correct_field.", contract, key)
     return ConditionResolution(current, [REVIEW_REQUIRED, "LLM_SUGGESTION_UNVERIFIED", state], llm_used=True)
-
-
-def make_resolver(func: Callable[[str], Any], model_id: str, prompt_version: str) -> SemanticResolver:
-    """Tiện cho test: bọc một hàm thành resolver."""
-    func.model_id, func.prompt_version = model_id, prompt_version  # type: ignore[attr-defined]
-    return func  # type: ignore[return-value]

@@ -9,8 +9,14 @@ type LocaleContextValue = {
   t: (key: MessageKey) => string
 }
 const LocaleContext = createContext<LocaleContextValue | null>(null)
-export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLanguage] = useState<Locale>('en')
+export function LocaleProvider({
+  children,
+  initialLocale,
+}: {
+  children: ReactNode
+  initialLocale?: Locale
+}) {
+  const [locale, setLanguage] = useState<Locale>(initialLocale ?? 'en')
   useEffect(() => {
     try {
       const stored = localStorage.getItem('aic.locale')

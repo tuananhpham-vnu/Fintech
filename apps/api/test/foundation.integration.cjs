@@ -86,6 +86,11 @@ test('Phase1 foundation: actual PostgreSQL and HTTP (no mock DB/auth)', async (t
         '0016_mvp_source_payload_null_guards.sql',
         '0017_mvp_questionnaire_source_tuple.sql',
         '0018_mvp_dossier_intake.sql',
+        '0019_assessments.sql',
+        '0020_company_health_workspaces.sql',
+        '0021_financial_import_sources.sql',
+        '0022_company_financial_intake.sql',
+        '0023_financial_reasoning.sql',
       ])
       assert.deepEqual((await migrate(ownerUrl.href)).applied, [])
       const row = (await owner.query('SELECT * FROM aic.schema_migrations ORDER BY name')).rows[0]
@@ -675,9 +680,8 @@ test('Phase1 foundation: actual PostgreSQL and HTTP (no mock DB/auth)', async (t
         },
         body: '{}',
       })
-      assert.equal(blocked.status, 503)
-      assert.equal(blocked.body.code, 'CONTRACT_NOT_RELEASED')
-      assert.ok(blocked.body.details.blockers.includes('APPROVED_POLICY_SELECTION_PENDING'))
+      assert.equal(blocked.status, 410)
+      assert.equal(blocked.body.code, 'TRANSACTION_FEATURE_RETIRED')
       for (const route of [
         '/counterparties',
         '/cases/' + ids.caseA + '/documents',
@@ -754,6 +758,8 @@ test('Phase1 foundation: actual PostgreSQL and HTTP (no mock DB/auth)', async (t
         const previous = { ...process.env }
         try {
           process.env.NODE_ENV = 'production'
+          process.env.INTERNAL_API_KEY = 'SYNTHETIC-production-config-test-only'
+          process.env.AIC_IDEMPOTENCY_TTL_MS = '86400000'
           process.env.AIC_FRONTEND_ORIGIN = 'https://aic.example'
           assert.equal(loadConfig().secureCookies, true)
           process.env.AIC_RUNTIME_MODE = 'prototype'

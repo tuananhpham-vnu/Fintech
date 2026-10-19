@@ -1,3 +1,4 @@
+import { accountingProfile, fullFinancialYear } from './accounting-profiles';
 /** Read-only comparison rules, AIC-FINANCIAL-TRENDS-1. No scoring or imputation. */
 export function financialComparisonIssues(set: any, baseline: any, all: any[]): string[] {
   const issues: string[] = [];
@@ -5,16 +6,24 @@ export function financialComparisonIssues(set: any, baseline: any, all: any[]): 
   const year = p.start_date.slice(0, 4);
   // Only full calendar FY is supported. Short, opening and shifted fiscal periods
   // remain visible with a reason; they are never annualized or silently aligned.
-  if (p.kind !== 'FY' || p.start_date !== `${year}-01-01` || p.end_date !== `${year}-12-31`)
+  if (accountingProfile(set.scope) ? !fullFinancialYear(p)
+    : p.kind !== 'FY' || p.start_date !== `${year}-01-01` || p.end_date !== `${year}-12-31`)
     issues.push('FULL_CALENDAR_FY_REQUIRED');
   if (set.metadata.observation_kind !== 'actual' || set.scope.accounting_regime === 'UNKNOWN')
     issues.push('ACTUAL_KNOWN_ACCOUNTING_BASIS_REQUIRED');
   for (const key of ['entity_id', 'country', 'industry', 'pilot_scope', 'basis', 'accounting_regime', 'currency', 'unit_multiplier'])
-    if (set.scope[key] !== baseline.scope[key]) issues.push('INCOMPATIBLE_' + key.toUpperCase());
+    if (!(key==='unit_multiplier' && accountingProfile(set.scope)) && set.scope[key] !== baseline.scope[key]) issues.push('INCOMPATIBLE_' + key.toUpperCase());
   if (all.some(s => s.id !== set.id && s.scope.period.start_date === p.start_date &&
     s.scope.period.end_date === p.end_date && s.scope.basis === set.scope.basis))
     issues.push('MULTIPLE_STATEMENT_VERSIONS');
   return issues;
+}
+
+/** Standalone values remain meaningful even if another column is not comparable.
+ * Intrinsic period, source and version checks still apply to this column itself.
+ */
+export function standaloneTrendEligible(set: any, all: any[]): boolean {
+  return financialComparisonIssues(set, set, all).length === 0;
 }
 
 export function verifiedTrendFacts(set: any) {

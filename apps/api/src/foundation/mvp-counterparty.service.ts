@@ -90,13 +90,10 @@ export class MvpCounterpartyService {
     if (
       typeof key !== 'string' ||
       !/^[\x21-\x7e]{1,200}$/.test(key) ||
-      [
-        input.name,
-        input.country,
-        input.reason,
-        input.source.reported_reference,
-        input.source.statement,
-      ].some((value) => !value.trim())
+      [input.name, input.country].some((value) => !value.trim()) ||
+      (input.reason !== undefined && !input.reason.trim()) ||
+      (input.source !== undefined &&
+        [input.source.reported_reference, input.source.statement].some((value) => !value.trim()))
     )
       throw new FoundationError(422, 'INVALID_INPUT')
     const operation = id ? 'counterparty.update' : 'counterparty.create'
@@ -142,12 +139,12 @@ export class MvpCounterpartyService {
           sourceId = randomUUID()
         const recordedAt = iso((await tx.query('SELECT clock_timestamp() AS time')).rows[0].time)
         const source = {
-          ...input.source,
+          ...(input.source ?? { kind: 'specialist_entry' }),
           id: sourceId,
           organization_id: session.user.organization_id,
           counterparty_id: counterpartyId,
           source_revision: revision,
-          origin: 'staff_transcribed',
+          origin: input.source ? 'staff_transcribed' : 'staff_entered',
           entered_by: session.user.id,
           actor_id: session.user.id,
           recorded_at: recordedAt,
@@ -191,7 +188,7 @@ export class MvpCounterpartyService {
             canonicalJson(source),
             canonicalJson(result),
             session.user.id,
-            input.reason,
+            input.reason ?? null,
             recordedAt,
           ],
         )
@@ -207,7 +204,7 @@ export class MvpCounterpartyService {
             counterpartyId,
             current ? Number(current.revision) : null,
             revision,
-            input.reason,
+            input.reason ?? null,
             canonicalJson({
               source_id: sourceId,
               identity_status: 'unresolved',

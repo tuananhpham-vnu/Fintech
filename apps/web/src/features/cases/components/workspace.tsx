@@ -33,7 +33,8 @@ import {
 } from 'lucide-react'
 import { useEffect, useState, type ComponentType } from 'react'
 import { useCaseWorkspace } from '../hooks/use-case-workspace'
-export const tabs = ['overview', 'files', 'review', 'information', 'assessment', 'history'] as const
+import { CompanyWorkspace } from './company-workspace'
+const tabs = ['overview', 'files', 'review', 'information', 'assessment', 'history'] as const
 export type Tab = (typeof tabs)[number]
 const tabIcons: Record<Tab, ComponentType<{ size?: number; className?: string }>> = {
   overview: FileText,
@@ -74,6 +75,15 @@ export function Workspace({ caseId }: { caseId: string }) {
       </>
     )
   const company = detail.purpose === 'company_health'
+  if (company)
+    return (
+      <CompanyWorkspace
+        detail={detail}
+        party={party.data}
+        readiness={currentReadiness}
+        reload={reload}
+      />
+    )
   const activeTabs: readonly Tab[] = company ? ['overview', 'files', 'assessment', 'history'] : tabs
   const selectedTab = activeTabs.includes(tab) ? tab : 'overview'
   return (

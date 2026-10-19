@@ -62,6 +62,37 @@ def test_long_pdf_retains_original_page_and_hash_without_first_ten_page_truncati
     assert set(result['missing_keys']) and not any(f['key']=='total_liabilities' for f in result['facts'])
 
 
+def test_service_output_matches_the_backend_contract_and_preserves_legacy_prompt_versions():
+    from pathlib import Path
+    from jsonschema import Draft7Validator
+    bundle=json.loads((Path(__file__).resolve().parents[3]/'packages/contracts/aic-financial-import/schemas.json').read_text('utf8'))
+    validator=Draft7Validator({'definitions':bundle['definitions'],'$ref':'#/definitions/FinancialImportAiCandidates'})
+    result=execute(request(sample()),FakeModel(answer()))
+    assert result['provenance']['prompt_version']=='financial-import-v2'
+    validator.validate(result)
+    result['provenance']['prompt_version']='financial-import-v1'
+    result['ocr_failures']=[{'page':1,'code':'MODEL_OUTPUT_BLOCKED'}]
+    validator.validate(result)
+    result['provenance']['prompt_version']='UNAPPROVED-VERSION'
+    assert list(validator.iter_errors(result))
+
+
+def test_contract_repair_identifies_unit_field_without_scaling_printed_amounts():
+    from providers.base import GenerateResult
+    prompts=[]
+    class UnitRepair:
+        model_id='synthetic-units'
+        def generate_json(self,system,user,*args,**kwargs):
+            prompts.append(system)
+            out=answer()
+            if len(prompts)==1:out['scope']['unit_multiplier']='millions'
+            return GenerateResult(out,self.model_id,1,1)
+    result=execute(request(sample(),pages=[1]),UnitRepair())
+    assert len(prompts)==2 and 'scope.unit_multiplier (pattern)' in prompts[1]
+    assert result['scope']['unit_multiplier']=='1000000'
+    assert result['facts'][0]['value']=='77099' and result['facts'][0]['raw_token']=='77,099'
+
+
 def test_index_needs_no_model_and_reports_original_long_pdf_pages():
     result=execute(request(sample(35),'index'))
     assert len(result['pages'])==35 and 35 in result['suggested_pages']
@@ -94,6 +125,22 @@ def test_scope_mismatch_rejected_and_bad_scope_evidence_rejected():
     with pytest.raises(ServiceError):execute(payload,FakeModel(answer()))
     raw=answer();raw['scope_evidence'][0]['quote']='Made-up currency evidence'
     with pytest.raises(ServiceError):execute(request(sample()),FakeModel(raw))
+
+
+def test_comparative_year_correction_regenerates_amounts_instead_of_relabelling_them():
+    payload=request(sample())
+    payload['requested_scope']=dict(country='US',basis='consolidated',end_date='2024-12-31')
+    prior=answer()
+    prior['scope'].update(start_date='2024-01-01',end_date='2024-12-31')
+    prior['facts'][0].update(value='70000',raw_token='70,000',period_end='2024-12-31')
+    model=FakeModel(answer(),prior)
+    result=execute(payload,model)
+    assert len(model.calls)==2 and 'regenerate ALL facts' in model.calls[-1]['system']
+    assert result['scope']['end_date']=='2024-12-31'
+    assert result['facts'][0]['value']=='70000' and result['facts'][0]['verification']=='unverified'
+    with pytest.raises(ServiceError) as error:
+        execute(payload,FakeModel(answer()))
+    assert error.value.code=='FINANCIAL_SCOPE_MISMATCH'
 
 
 def test_source_hash_and_resource_limits_fail_closed_before_provider():

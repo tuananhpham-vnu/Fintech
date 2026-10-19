@@ -2,40 +2,43 @@ const { spawn } = require("node:child_process");
 const path = require("node:path");
 const fs = require("node:fs");
 const net = require("node:net");
+const { spawnSync } = require("node:child_process");
+const { prepareLocalDatabase, validateTargets } = require("./dev-prepare.cjs");
+const { localEnvironment, aiEnvironment } = require("./dev-environment.cjs");
 
 const ROOT = path.resolve(__dirname, "..");
 
-// Load root .env if present
-const envFile = path.join(ROOT, ".env");
-if (fs.existsSync(envFile)) {
-  const content = fs.readFileSync(envFile, "utf8");
-  for (const line of content.split(/\r?\n/)) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) continue;
-    const eqIdx = trimmed.indexOf("=");
-    if (eqIdx > 0) {
-      const key = trimmed.slice(0, eqIdx).trim();
-      const val = trimmed.slice(eqIdx + 1).trim();
-      if (!process.env[key]) process.env[key] = val;
-    }
-  }
-}
+const { env, overridden } = localEnvironment(ROOT);
+if (overridden.length)
+  console.log(
+    `[PREP] Using root .env instead of terminal overrides: ${overridden.join(", ")}`,
+  );
 
 const PYTHON_EXEC =
   process.platform === "win32"
     ? path.join(ROOT, ".venv", "Scripts", "python.exe")
     : path.join(ROOT, ".venv", "bin", "python");
 
-const STORAGE_DIR = process.env.AIC_STORAGE_DIR || "C:/private/aic-mvp-cache";
-const INTERNAL_KEY = process.env.INTERNAL_API_KEY;
-const DB_URL = process.env.DATABASE_URL;
-const API_DB_URL = process.env.AIC_API_DATABASE_URL || DB_URL;
-const WORKER_DB_URL = process.env.AIC_WORKER_DATABASE_URL || DB_URL;
+const STORAGE_DIR = env.AIC_STORAGE_DIR || "C:/private/aic-mvp-cache";
+const INTERNAL_KEY = env.INTERNAL_API_KEY;
+const DB_URL = env.DATABASE_URL;
+const API_DB_URL = env.AIC_API_DATABASE_URL || DB_URL;
+const WORKER_DB_URL = env.AIC_WORKER_DATABASE_URL || DB_URL;
+let selectedAiEnv;
+try {
+  selectedAiEnv = aiEnvironment(env);
+} catch (error) {
+  console.error(error.message);
+  process.exit(1);
+}
 const builtWeb = process.argv.includes("--built-web");
-if (process.argv.slice(2).some((arg) => arg !== "--built-web"))
-  throw new Error("Supported option: --built-web");
+const checkOnly = process.argv.includes("--check");
+if (
+  process.argv.slice(2).some((arg) => !["--built-web", "--check"].includes(arg))
+)
+  throw new Error("Supported options: --built-web, --check");
 const systemEnv = Object.fromEntries(
-  Object.entries(process.env).filter(([key]) =>
+  Object.entries(env).filter(([key]) =>
     /^(PATH|SystemRoot|WINDIR|TEMP|TMP|LANG|LC_ALL|USERPROFILE|APPDATA|LOCALAPPDATA|PNPM_HOME|COMSPEC|PATHEXT|HOME)$/i.test(
       key,
     ),
@@ -44,21 +47,16 @@ const systemEnv = Object.fromEntries(
 const apiEnv = {
   ...systemEnv,
   ...Object.fromEntries(
-    Object.entries(process.env).filter(
+    Object.entries(env).filter(
       ([key]) =>
         key.startsWith("AIC_") &&
         !["AIC_API_DATABASE_URL", "AIC_WORKER_DATABASE_URL"].includes(key),
     ),
   ),
 };
-if (
-  !INTERNAL_KEY ||
-  !API_DB_URL ||
-  !WORKER_DB_URL ||
-  !process.env.GEMINI_API_KEY
-) {
+if (!INTERNAL_KEY || !DB_URL || !API_DB_URL || !WORKER_DB_URL) {
   console.error(
-    "AIC startup requires explicit DATABASE_URL and INTERNAL_API_KEY; no services were started.",
+    "AIC startup requires DATABASE_URL and INTERNAL_API_KEY in the root .env; no services were started.",
   );
   process.exit(1);
 }
@@ -114,10 +112,12 @@ function cleanup() {
     `\n${colors.red}${colors.bold}Stopping all services...${colors.reset}`,
   );
   for (const p of processes) {
+    if (p.exitCode !== null || p.signalCode !== null) continue;
     try {
       if (process.platform === "win32" && p.pid) {
         spawn("taskkill", ["/pid", p.pid.toString(), "/f", "/t"], {
           stdio: "ignore",
+          windowsHide: true,
         });
       } else if (p.kill) {
         p.kill("SIGTERM");
@@ -136,40 +136,242 @@ process.on("SIGTERM", () => {
   process.exit(0);
 });
 
-async function start() {
-  for (const file of [
-    PYTHON_EXEC,
-    path.join(ROOT, "apps/api/dist/main.js"),
-    path.join(ROOT, "apps/api/dist/documents/run-worker.js"),
-    path.join(ROOT, "apps/api/dist/documents/run-dossier-worker.js"),
-    ...(builtWeb ? [path.join(ROOT, "apps/web/.next/BUILD_ID")] : []),
-  ])
-    if (!fs.existsSync(file))
-      throw new Error(
-        "Required runtime or build is missing; build API/web before starting.",
-      );
-  await Promise.all(
-    [3000, 3001, 8100].map(
-      (port) =>
-        new Promise((resolve, reject) => {
-          const probe = net.createServer();
-          probe.once("error", () =>
-            reject(
-              new Error(
-                `Port ${port} is already in use; no services were started.`,
-              ),
+function pnpmCommand(args) {
+  const entry = process.env.npm_execpath;
+  if (entry && fs.existsSync(entry))
+    return [process.execPath, [entry, ...args], false];
+  return [
+    process.platform === "win32" ? "pnpm.cmd" : "pnpm",
+    args,
+    process.platform === "win32",
+  ];
+}
+
+function runPreparation(file, args, shell = false) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(file, args, {
+      cwd: ROOT,
+      env: systemEnv,
+      stdio: "inherit",
+      shell,
+      windowsHide: true,
+    });
+    processes.push(child);
+    child.once("error", () =>
+      reject(
+        new Error(
+          "Development preparation could not start; check the installed runtimes.",
+        ),
+      ),
+    );
+    child.once("exit", (code) =>
+      code === 0 && !stopping
+        ? resolve()
+        : reject(
+            new Error(
+              "Development preparation failed; no services were started.",
             ),
-          );
-          probe.listen(port, "127.0.0.1", () => probe.close(resolve));
-        }),
-    ),
+          ),
+    );
+  });
+}
+
+async function waitReady(name, url) {
+  const deadline = Date.now() + 60_000;
+  while (!stopping && Date.now() < deadline) {
+    try {
+      const response = await fetch(url, { signal: AbortSignal.timeout(1500) });
+      await response.body?.cancel();
+      if (response.ok) {
+        console.log(`[READY] ${name}`);
+        return;
+      }
+    } catch {}
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  throw new Error(
+    `${name} did not become ready; check the service logs above.`,
   );
+}
+
+async function start() {
+  console.log(
+    `[PREP] AI provider: ${selectedAiEnv.AI_PROVIDER}; model: ${selectedAiEnv.MODEL_ID}`,
+  );
+  if (process.env.NODE_ENV === "production")
+    throw new Error(
+      "dev:all is for local development; production migrations require the explicit runner.",
+    );
+  validateTargets(DB_URL, API_DB_URL, WORKER_DB_URL, env);
+  if (!checkOnly && !fs.existsSync(PYTHON_EXEC))
+    throw new Error(
+      "Python .venv is missing; create the project virtual environment first.",
+    );
+  if (
+    !checkOnly &&
+    builtWeb &&
+    !fs.existsSync(path.join(ROOT, "apps/web/.next/BUILD_ID"))
+  )
+    throw new Error(
+      "Built web is missing; run pnpm build, or use pnpm dev:all for development.",
+    );
+  if (!checkOnly) {
+    await Promise.all(
+      [3000, 3001, 8100].map(
+        (port) =>
+          new Promise((resolve, reject) => {
+            const probe = net.createServer();
+            probe.once("error", () =>
+              reject(
+                new Error(
+                  `Port ${port} is already in use; no services were started.`,
+                ),
+              ),
+            );
+            probe.listen(port, "127.0.0.1", () => probe.close(resolve));
+          }),
+      ),
+    );
+    console.log("[PREP] Checking AI dependencies...");
+    const requirements = spawnSync(
+      PYTHON_EXEC,
+      [
+        "-c",
+        [
+          "import sys,tomllib,importlib.metadata as m",
+          "from pip._vendor.packaging.requirements import Requirement",
+          "deps=tomllib.load(open('services/ai/pyproject.toml','rb'))['project']['dependencies']",
+          "try:",
+          " for item in deps:",
+          "  r=Requirement(item)",
+          "  if not r.marker or r.marker.evaluate():",
+          "   if m.version(r.name) not in r.specifier: sys.exit(1)",
+          "except m.PackageNotFoundError: sys.exit(1)",
+        ].join("\n"),
+      ],
+      {
+        cwd: ROOT,
+        env: systemEnv,
+        stdio: "ignore",
+        windowsHide: true,
+        timeout: 15_000,
+      },
+    );
+    if (requirements.status !== 0) {
+      console.log(
+        "[PREP] Installing the AI dependencies declared in pyproject.toml...",
+      );
+      await runPreparation(PYTHON_EXEC, [
+        "-m",
+        "pip",
+        "install",
+        "--disable-pip-version-check",
+        "--quiet",
+        "--no-input",
+        "-e",
+        "services/ai",
+      ]);
+    }
+  }
+  console.log("[PREP] Building the current API source...");
+  await runPreparation(...pnpmCommand(["api:build"]));
+  const apiRuntimeEnv = {
+    ...apiEnv,
+    PORT: "3001",
+    NODE_ENV: "development",
+    AIC_RUNTIME_MODE: "foundation",
+    AIC_DOCUMENT_RUNTIME: "local",
+    AIC_DOCUMENT_AI_MODE: "live",
+    AIC_STORAGE_DIR: STORAGE_DIR,
+    INTERNAL_API_KEY: INTERNAL_KEY,
+    AIC_AI_SERVICE_URL: "http://127.0.0.1:8100",
+    AIC_FRONTEND_ORIGIN: "http://127.0.0.1:3000",
+    AIC_IDEMPOTENCY_TTL_MS: "86400000",
+    DATABASE_URL: API_DB_URL,
+  };
+  console.log("[PREP] Validating API configuration...");
+  const configCheck = spawnSync(
+    process.execPath,
+    [
+      "-e",
+      `
+    const {loadConfig}=require('./dist/config/configuration.js');
+    const {startupFailure}=require('./dist/config/startup-diagnostics.js');
+    try { loadConfig(); }
+    catch(error) { process.stderr.write(startupFailure(error,'CONFIG')); process.exitCode=1; }
+  `,
+    ],
+    {
+      cwd: path.join(ROOT, "apps/api"),
+      env: apiRuntimeEnv,
+      stdio: "inherit",
+      windowsHide: true,
+      timeout: 15_000,
+    },
+  );
+  if (configCheck.status !== 0)
+    throw new Error(
+      "API configuration check failed; no services were started.",
+    );
+  const aiRuntimeEnv = {
+    ...systemEnv,
+    ...selectedAiEnv,
+    INTERNAL_API_KEY: INTERNAL_KEY,
+    AI_STORAGE_DIR: STORAGE_DIR,
+    AI_MODE: "live",
+    AI_LOAD_DOTENV: "0",
+    ENABLE_TEST_CONSOLE: "0",
+  };
+  console.log("[PREP] Validating AI provider configuration (no API call)...");
+  const providerCheck = spawnSync(
+    PYTHON_EXEC,
+    [
+      "-c",
+      [
+        "import sys",
+        "from providers.factory import create_provider",
+        "try:",
+        " provider=create_provider()",
+        " provider.close()",
+        " import os",
+        " if os.environ.get('OCR_ENGINE') == 'docling':",
+        "  from extraction import Config",
+        "  from extraction.ocr import DoclingOcr",
+        "  cfg=Config.from_env()",
+        "  DoclingOcr(cfg.docling_python,cfg.docling_engine,cfg.docling_lang,cfg.docling_artifacts)",
+        "except Exception:",
+        " print('AI/OCR configuration failed; check the selected provider and run pnpm ai:ocr:setup for Docling.',file=sys.stderr)",
+        " sys.exit(1)",
+      ].join("\n"),
+    ],
+    {
+      cwd: path.join(ROOT, "services/ai"),
+      env: aiRuntimeEnv,
+      stdio: "inherit",
+      windowsHide: true,
+      timeout: 15_000,
+    },
+  );
+  if (providerCheck.status !== 0)
+    throw new Error("AI configuration check failed; no services were started.");
+  if (checkOnly) {
+    console.log(
+      "[PREP] API and AI configurations are valid; no services were started.",
+    );
+    return;
+  }
+  await prepareLocalDatabase({
+    root: ROOT,
+    ownerUrl: DB_URL,
+    apiUrl: API_DB_URL,
+    workerUrl: WORKER_DB_URL,
+    env,
+  });
+  if (stopping) return;
   console.log(
     `${colors.bold}====================================================${colors.reset}`,
   );
-  console.log(
-    `${colors.bold}Starting AIC Services concurrently...${colors.reset}`,
-  );
+  console.log(`${colors.bold}Starting AIC Services...${colors.reset}`);
   console.log(
     `- ${colors.web}[WEB]${colors.reset}    Next.js   : http://127.0.0.1:3000`,
   );
@@ -186,6 +388,9 @@ async function start() {
     `- ${colors.worker}[DOSSIER]${colors.reset} ZIP Worker: Polling intake/extraction`,
   );
   console.log(
+    `- ${colors.worker}[FINANCIAL]${colors.reset} BCTC Worker: Polling financial intake`,
+  );
+  console.log(
     `${colors.gray}Press Ctrl+C to terminate all services.${colors.reset}`,
   );
   console.log(
@@ -199,18 +404,7 @@ async function start() {
       ["-m", "runner", "serve", "--port", "8100"],
       {
         cwd: path.join(ROOT, "services", "ai"),
-        env: {
-          ...systemEnv,
-          ...Object.fromEntries(Object.entries(process.env).filter(([key]) => key.startsWith('AI_'))),
-          GEMINI_API_KEY: process.env.GEMINI_API_KEY,
-          MODEL_ID: process.env.MODEL_ID,
-          PROMPT_VERSION: process.env.PROMPT_VERSION,
-          INTERNAL_API_KEY: INTERNAL_KEY,
-          AI_STORAGE_DIR: STORAGE_DIR,
-          AI_MODE: "live",
-          AI_LOAD_DOTENV: "0",
-          ENABLE_TEST_CONSOLE: "0",
-        },
+        env: aiRuntimeEnv,
       },
     );
     pipeOutput(aiProc, "AI", colors.ai);
@@ -221,25 +415,13 @@ async function start() {
     );
   }
 
+  await waitReady("AI", "http://127.0.0.1:8100/healthz");
   // 2. Backend API (NestJS)
   const apiDist = path.join(ROOT, "apps", "api", "dist", "main.js");
   if (fs.existsSync(apiDist)) {
     const apiProc = spawn(process.execPath, [apiDist], {
       cwd: path.join(ROOT, "apps", "api"),
-      env: {
-        ...apiEnv,
-        PORT: "3001",
-        NODE_ENV: "development",
-        AIC_RUNTIME_MODE: "foundation",
-        AIC_DOCUMENT_RUNTIME: "local",
-        AIC_DOCUMENT_AI_MODE: "live",
-        AIC_STORAGE_DIR: STORAGE_DIR,
-        INTERNAL_API_KEY: INTERNAL_KEY,
-        AIC_AI_SERVICE_URL: "http://127.0.0.1:8100",
-        AIC_FRONTEND_ORIGIN: "http://127.0.0.1:3000",
-        AIC_IDEMPOTENCY_TTL_MS: "86400000",
-        DATABASE_URL: API_DB_URL,
-      },
+      env: apiRuntimeEnv,
     });
     pipeOutput(apiProc, "API", colors.api);
     processes.push(apiProc);
@@ -249,6 +431,10 @@ async function start() {
     );
   }
 
+  await waitReady(
+    "API / PostgreSQL",
+    "http://127.0.0.1:3001/api/v2/health/ready",
+  );
   // 3. Document Worker
   const workerDist = path.join(
     ROOT,
@@ -261,17 +447,7 @@ async function start() {
   if (fs.existsSync(workerDist)) {
     const workerProc = spawn(process.execPath, [workerDist, "--poll"], {
       cwd: path.join(ROOT, "apps", "api"),
-      env: {
-        ...apiEnv,
-        NODE_ENV: "development",
-        AIC_RUNTIME_MODE: "foundation",
-        AIC_DOCUMENT_RUNTIME: "local",
-        AIC_DOCUMENT_AI_MODE: "live",
-        AIC_STORAGE_DIR: STORAGE_DIR,
-        INTERNAL_API_KEY: INTERNAL_KEY,
-        AIC_AI_SERVICE_URL: "http://127.0.0.1:8100",
-        DATABASE_URL: WORKER_DB_URL,
-      },
+      env: { ...apiRuntimeEnv, DATABASE_URL: WORKER_DB_URL },
     });
     pipeOutput(workerProc, "WORKER", colors.worker);
     processes.push(workerProc);
@@ -292,17 +468,7 @@ async function start() {
       [dossierWorkerDist, "--poll"],
       {
         cwd: path.join(ROOT, "apps", "api"),
-        env: {
-          ...apiEnv,
-          NODE_ENV: "development",
-          AIC_RUNTIME_MODE: "foundation",
-          AIC_DOCUMENT_RUNTIME: "local",
-          AIC_DOCUMENT_AI_MODE: "live",
-          AIC_STORAGE_DIR: STORAGE_DIR,
-          INTERNAL_API_KEY: INTERNAL_KEY,
-          AIC_AI_SERVICE_URL: "http://127.0.0.1:8100",
-          DATABASE_URL: API_DB_URL,
-        },
+        env: apiRuntimeEnv,
       },
     );
     pipeOutput(dossierWorkerProc, "DOSSIER", colors.worker);
@@ -313,24 +479,44 @@ async function start() {
     );
   }
 
-  // 4. Frontend Web (Next.js)
-  const pnpmCmd = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
-  const webProc = spawn(
-    pnpmCmd,
-    [builtWeb ? "start" : "dev", "--hostname", "127.0.0.1", "--port", "3000"],
-    {
-      cwd: ROOT,
-      shell: true,
-      env: {
-        ...systemEnv,
-        AIC_BACKEND_URL: "http://127.0.0.1:3001/api/v2",
-        AIC_FRONTEND_ORIGIN: "http://127.0.0.1:3000",
-        NEXT_TELEMETRY_DISABLED: "1",
-      },
-    },
+  const intakeWorkerDist = path.join(
+    ROOT,
+    "apps/api/dist/financial/run-intake-worker.js",
   );
+  if (fs.existsSync(intakeWorkerDist)) {
+    const intakeProc = spawn(process.execPath, [intakeWorkerDist, "--poll"], {
+      cwd: path.join(ROOT, "apps/api"),
+      env: apiRuntimeEnv,
+    });
+    pipeOutput(intakeProc, "FINANCIAL", colors.worker);
+    processes.push(intakeProc);
+  }
+
+  // 4. Frontend Web (Next.js)
+  const [pnpmCmd, webArgs, webShell] = pnpmCommand([
+    builtWeb ? "start" : "dev",
+    "--hostname",
+    "127.0.0.1",
+    "--port",
+    "3000",
+  ]);
+  const webProc = spawn(pnpmCmd, webArgs, {
+    cwd: ROOT,
+    shell: webShell,
+    windowsHide: true,
+    env: {
+      ...systemEnv,
+      AIC_BACKEND_URL: "http://127.0.0.1:3001/api/v2",
+      AIC_FRONTEND_ORIGIN: "http://127.0.0.1:3000",
+      NEXT_TELEMETRY_DISABLED: "1",
+    },
+  });
   pipeOutput(webProc, "WEB", colors.web);
   processes.push(webProc);
+  await waitReady("Web", "http://127.0.0.1:3000");
+  console.log(
+    "\nAIC is ready: http://127.0.0.1:3000 (Ctrl+C to stop this stack).\n",
+  );
 }
 void start().catch((error) => {
   console.error(error.message);

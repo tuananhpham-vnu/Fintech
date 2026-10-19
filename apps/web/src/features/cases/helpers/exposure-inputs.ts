@@ -106,7 +106,7 @@ function pick(value: Record<string, unknown>, keys: string[]) {
     keys.filter((key) => Object.hasOwn(value, key)).map((key) => [key, value[key]]),
   )
 }
-export function projectSource(value: unknown): SourceInput {
+function projectSource(value: unknown): SourceInput {
   if (!object(value)) invalid()
   return pick(
     value,

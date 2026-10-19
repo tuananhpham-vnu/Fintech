@@ -11,7 +11,7 @@ test('financial units preserve decimal precision, sign and unknown state across 
   assert.equal(formatRatio('0.08', 'AIC-M07', 'vi'), '8%')
   assert.equal(formatRatio('-0.01234567890123456789', 'AIC-M06', 'en'), '-1.234567890123456789%')
   assert.equal(formatRatio('2', 'AIC-M04', 'zh-CN'), '2 倍')
-  assert.equal(formatRatio(null, 'AIC-M03', 'vi'), '—')
+  assert.equal(formatRatio(null, 'AIC-M03', 'vi'), 'N/A')
 })
 test('repeating ratios are approximate displays, never zero-debt exceptions', () => {
   const input = { numerator: '5', denominator: '3', decimal: null }

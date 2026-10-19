@@ -96,19 +96,7 @@ export class CasesController {
     @Headers("idempotency-key") key: string,
     @Body() body: unknown,
   ) {
-    if (this.mutations)
-      return (await this.mutations.create(req.session, key, body)).body;
-    throw new FoundationError(
-      503,
-      "CONTRACT_NOT_RELEASED",
-      "Case creation is blocked",
-      {
-        blockers: [
-          "APPROVED_POLICY_SELECTION_PENDING",
-          "EXPOSURE_WRITE_SCHEMA_PENDING",
-        ],
-      },
-    );
+    throw new FoundationError(410, 'TRANSACTION_FEATURE_RETIRED', 'Create a company financial assessment instead');
   }
   @Patch(":id/exposure") async exposure(
     @Req() req: FoundationRequest,
@@ -119,10 +107,6 @@ export class CasesController {
     if (this.mutations)
       return (await this.mutations.update(req.session, id, key, body)).body;
     await this.core.case(req.user, id);
-    throw new FoundationError(
-      503,
-      "CONTRACT_NOT_RELEASED",
-      "Exposure write schema is pending",
-    );
+    throw new FoundationError(503, 'CONTRACT_NOT_RELEASED');
   }
 }

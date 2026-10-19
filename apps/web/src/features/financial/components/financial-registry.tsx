@@ -238,7 +238,9 @@ export function FinancialInformation({
                           >
                             {productText(locale, 'viewSource')} · {t('page')} {f.source.page}
                           </button>
-                        ) : f.source.kind === 'financial_import' ? (
+                        ) : f.source.kind === 'financial_import' ||
+                          f.source.kind === 'statement_entry' ||
+                          f.source.kind === 'calculated' ? (
                           <details>
                             <summary>
                               {productText(locale, 'viewSource')} · {t('page')} {f.source.page}
@@ -917,7 +919,9 @@ function FinancialVerification({
                 {productText(locale, 'viewSource')}
               </button>
             </>
-          ) : f.source.kind === 'financial_import' ? (
+          ) : f.source.kind === 'financial_import' ||
+            f.source.kind === 'statement_entry' ||
+            f.source.kind === 'calculated' ? (
             <>
               <p>
                 {t('page')} {f.source.page}

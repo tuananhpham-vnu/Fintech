@@ -1,6 +1,7 @@
 import * as path from "path";
 import type { FoundationConfig } from "../foundation/ports";
 import { loadFhiPolicy } from "../financial/fhi-policy";
+import { loadInternationalPolicy } from '../financial/accounting-profiles';
 
 /** Transport-only configuration: legacy client unit tests do not require a DB. */
 export function loadAiTransportConfig() {
@@ -139,6 +140,7 @@ export function loadConfig(): AppConfig {
     throw new Error("Invalid AIC_COOKIE_NAME");
   const config: AppConfig = {
     fhiPolicy: loadFhiPolicy(process.env.AIC_FHI_POLICY_PATH),
+    internationalPolicy: loadInternationalPolicy(process.env.AIC_INTERNATIONAL_POLICY_PATH),
     port,
     frontendOrigin: origin.origin,
     allowedOrigins:

@@ -18,6 +18,9 @@ import type { ExactValue } from "./decimal";
 import { FinancialRegistry } from "./financial-registry.service";
 import { FHI_METHOD_ID, FHI_METHOD_VERSION } from "./fhi-method";
 import { activeFhiPolicy } from "./fhi-policy";
+import { financialReviewState } from './financial-review-state';
+import { partialAssessment } from './partial-assessment';
+import { CASE_ASSESSMENT_VERSION } from './case-assessment';
 
 const iso = (value: Date | string) => new Date(value).toISOString();
 const display = (value: ExactValue | null) =>
@@ -62,17 +65,14 @@ export class AssessmentService {
     await this.active(tx, session);
     return current;
   }
-  private async prepare(tx: SqlClient, current: any, setId?: string) {
-    const financial = await this.finance.evaluateTx(tx, current, setId);
+  private async prepare(tx: SqlClient, current: any, setId?: string,
+    caseWide = current.purpose === 'company_health' && setId === undefined) {
+    const financial = await this.finance.evaluateTx(tx, current, setId, caseWide);
     const context = await this.workflows.assessmentContextTx(tx, current);
     const at = iso(
       (await tx.query("SELECT clock_timestamp() AS at")).rows[0].at,
     );
-    const policy = activeFhiPolicy(
-      this.config.fhiPolicy,
-      current.organization_id,
-      at,
-    );
+    const policy = financial.policy;
     const jobs = (
       await tx.query(
         "SELECT id FROM aic.mvp_document_jobs WHERE organization_id=$1 AND case_id=$2 AND state IN ('queued','running') LIMIT 1",
@@ -81,10 +81,14 @@ export class AssessmentService {
     ).rows;
     const blockers = [...financial.registry.blockers] as string[];
     const company = current.purpose === "company_health";
+    const confirmation = company ? await financialReviewState(tx,current) : null;
     const core =
       company || ["RECEIVABLE", "PREPAYMENT"].includes(current.exposure_kind);
     if (!core) blockers.push("UNSUPPORTED_EXPOSURE_KIND");
     if (jobs.length) blockers.push("SOURCE_PROCESSING");
+    if (confirmation?.processing) blockers.push('SOURCE_PROCESSING');
+    if (company && !confirmation?.confirmed) blockers.push('FINANCIAL_REVIEW_ALL_REQUIRED');
+    if (confirmation?.unresolved_count) blockers.push('FINANCIAL_PERIOD_REVIEW_REQUIRED');
     if (!company && !context.review) blockers.push("REVIEW_REQUIRED");
     else if (context.review) {
       if (context.review.stale) blockers.push("STALE_REVIEW");
@@ -101,6 +105,7 @@ export class AssessmentService {
       financial: financial.source_snapshot_hash,
       review_inputs: context.snapshot,
       method_policy: policy ? requestHash(policy) : null,
+      ...(company ? {financial_confirmation:confirmation} : {}),
     });
     const readiness = {
       case_revision: Number(current.revision),
@@ -108,7 +113,7 @@ export class AssessmentService {
       assessment_allowed:
         core &&
         jobs.length === 0 &&
-        (company || (!!context.review && !context.review.stale)),
+        (company ? !!confirmation?.confirmed && !confirmation.processing : (!!context.review && !context.review.stale)),
       numeric_assessment_allowed:
         !!policy &&
         codes.length === 0 &&
@@ -148,6 +153,7 @@ export class AssessmentService {
       tx,
       current,
       row.selected_set_id ?? undefined,
+      !!row.payload_json.case_aggregation,
     );
     const ack = (
       await tx.query(
@@ -279,11 +285,18 @@ export class AssessmentService {
           );
         const published = prepared.readiness.numeric_assessment_allowed;
         const engine = prepared.engine;
+        const partial = partialAssessment(engine, {
+          company: current.purpose === 'company_health',
+          policyActive: !!prepared.policy,
+          reviewAllowed: prepared.readiness.assessment_allowed,
+          blockers: prepared.readiness.blockers.map(b => b.code),
+        });
         const components = (engine?.metrics ?? []).map((metric) => ({
           metric_id: metric.metric_id,
           formula_id: metric.formula_id,
           raw_value: display(metric.raw_ratio),
-          points: published ? display(metric.points) : null,
+          points: published || partial?.components.some(c => c.metric_id === metric.metric_id)
+            ? display(metric.points) : null,
           max_points: metric.max_points,
           source_facts: metric.source_facts.map((fact) => fact.id),
           verification_state: metric.flags.includes(
@@ -305,7 +318,9 @@ export class AssessmentService {
           case_id: caseId,
           case_revision: next,
           checked_case_revision: next,
-          method_version: FHI_METHOD_ID + "/" + FHI_METHOD_VERSION,
+          method_version: `${FHI_METHOD_ID}/${engine?.method_version ?? FHI_METHOD_VERSION}` +
+            (prepared.aggregation ? '/mean_metric_points_v1' : ''),
+          ...(prepared.aggregation ? { case_aggregation: prepared.aggregation } : {}),
           method_status: prepared.policy?.status ?? "unconfigured",
           method_policy_hash: prepared.policy
             ? requestHash(prepared.policy)
@@ -323,14 +338,17 @@ export class AssessmentService {
             factor_id: metric.metric_id,
             label: metric.metric_id,
             status: metric.status === "available" ? "available" : "missing",
-            score: published ? display(metric.points) : null,
+            score: published || partial?.components.some(c => c.metric_id === metric.metric_id)
+              ? display(metric.points) : null,
             value: display(metric.raw_ratio),
             rationale: metric.formula,
             evidence_refs: [
               ...new Set<string>(
                 prepared.registry.sets
                   .filter(
-                    (set: any) => set.id === prepared.registry.selected_set_id,
+                    (set: any) => prepared.aggregation
+                      ? prepared.aggregation.included_set_ids.includes(set.id)
+                      : set.id === prepared.registry.selected_set_id,
                   )
                   .flatMap((set: any) => set.facts)
                   .filter((fact: any) =>
@@ -356,6 +374,7 @@ export class AssessmentService {
             .map((finding: any) => finding.summary),
           limitations: prepared.readiness.limitations,
           financial_health: {
+            ...(partial ? { partial_assessment: partial } : {}),
             status: published ? "PREVIEW_ELIGIBLE" : "blocked",
             score: published ? engine.calculation.display_total : null,
             band: published ? engine.calculation.candidate_band : null,
@@ -390,6 +409,10 @@ export class AssessmentService {
                 metrics: engine.metrics,
                 groups: engine.groups,
                 calculation: engine.calculation,
+                ...(prepared.aggregation ? { periods: prepared.periodEngines.map(p => ({
+                  set_id: p.set.id, set_revision: p.set.revision, scope: p.set.scope,
+                  metrics: p.engine.metrics, blockers: p.blockers,
+                })) } : {}),
               }
             : null,
           acknowledged_by: null,

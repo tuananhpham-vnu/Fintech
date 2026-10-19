@@ -46,11 +46,10 @@ def build_backend(settings: Settings, contracts: Contracts | None = None) -> Bac
 
     import rules  # rule deterministic chạy được cả khi chưa có Gemini key; ca khó khi đó chuyển HITL
     semantic = None
-    if settings.gemini_key_configured and contracts is not None:
-        from providers.gemini import GeminiConfig, GeminiProvider
+    if settings.provider_key_configured and contracts is not None:
+        from providers.factory import create_provider
         from providers.semantic import PaymentConditionResolver
-        config = GeminiConfig.from_env()
-        semantic = PaymentConditionResolver(GeminiProvider(GeminiConfig(config.api_key, settings.model_id or config.model_id)),
+        semantic = PaymentConditionResolver(create_provider(name=settings.provider_name, model=settings.model_id or None),
                                             contracts)
     return LiveBackend(evaluator=functools.partial(rules.evaluate, semantic=semantic))
 
@@ -103,8 +102,26 @@ def create_app(settings: Settings | None = None, backend: Backend | None = None,
         from financial_import.service import execute
         request.state.ai_operation = "financial-import"
         payload = await _read_json(request, 34_000_000)
-        result = await run_in_threadpool(execute, payload)
+        from financial_import.checkpoint import scoped_call
+        result = await run_in_threadpool(scoped_call, request.headers.get('X-AIC-Cache-Scope','standalone'), execute, payload)
         return JSONResponse(result, headers={"X-AI-Mode": "live"})
+    @app.post('/internal/v2/financial-prepare')
+    async def financial_prepare(request: Request) -> JSONResponse:
+        _authorize(settings, request.headers.get('X-Internal-Key'))
+        from financial_import.intake import prepare
+        result = await run_in_threadpool(prepare, await _read_json(request, 34_000_000))
+        return JSONResponse(result, headers={'X-AI-Mode': backend.name})
+
+    @app.post('/internal/v2/financial-discovery')
+    async def financial_discovery(request: Request) -> JSONResponse:
+        _authorize(settings, request.headers.get('X-Internal-Key'))
+        if backend.name != 'live':
+            raise ServiceError(503, 'PROVIDER_UNAVAILABLE', 'Financial discovery requires live mode.')
+        from financial_import.intake import discover
+        request.state.ai_operation = 'financial-discovery'
+        from financial_import.checkpoint import scoped_call
+        result = await run_in_threadpool(scoped_call, request.headers.get('X-AIC-Cache-Scope','standalone'), discover, await _read_json(request, 34_000_000))
+        return JSONResponse(result, headers={'X-AI-Mode': 'live'})
     if settings.test_console:
         _mount_console(app)
     return app

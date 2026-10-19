@@ -230,15 +230,15 @@ async function main() {
     async () => {
       process.env.AIC_BACKEND_URL = 'https://backend.test/api/v2'
       const missing = await route.POST(
-        new Request('http://app.test/api/v2/cases', {
+        new Request('http://app.test/api/v2/company-assessments', {
           method: 'POST',
           headers: { Origin: 'http://app.test' },
         }),
-        { params: Promise.resolve({ path: ['cases'] }) },
+        { params: Promise.resolve({ path: ['company-assessments'] }) },
       )
       assert.equal(missing.status, 403)
       global.fetch = async (url, init) => {
-        assert.equal(url, 'https://backend.test/api/v2/cases')
+        assert.equal(url, 'https://backend.test/api/v2/company-assessments')
         assert.equal(init.headers.has('x-service-key'), false)
         return Response.json(fixtures.cases[0], {
           status: 201,
@@ -246,7 +246,7 @@ async function main() {
         })
       }
       const good = await route.POST(
-        new Request('http://app.test/api/v2/cases', {
+        new Request('http://app.test/api/v2/company-assessments', {
           method: 'POST',
           headers: {
             Origin: 'http://app.test',
@@ -257,7 +257,7 @@ async function main() {
           },
           body: '{}',
         }),
-        { params: Promise.resolve({ path: ['cases'] }) },
+        { params: Promise.resolve({ path: ['company-assessments'] }) },
       )
       assert.equal(good.status, 201)
       assert.ok(good.headers.get('set-cookie').includes('HttpOnly'))

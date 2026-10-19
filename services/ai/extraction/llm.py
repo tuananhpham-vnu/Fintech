@@ -1,4 +1,4 @@
-"""Gọi GeminiProvider cho M2 với budget tổng của một request và ánh xạ lỗi provider sang envelope.
+"""Gọi provider cho M2 với budget tổng của một request và ánh xạ lỗi sang envelope.
 
 - ProviderUnavailable / lỗi HTTP -> 503 PROVIDER_UNAVAILABLE (không bao giờ rơi về mock/gold).
 - Output không parse được JSON -> MalformedOutput để caller quyết định có repair (tối đa 1 lần) hay trả 422.
@@ -15,11 +15,11 @@ import time
 from contextlib import contextmanager
 from typing import Any, Iterator, Sequence
 
-from providers.gemini import ProviderError, ProviderUnavailable
+from providers.base import ModelOutputError, ProviderError, ProviderUnavailable
 from runner.errors import PROVIDER_UNAVAILABLE, ServiceError
 
-EXTRACTION_MAX_OUTPUT_TOKENS = 8192
-OCR_MAX_OUTPUT_TOKENS = 8192
+EXTRACTION_MAX_OUTPUT_TOKENS = 16384
+OCR_MAX_OUTPUT_TOKENS = 16384
 
 
 class MalformedOutput(Exception):
@@ -87,7 +87,7 @@ def call_json(provider: Any, system: str, user: str, schema: dict, deadline: Dea
               media: Sequence[tuple[str, bytes]] = (), max_output_tokens: int = EXTRACTION_MAX_OUTPUT_TOKENS,
               gate: CallGate | None = None) -> Any:
     if provider is None:
-        raise _unavailable(f"No model provider configured for {what} (GEMINI_API_KEY).")
+        raise _unavailable(f"No model provider configured for {what}.")
     deadline.check(what)
     with (gate or GATE).slot(deadline, what):
         deadline.check(what)
@@ -95,7 +95,11 @@ def call_json(provider: Any, system: str, user: str, schema: dict, deadline: Dea
             result = provider.generate_json(system, user, schema, media=media, deadline=deadline.end,
                                             max_output_tokens=max_output_tokens)
         except ProviderUnavailable as exc:
+            if getattr(exc,'code',None)=='AI_SPEND_BUDGET_EXHAUSTED':
+                raise ServiceError(429,exc.code,'AI spending ceiling reached; review existing results before further processing.') from exc
             raise _unavailable(f"Model provider unavailable during {what}.") from exc
+        except ModelOutputError as exc:
+            raise ServiceError(422, exc.code, "Model returned no usable output.") from exc
         except ProviderError as exc:
             if isinstance(exc.__cause__, (json.JSONDecodeError, KeyError, IndexError, TypeError)):
                 raise MalformedOutput(what) from exc

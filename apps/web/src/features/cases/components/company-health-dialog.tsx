@@ -39,11 +39,11 @@ export function CompanyHealthDialog({
       <form
         onSubmit={(e) => {
           e.preventDefault()
-          if (!capability.data?.available || !reason.trim()) return
+          if (!capability.data?.available) return
           const body = {
             schema_version: 'AIC-COMPANY-HEALTH-1' as const,
             counterparty_id: party,
-            reason: reason.trim(),
+            ...(reason.trim() ? { reason: reason.trim() } : {}),
           }
           void action.run(
             (keys) => casesApi.createCompany(body, keys.for('/company-assessments', body)),
@@ -78,13 +78,8 @@ export function CompanyHealthDialog({
             </button>
           )}
           <label className="field-label">
-            {copy('reason')} *
-            <textarea
-              required
-              maxLength={2000}
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-            />
+            {copy('reason')}
+            <textarea maxLength={2000} value={reason} onChange={(e) => setReason(e.target.value)} />
           </label>
         </fieldset>
         <Link className="text-button" href="/counterparties">
@@ -102,7 +97,7 @@ export function CompanyHealthDialog({
           </button>
           <button
             className="primary-button"
-            disabled={action.busy || !capability.data?.available || !party || !reason.trim()}
+            disabled={action.busy || !capability.data?.available || !party}
           >
             {copy('create')}
           </button>

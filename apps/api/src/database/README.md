@@ -34,10 +34,12 @@ Initialization executes SELECT 1, locates the latest required numbered migration
 and requires its matching name/canonical SHA-256 checksum in `aic.schema_migrations`.
 Migration 0020 introduced the separately gated company-health expansion; an
 installed 0020 must have its matching checksum. The current release also includes
-0021 for immutable international financial-import sources, so its latest required
-readiness migration is now 0021. Apply the full ordered migration set before running
+0021 for immutable international financial-import sources and 0022 for company
+financial intake/common review, so its latest required readiness migration is 0022. Apply the full ordered migration set before running
 this release. See the company-health v1 contract for its controlled rollout/backup/
-rollback boundary. No startup path runs migrations. Missing
+rollback boundary. Nest startup only verifies schema; the local `pnpm dev:all`
+launcher separately backs up and migrates loopback development databases before
+starting Nest (see `scripts/dev-prepare.cjs`). Missing
 migration files (including the required 0003 baseline), a missing schema/ledger,
 a missing latest row, or a checksum mismatch reject startup and close the pool.
 This is read-only verification;
@@ -67,7 +69,8 @@ Linux LF packages with otherwise identical SQL have identical checksums.
 No other whitespace, lone CR, BOM, or final newline is changed, and migration
 files are never rewritten. Changed canonical checksums, removed/renamed history, duplicate versions, and new
 migrations inserted before applied history are rejected. Repeated successful
-invocation returns `{ applied: [] }`. Nothing imports this runner automatically.
+invocation returns `{ applied: [] }`. The local development launcher imports the
+runner after its backup succeeds; production/API startup does not.
 
 Earlier isolated test databases may contain raw-byte checksums from before this
 canonicalization rule. A raw CRLF checksum will still be rejected; no legacy

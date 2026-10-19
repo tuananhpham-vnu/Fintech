@@ -4,11 +4,8 @@ import { ErrorNotice } from '@/components/feedback/error-notice'
 import { Loading } from '@/components/feedback/loading'
 import { Pagination } from '@/components/ui/pagination'
 import { Status } from '@/components/ui/status'
-import { TransactionDialog } from '@/features/cases/components/transaction-dialog'
 import { CompanyHealthDialog } from './company-health-dialog'
 import { companyHealthText } from '@/lib/i18n/company-health-copy'
-import { type ExposureKind } from '@/lib/api/contracts'
-import { rolePairs } from '@/lib/domain/cases'
 import { useLocale } from '@/lib/i18n/locale-provider'
 import { isSyntheticText, productText } from '@/lib/i18n/product-copy'
 import { formatMoney } from '@/lib/utils/money'
@@ -18,10 +15,8 @@ import { useState } from 'react'
 import { useCaseList } from '../hooks/use-case-list'
 export function CaseList() {
   const { t, locale } = useLocale()
-  const [open, setOpen] = useState(false)
   const [companyOpen, setCompanyOpen] = useState(false)
-  const { rows, names, visible, cursors, setCursors, query, setQuery, kind, setKind } =
-    useCaseList()
+  const { rows, names, visible, cursors, setCursors, query, setQuery } = useCaseList()
   return (
     <>
       <div className="aic-page-title">
@@ -34,9 +29,6 @@ export function CaseList() {
           <button className="primary-button" onClick={() => setCompanyOpen(true)}>
             <Plus size={17} />
             {companyHealthText(locale, 'create')}
-          </button>
-          <button className="secondary-button" onClick={() => setOpen(true)}>
-            {t('newCase')}
           </button>
         </div>
       </div>
@@ -62,20 +54,6 @@ export function CaseList() {
               onChange={(e) => setQuery(e.target.value)}
             />
           </label>
-          <select
-            className="filter-select"
-            aria-label={companyHealthText(locale, 'filter')}
-            value={kind}
-            onChange={(e) => setKind(e.target.value)}
-          >
-            <option value="">{t('all')}</option>
-            <option value="company_health">{companyHealthText(locale, 'title')}</option>
-            {Object.keys(rolePairs).map((k) => (
-              <option key={k} value={k}>
-                {t(k as ExposureKind)}
-              </option>
-            ))}
-          </select>
         </div>
         <ErrorNotice error={rows.error} retry={rows.reload} />
         {rows.loading && <Loading />}
@@ -147,7 +125,6 @@ export function CaseList() {
           }}
         />
       </section>
-      {open && <TransactionDialog onClose={() => setOpen(false)} onSaved={rows.reload} />}
       {companyOpen && (
         <CompanyHealthDialog onClose={() => setCompanyOpen(false)} onSaved={rows.reload} />
       )}

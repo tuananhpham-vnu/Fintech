@@ -14,6 +14,7 @@ export interface FoundationDatabase extends SqlClient {
 }
 export interface FoundationConfig {
   fhiPolicy?: Readonly<import("../financial/fhi-policy").FhiPublicationPolicy>;
+  internationalPolicy?: Readonly<import("../financial/accounting-profiles").InternationalPolicy>;
   databaseUrl: string;
   frontendOrigin: string;
   allowedOrigins: string[];

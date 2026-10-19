@@ -622,7 +622,7 @@ export class MvpCaseService {
           session.user.organization_id,
           id,
           session.user.id,
-          input.reason,
+          input.reason?.trim() || null,
           canonicalJson({
             schema_version: input.schema_version,
             purpose: 'company_health',

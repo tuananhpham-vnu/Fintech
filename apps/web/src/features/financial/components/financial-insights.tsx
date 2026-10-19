@@ -424,7 +424,9 @@ export function FinancialInsights({
                   </>
                 ) : (
                   <p>
-                    {f.source.kind === 'financial_import' ? (
+                    {f.source.kind === 'financial_import' ||
+                    f.source.kind === 'statement_entry' ||
+                    f.source.kind === 'calculated' ? (
                       <>
                         <a
                           href={importSourceUrl(

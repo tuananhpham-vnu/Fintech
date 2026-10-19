@@ -1,0 +1,22 @@
+{
+  "version": "AIC-ACCOUNTING-CONCEPTS-1",
+  "method_id": "AIC-FHI-1.0",
+  "method_unchanged": true,
+  "scope_policy": "One entity, reporting interval, basis and currency. Exact source-unit normalization only. Instant variables retain their actual as_of date.",
+  "concepts": [
+    {"key":"current_assets","nature":"instant","meaning":"Total current assets","relations":["complete nonoverlapping current asset breakdown"],"exclude":["noncurrent assets"]},
+    {"key":"current_liabilities","nature":"instant","meaning":"Total current liabilities","relations":["total liabilities = current liabilities + noncurrent liabilities"],"exclude":["interest-bearing debt substituted for liabilities"]},
+    {"key":"cash","nature":"instant","meaning":"Separate cash component eligible per existing method","relations":["cash and cash equivalents = cash + cash equivalents"],"exclude":["combined cash-and-equivalents as cash alone","restricted cash without eligible-source review"]},
+    {"key":"unrestricted_short_term_equivalents","nature":"instant","meaning":"Separate eligible unrestricted short-term cash-equivalent component","relations":["combined cash and cash equivalents minus separate cash, with eligibility evidenced"],"exclude":["all short-term investments","assumed zero","restricted deposits"]},
+    {"key":"trade_receivables","nature":"instant","meaning":"Net eligible customer trade receivables per current implementation; reconcile gross/net scope with method source before relaxing this interpretation","relations":["gross customer receivables minus specifically attributable allowance"],"exclude":["all receivables","general unallocated provision","gross promoted as net"]},
+    {"key":"total_equity","nature":"instant","meaning":"Total equity for the selected reporting basis","relations":["total assets = total liabilities + total equity"],"exclude":["parent-only equity when consolidated total is required"]},
+    {"key":"total_assets","nature":"instant","meaning":"Total assets","relations":["current assets + noncurrent assets","total liabilities + total equity"],"exclude":["subtotal added to its children"]},
+    {"key":"total_liabilities","nature":"instant","meaning":"Total liabilities","relations":["current + noncurrent liabilities","total assets minus total equity"],"exclude":["borrowings alone"]},
+    {"key":"interest_bearing_debt","nature":"instant","meaning":"Complete eligible interest-bearing debt aggregate","relations":["complete disjoint eligible borrowing and lease components"],"exclude":["all liabilities","double counted current maturities","missing component assumed zero"]},
+    {"key":"operating_profit","nature":"duration","meaning":"Explicit operating profit for the selected accounting basis; preserve current method's operating-profit input, do not invent a cross-country EBIT bridge","relations":["complete source-supported operating income and expense identity"],"exclude":["net profit","pretax profit substituted without defined method bridge","EBITDA"]},
+    {"key":"depreciation_amortization","nature":"duration","meaning":"Period depreciation and eligible amortization with addback scope matching the operating-profit input","relations":["complete separate eligible period components","complete accumulated-balance rollforward including disposal/transfers/adjustments"],"exclude":["accumulated depreciation as period expense","zero closing assets interpreted as zero period expense","all prepaid allocation treated as eligible amortization","capitalized amounts not deducted from the profit input"]},
+    {"key":"interest_expense","nature":"duration","meaning":"Period gross interest expense per method","relations":["source-supported finance-cost decomposition if complete"],"exclude":["interest paid","total finance expense","net interest substituted for gross"]},
+    {"key":"net_revenue","nature":"duration","meaning":"Net revenue for the method's revenue scope","relations":["gross revenue minus complete revenue deductions"],"exclude":["segment subtotal replacing entity revenue"]},
+    {"key":"cash_from_operations","nature":"duration","meaning":"Net operating cash flow for the exact reporting interval","relations":["complete signed operating cash-flow lines","complete indirect cash-flow reconciliation"],"exclude":["profit as operating cash flow","gross receipts","CFO used as EBITDA"]}
+  ]
+}

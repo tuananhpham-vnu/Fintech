@@ -3,15 +3,17 @@ import { Loading } from '@/components/feedback/loading'
 import { useLocale } from '@/lib/i18n/locale-provider'
 import type { PDFDocumentLoadingTask, RenderTask } from 'pdfjs-dist'
 import { useEffect, useRef, useState } from 'react'
-export function PdfView({
-  url,
-  initialPage,
-  onPageChange,
-}: {
+import { ScrollPdfView } from './scroll-pdf-view'
+type Props = {
   url: string
   initialPage: number
   onPageChange: (page: number) => void
-}) {
+  continuous?: boolean
+}
+export function PdfView(props: Props) {
+  return props.continuous ? <ScrollPdfView {...props} /> : <SinglePdfView {...props} />
+}
+function SinglePdfView({ url, initialPage, onPageChange }: Props) {
   const { t } = useLocale(),
     canvas = useRef<HTMLCanvasElement>(null),
     [page, setPage] = useState(initialPage),

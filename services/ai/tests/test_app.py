@@ -1,5 +1,7 @@
 """T13a acceptance: 3 route đúng input/output, guard output, không DB, live không tự rơi về mock."""
 import sys
+import subprocess
+from pathlib import Path
 import uuid
 
 import pytest
@@ -78,7 +80,12 @@ def test_mock_does_not_invent_answers(client, contracts, gold):
     _error_ok(contracts, client.post("/internal/v1/evaluate", json=request, headers=HEADERS), 503, "PROVIDER_UNAVAILABLE")
 
 
-def test_live_mode_never_falls_back_to_mock(live_client, contracts, examples, gold):
+def test_live_mode_never_falls_back_to_mock(contracts, examples):
+    from runner.backends import LiveBackend
+    # Simulate an unavailable extraction package explicitly. Installing the real
+    # local runtime must not change this test's precondition.
+    live_client=TestClient(create_app(make_settings(MODE_LIVE),contracts=contracts,
+        backend=LiveBackend(extraction_module='aic_test_missing_extraction_package')))
     for route, payload in (("inspect", example(examples, "inspect request")),
                            ("extract", example(examples, "extract request"))):
         response = live_client.post(f"/internal/v1/{route}", json=payload, headers=HEADERS)
@@ -122,8 +129,18 @@ def test_semantic_guards_block_bad_model_output(contracts, gold, name):
 
 
 def test_service_has_no_database_or_callback_client(client):
-    forbidden = {"sqlalchemy", "psycopg", "psycopg2", "asyncpg", "sqlite3", "requests"}
-    assert forbidden.isdisjoint(m.split(".")[0] for m in sys.modules if m.startswith(("runner", *forbidden)))
+    # Audit app startup in isolation: other test modules deliberately import
+    # SQLite to verify the opt-in private spend ledger, not a business DB client.
+    script = '''
+import sys
+from runner.app import create_app
+from runner.config import Settings
+create_app(Settings.from_env({'AI_MODE':'mock'}))
+forbidden={'sqlalchemy','psycopg','psycopg2','asyncpg','sqlite3','requests'}
+assert forbidden.isdisjoint(m.split('.')[0] for m in sys.modules)
+'''
+    subprocess.run([sys.executable,'-c',script],cwd=Path(__file__).resolve().parents[1],
+                   check=True,capture_output=True,text=True)
 
 
 def test_console_disabled_by_default(client):

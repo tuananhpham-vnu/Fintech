@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, HttpCode, Param, Post, Req, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Body, Controller, Get, Headers, HttpCode, Param, Post, Query, Req, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import type { Response } from 'express'
 import type { FoundationRequest } from '../foundation/ports'
@@ -18,6 +18,16 @@ export class FinancialImportController {
   @Get('cases/:id/financial-imports/:receipt')
   receipt(@Req() r: FoundationRequest,@Param('id') id:string,@Param('receipt') receipt:string) {
     return this.imports.receipt(r.session,id,receipt)
+  }
+  @Get('cases/:id/financial-reasoning/:receipt')
+  reasoning(@Req() r:FoundationRequest,@Param('id') id:string,@Param('receipt') receipt:string,@Query('offset') offset='0') {
+    if(!/^\d{1,6}$/.test(offset))throw new FoundationError(422,'INVALID_INPUT')
+    return this.imports.reasoning(r.session,id,receipt,Number(offset))
+  }
+  @Post('cases/:id/financial-reasoning/:receipt/decisions') @HttpCode(201)
+  reviewReasoning(@Req() r:FoundationRequest,@Param('id') id:string,@Param('receipt') receipt:string,
+    @Headers('idempotency-key') key:string,@Body() body:unknown) {
+    return this.imports.reviewReasoning(r.session,id,receipt,key,body)
   }
   @Post('cases/:id/financial-files') @HttpCode(201)
   @UseGuards(DossierUploadGuard)

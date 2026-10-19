@@ -32,7 +32,7 @@ export async function importSource(tx: SqlClient, current: any, kind: string, id
 }
 export async function importReceipt(tx: SqlClient, current: any, id: string) {
   const row = (await tx.query(`SELECT metadata_json FROM aic.audit_events
-    WHERE organization_id=$1 AND case_id=$2 AND subject_id=$3 AND action='financial.import_extracted'`,
+    WHERE organization_id=$1 AND case_id=$2 AND subject_id=$3 AND action IN ('financial.import_extracted','financial.intake_period_reviewed','financial.reasoning_reviewed')`,
     [current.organization_id, current.id, id])).rows[0]?.metadata_json
   if (!row || row.contract_version !== IMPORT_VERSION) throw notFound()
   return row
@@ -41,7 +41,7 @@ export async function validImportedSource(tx: SqlClient, current: any, source: a
   try {
     const receipt = await importReceipt(tx, current, source.receipt_id)
     const file = await importSource(tx, current, source.source_kind, source.source_id)
-    if (file.sha256 !== source.source_hash || receipt.source.id !== file.id || receipt.source.kind !== file.kind ||
+    if (receipt.document_type !== 'financial_statement' || !(await currentFinancialFile(tx,current,file.id)) || file.sha256 !== source.source_hash || receipt.source.id !== file.id || receipt.source.kind !== file.kind ||
         receipt.sha256 !== source.source_hash || !receipt.facts.some((f: any) => f.key === source.fact_key &&
           f.page === source.page && f.quote === source.quote)) return false
     if (!reviewed) return true
@@ -54,4 +54,10 @@ export async function validImportedSource(tx: SqlClient, current: any, source: a
     if (error instanceof FoundationError && error.getStatus() === 404) return false
     throw error
   }
+}
+export async function currentFinancialFile(tx: SqlClient, current: any, sourceId: string) {
+  const rows = (await tx.query(`SELECT superseded_by,origin_json FROM aic.financial_intakes
+    WHERE organization_id=$1 AND case_id=$2 AND prepared_source_id=$3`,
+    [current.organization_id,current.id,sourceId])).rows;
+  return !rows.length || rows.some(r=>!r.superseded_by && !r.origin_json?.exclusion);
 }

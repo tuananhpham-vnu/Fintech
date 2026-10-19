@@ -2,7 +2,7 @@ import type { Locale } from '@/lib/api/contracts'
 export function formatTime(value: string, locale: Locale) {
   const date = new Date(value)
   return Number.isNaN(date.getTime())
-    ? '—'
+    ? 'N/A'
     : new Intl.DateTimeFormat(locale, {
         dateStyle: 'medium',
         timeStyle: 'short',
@@ -11,7 +11,7 @@ export function formatTime(value: string, locale: Locale) {
 }
 export function displayValue(value: unknown) {
   return value === null || value === undefined
-    ? '—'
+    ? 'N/A'
     : typeof value === 'object'
       ? JSON.stringify(value, null, 2)
       : String(value)

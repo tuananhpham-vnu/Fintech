@@ -66,6 +66,28 @@ def test_disabled_or_invalid_correlation_emits_nothing(monkeypatch, caplog):
     assert not caplog.records
 
 
+@pytest.mark.parametrize('operation', ['financial-discovery', 'financial-import'])
+def test_financial_failures_keep_safe_request_correlation(monkeypatch, caplog, operation):
+    monkeypatch.setenv('AIC_SAFE_PROVIDER_DIAGNOSTICS', '1')
+    error = ServiceError(503, 'PROVIDER_UNAVAILABLE', 'private document must not be logged')
+    error.__cause__ = ProviderUnavailable('DeepSeek unavailable after 3 attempts (HTTP 429)')
+    request_id = str(uuid.uuid4())
+    event = emit_failure(error, operation, None, request_id)
+    assert event['operation'] == operation and event['request_id'] == request_id
+    assert event['category'] == 'RATE_LIMIT_OR_QUOTA'
+    assert 'private document' not in caplog.text
+
+
+@pytest.mark.parametrize('code', ['INVALID_MODEL_OUTPUT', 'MODEL_OUTPUT_BLOCKED',
+                                  'MODEL_OUTPUT_TRUNCATED', 'MODEL_OUTPUT_EMPTY'])
+def test_financial_model_output_diagnostic_is_content_free(monkeypatch, caplog, code):
+    monkeypatch.setenv('AIC_SAFE_PROVIDER_DIAGNOSTICS', '1')
+    error = ServiceError(422, code, 'PRIVATE MODEL CONTENT')
+    event = emit_failure(error, 'financial-discovery', None, str(uuid.uuid4()))
+    assert event['category'] == code and event['service_status'] == 422
+    assert event['service_code'] == code and 'PRIVATE MODEL CONTENT' not in caplog.text
+
+
 def test_error_envelope_request_id_matches_content_free_server_event(monkeypatch, caplog, contracts, examples):
     monkeypatch.setenv("AIC_SAFE_PROVIDER_DIAGNOSTICS", "1")
     class FailingBackend:

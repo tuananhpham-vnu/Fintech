@@ -1,5 +1,5 @@
 import type { Locale } from '@/lib/api/contracts'
-export const moneyPattern = /^[1-9]\d*$/
+const moneyPattern = /^[1-9]\d*$/
 export function validAmount(value: string) {
   return moneyPattern.test(value) && value.length <= 24
 }

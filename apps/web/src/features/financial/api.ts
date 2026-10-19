@@ -1,5 +1,6 @@
 import { apiPath, request, type MutationKey } from '@/lib/api/client'
 import { evidence } from '@/lib/api/decoders'
+import { decodeAccountingProfile } from '@/lib/api/accounting-profile'
 export const factKeys = [
   'current_assets',
   'current_liabilities',
@@ -15,8 +16,35 @@ export const factKeys = [
   'interest_expense',
   'net_revenue',
   'cash_from_operations',
+  'eligible_cash_and_equivalents',
 ] as const
+export const factKeysForCountry = (country?: string) =>
+  factKeys.filter(
+    (key) => key !== 'eligible_cash_and_equivalents' || country === 'US' || country === 'CN',
+  )
 export type FinancialSource =
+  | {
+      kind: 'calculated'
+      receipt_id: string
+      calculation_id: string
+      fact_key: string
+      source_kind: 'document' | 'dossier_member' | 'financial_file'
+      source_id: string
+      source_hash: string
+      page: number
+      quote: string
+    }
+  | {
+      kind: 'statement_entry'
+      receipt_id: string
+      fact_key: string
+      source_kind: 'document' | 'dossier_member' | 'financial_file'
+      source_id: string
+      source_hash: string
+      page: number
+      quote: string
+      reason: string
+    }
   | { kind: 'manual_entry'; statement: string }
   | {
       kind: 'financial_import'
@@ -27,6 +55,7 @@ export type FinancialSource =
       source_hash: string
       page: number
       quote: string
+      human_correction?: { reason: string }
     }
   | {
       kind: 'document'
@@ -44,7 +73,105 @@ export type FactInput = {
   missing_reason: string | null
   source: FinancialSource
 }
+export type CalculationProposal = {
+  id: string
+  key: string
+  reason: string
+  assumptions: string[]
+  expression: string[]
+  inputs: {
+    id: string
+    value: string
+    label: string
+    raw_token: string
+    page: number
+    quote: string
+    period_start: string
+    period_end: string
+    basis: string
+    currency: string
+    unit_multiplier: string
+    dimension: string
+  }[]
+  computed_value: string | null
+  blocked_reason: string | null
+  blocked_details?: {
+    missing_variables: {
+      id: string
+      label: string
+      source_status?:
+        'not_observed' | 'observed_unlinked' | 'scope_mismatch' | 'allocation_unproven'
+      source_candidates?: {
+        observation_id: string
+        label: string
+        page: number
+        quote: string
+        status: string
+      }[]
+    }[]
+    assumptions: string[]
+  }
+  receipt_id: string
+  source_kind: 'document' | 'dossier_member' | 'financial_file'
+  source_id: string
+  source_hash: string
+  reasoning_version?: string
+  proof?: {
+    variable_id: string
+    leaf_ids: string[]
+    relation_ids: string[]
+    depth: number
+    exact_value: { numerator: string; denominator: string; decimal: string | null }
+    variables: { id: string; label: string; key: string | null }[]
+    steps: {
+      id: string
+      label: string
+      reason: string
+      kind: string
+      expression?: string[]
+      output_variable_id?: string
+      terms: { variable_id: string; coefficient: string }[]
+      evidence: { page: number; quote: string }[]
+    }[]
+    intermediate_values: {
+      variable_id: string
+      value: { decimal: string | null; numerator: string; denominator: string }
+    }[]
+  } | null
+}
+export type ReasoningSummary = {
+  version: string
+  receipt_id: string
+  proof_hash: string
+  coverage: { pages_read: number[]; pages_available: number[]; complete: boolean }
+  diagnostics: { code: string; detail: string }[]
+  targets: {
+    key: string
+    status: string
+    origin: string
+    value: string | null
+    code: string | null
+    steps: number
+  }[]
+}
+export type ReasoningPage = {
+  summary: ReasoningSummary
+  relations: NonNullable<CalculationProposal['proof']>['steps']
+  rows: {
+    variable: { id: string; label: string }
+    observations: {
+      id: string
+      label: string
+      value: string
+      raw_token: string
+      page: number
+      quote: string
+    }[]
+  }[]
+  next_offset: number | null
+}
 export type FinancialInput = {
+  intake_review?: { intake_id: string; receipt_id: string; page: number; quote: string }
   import_review?: { receipt_id: string; confirmed: true }
   expected_revision: number
   reason: string
@@ -74,7 +201,18 @@ export type FinancialSet = {
     currency: string
     unit_multiplier: string
   }
-  metadata: { observation_kind: string; audit_status: string; statement_version: string }
+  metadata: {
+    accounting_profile?: import('@/lib/api/contracts').AccountingProfile
+    source_rounding?: {
+      quantums: Record<string, string>
+      evidence: { page: number; quote: string }[]
+    }
+    observation_kind: string
+    audit_status: string
+    statement_version: string
+    calculations?: CalculationProposal[]
+    reasoning?: ReasoningSummary
+  }
   facts: (FactInput & {
     id: string
     revision: number
@@ -121,6 +259,76 @@ export type Registry = {
 }
 function financialSet(value: unknown): FinancialSet {
   const s = value as FinancialSet
+  if (s?.metadata?.accounting_profile !== undefined) {
+    const profile = decodeAccountingProfile(s.metadata.accounting_profile)
+    if (
+      profile.country !== s.scope.country ||
+      profile.accounting_regime !== s.scope.accounting_regime
+    )
+      throw Error('Invalid accounting profile scope')
+  }
+  const reasoning = s?.metadata?.reasoning
+  if (
+    reasoning &&
+    (reasoning.version !== 'AIC-FINANCIAL-REASONING-1' ||
+      typeof reasoning.receipt_id !== 'string' ||
+      !/^[a-f0-9]{64}$/.test(reasoning.proof_hash) ||
+      !Array.isArray(reasoning.targets) ||
+      reasoning.targets.length !== 14 ||
+      reasoning.targets.some(
+        (t) =>
+          !factKeys.includes(t.key as (typeof factKeys)[number]) ||
+          !['resolved', 'unresolved', 'conflict'].includes(t.status) ||
+          !['direct', 'derived'].includes(t.origin) ||
+          (t.value !== null && typeof t.value !== 'string') ||
+          (t.code !== null && typeof t.code !== 'string'),
+      ) ||
+      !Array.isArray(reasoning.coverage?.pages_read) ||
+      !Array.isArray(reasoning.coverage?.pages_available) ||
+      !Array.isArray(reasoning.diagnostics))
+  )
+    throw Error('Invalid financial reasoning summary')
+  if (
+    s?.metadata?.calculations !== undefined &&
+    (!Array.isArray(s.metadata.calculations) ||
+      s.metadata.calculations.length > factKeysForCountry(s.scope.country).length ||
+      s.metadata.calculations.some(
+        (p) =>
+          !p ||
+          typeof p.id !== 'string' ||
+          !factKeys.includes(p.key as (typeof factKeys)[number]) ||
+          !Array.isArray(p.expression) ||
+          !p.expression.every((t) => typeof t === 'string') ||
+          !Array.isArray(p.inputs) ||
+          (!p.inputs.length && !p.blocked_reason) ||
+          p.inputs.some(
+            (i) =>
+              !i ||
+              typeof i.id !== 'string' ||
+              typeof i.label !== 'string' ||
+              typeof i.raw_token !== 'string' ||
+              typeof i.quote !== 'string' ||
+              !Number.isInteger(i.page) ||
+              i.page < 1 ||
+              i.page > 600,
+          ) ||
+          !Array.isArray(p.assumptions) ||
+          !p.assumptions.every((a) => typeof a === 'string') ||
+          (p.computed_value !== null &&
+            (typeof p.computed_value !== 'string' ||
+              !/^-?\d{1,30}(\.\d{1,12})?$/.test(p.computed_value))) ||
+          (p.blocked_reason !== null && typeof p.blocked_reason !== 'string') ||
+          typeof p.receipt_id !== 'string' ||
+          typeof p.source_id !== 'string' ||
+          (p.proof != null &&
+            (!Array.isArray(p.proof.steps) ||
+              !Array.isArray(p.proof.variables) ||
+              !Array.isArray(p.proof.intermediate_values) ||
+              !Array.isArray(p.proof.leaf_ids))) ||
+          !/^[a-f0-9]{64}$/.test(p.source_hash),
+      ))
+  )
+    throw Error('Invalid financial calculation proposals')
   if (
     !s ||
     typeof s.id !== 'string' ||
@@ -129,7 +337,7 @@ function financialSet(value: unknown): FinancialSet {
     !s.scope?.period ||
     !s.metadata ||
     !Array.isArray(s.facts) ||
-    s.facts.length > 14 ||
+    s.facts.length > factKeysForCountry(s.scope.country).length ||
     typeof s.verification_stale !== 'boolean'
   )
     throw Error('Invalid financial set')
@@ -149,7 +357,7 @@ function financialSet(value: unknown): FinancialSet {
       typeof f.id !== 'string' ||
       !Number.isSafeInteger(f.revision) ||
       f.revision < 1 ||
-      !factKeys.includes(f.key as (typeof factKeys)[number]) ||
+      !factKeysForCountry(s.scope.country).includes(f.key as (typeof factKeys)[number]) ||
       typeof f.raw_label !== 'string' ||
       (f.raw_value !== null && typeof f.raw_value !== 'string') ||
       (f.normalized_decimal !== null && typeof f.normalized_decimal !== 'string') ||
@@ -169,7 +377,16 @@ function financialSet(value: unknown): FinancialSet {
         typeof f.source.evidence_ref !== 'string'
       )
         throw Error('Invalid financial source')
-    } else if (f.source?.kind === 'financial_import') {
+    } else if (
+      f.source?.kind === 'financial_import' ||
+      f.source?.kind === 'statement_entry' ||
+      f.source?.kind === 'calculated'
+    ) {
+      if (
+        f.source.kind === 'calculated' &&
+        (typeof f.source.calculation_id !== 'string' || !f.source.calculation_id)
+      )
+        throw Error('Invalid calculated source')
       if (
         !f.source.receipt_id ||
         !f.source.fact_key ||
@@ -254,7 +471,16 @@ export const financialApi = {
             typeof row.gap_before !== 'boolean'
           )
             throw Error('Invalid comparison row')
-          if (row.comparison_issues.length && (row.facts.length || row.metrics.length))
+          if (row.standalone_values !== undefined && row.standalone_values !== true)
+            throw Error('Invalid standalone comparison flag')
+          if (
+            row.comparison_issues.length &&
+            (row.facts.length || row.metrics.length) &&
+            !(
+              row.standalone_values === true &&
+              row.comparison_issues.every((code) => code.startsWith('INCOMPATIBLE_'))
+            )
+          )
             throw Error('Incompatible comparison values')
           for (const f of row.facts)
             if (
@@ -280,6 +506,7 @@ export const financialApi = {
   save: (caseId: string, id: string | undefined, input: FinancialInput, keys: MutationKey) => {
     const path = id ? apiPath('financial-sets', id) : apiPath('cases', caseId, '/financial-sets')
     const body = {
+      ...(input.intake_review ? { intake_review: input.intake_review } : {}),
       ...(input.import_review ? { import_review: input.import_review } : {}),
       expected_revision: input.expected_revision,
       reason: input.reason,
@@ -304,7 +531,9 @@ export const financialApi = {
         source:
           f.source.kind === 'manual_entry'
             ? { kind: f.source.kind, statement: f.source.statement }
-            : f.source.kind === 'financial_import'
+            : f.source.kind === 'financial_import' ||
+                f.source.kind === 'statement_entry' ||
+                f.source.kind === 'calculated'
               ? { ...f.source }
               : {
                   kind: f.source.kind,
@@ -344,6 +573,78 @@ export const financialApi = {
   },
   evidence: (id: string, signal?: AbortSignal) =>
     request(apiPath('evidence', id), evidence, { signal }),
+  reasoning: (caseId: string, receiptId: string, offset = 0) =>
+    request(
+      apiPath(
+        'cases',
+        caseId,
+        `/financial-reasoning/${encodeURIComponent(receiptId)}?offset=${offset}`,
+      ),
+      (value) => {
+        const p = value as ReasoningPage
+        if (
+          !p ||
+          !Array.isArray(p.rows) ||
+          !Array.isArray(p.relations) ||
+          p.relations.length > 10 ||
+          p.relations.some(
+            (r) =>
+              typeof r.id !== 'string' ||
+              typeof r.label !== 'string' ||
+              typeof r.reason !== 'string' ||
+              !Array.isArray(r.evidence),
+          ) ||
+          p.rows.length > 50 ||
+          p.rows.some(
+            (r) =>
+              typeof r.variable?.label !== 'string' ||
+              !Array.isArray(r.observations) ||
+              r.observations.some(
+                (o) =>
+                  typeof o.id !== 'string' ||
+                  typeof o.quote !== 'string' ||
+                  typeof o.raw_token !== 'string' ||
+                  !Number.isInteger(o.page),
+              ),
+          ) ||
+          (p.next_offset !== null && !Number.isSafeInteger(p.next_offset))
+        )
+          throw Error('Invalid reasoning observations')
+        return p
+      },
+    ),
+  reviewReasoning: (
+    caseId: string,
+    receiptId: string,
+    body: {
+      set_id: string
+      expected_revision: number
+      reason: string
+      excluded_observation_ids: string[]
+      excluded_relation_ids?: string[]
+    },
+    keys: MutationKey,
+  ) => {
+    const path = apiPath(
+      'cases',
+      caseId,
+      `/financial-reasoning/${encodeURIComponent(receiptId)}/decisions`,
+    )
+    return request(
+      path,
+      (value) => {
+        const result = value as { revision: number; set_id: string; receipt_id: string }
+        if (
+          !result ||
+          !Number.isSafeInteger(result.revision) ||
+          typeof result.receipt_id !== 'string'
+        )
+          throw Error('Invalid reasoning review')
+        return result
+      },
+      { method: 'POST', body, idempotencyKey: keys.for(path, body) },
+    )
+  },
 }
 
 export type FinancialTrends = {
@@ -353,6 +654,7 @@ export type FinancialTrends = {
   baseline_set_id: string | null
   baseline_metrics: Registry['metrics']
   rows: {
+    standalone_values?: true
     set: FinancialSet
     comparison_issues: string[]
     gap_before: boolean

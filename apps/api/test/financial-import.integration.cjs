@@ -38,7 +38,7 @@ test('international import: PostgreSQL provenance, tenant ACL, human review, exa
         {...common,document_type:'financial_statement',scope,scope_evidence:[{page:20,quote:'SYNTHETIC company USD millions 2025'}],selected_pages:[20],
           facts:Object.entries(values).map(([key,value])=>({key,value,raw_token:value,label:key,page:20,quote:key+' '+value,period_end:'2025-12-31',basis:'consolidated',method:'native',verification:'unverified'})),
           missing_keys:['cash','unrestricted_short_term_equivalents','trade_receivables','interest_bearing_debt','depreciation_amortization'],rejected:[],warnings:['HUMAN_SOURCE_REVIEW_REQUIRED'],
-          ocr_failures:[],provenance:{model_id:'SYNTHETIC-TRANSPORT-DOUBLE',prompt_version:'financial-import-v1',ocr_version:'none'}}
+          ocr_failures:[],provenance:{model_id:'SYNTHETIC-TRANSPORT-DOUBLE',prompt_version:'financial-import-v2',ocr_version:'none'}}
       res.writeHead(200,{'Content-Type':'application/json','X-AI-Mode':mode});res.end(JSON.stringify(output))
     })
     await new Promise(r=>server.listen(0,'127.0.0.1',r))
@@ -96,7 +96,7 @@ test('international import: PostgreSQL provenance, tenant ACL, human review, exa
     const stale=await registry.get(alice,workspace.id,reviewed.set.id)
     assert.ok(stale.sets[0].facts.every(f=>f.verification.status==='stale'))
     for(const sql of ['UPDATE aic.financial_import_sources SET name=name WHERE false','DELETE FROM aic.financial_import_sources WHERE false','TRUNCATE aic.financial_import_sources'])
-      await assert.rejects(owner.query(sql),e=>e.code==='55000')
+      await assert.rejects(owner.query(sql),e=>['55000','0A000'].includes(e.code))
     await t.test('live-mode mismatch is rejected before accepting an AI receipt',async()=>{
       mode='mock';await reject(imports.run(alice,workspace.id,uuid(),{...input,expected_revision:revision,operation:'index'}),'AI_INVALID_RESPONSE')
     })

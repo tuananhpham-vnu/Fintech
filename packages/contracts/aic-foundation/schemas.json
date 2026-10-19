@@ -2357,9 +2357,7 @@
         "name",
         "country",
         "tax_id",
-        "industry_code",
-        "source",
-        "reason"
+        "industry_code"
       ],
       "additionalProperties": false
     },
@@ -2442,8 +2440,6 @@
         "country",
         "tax_id",
         "industry_code",
-        "source",
-        "reason",
         "expected_revision"
       ],
       "additionalProperties": false
@@ -3260,11 +3256,155 @@
               "type": "string",
               "minLength": 1,
               "maxLength": 4000
+            },
+            "human_correction": {
+              "type": "object",
+              "properties": {
+                "reason": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000
+                }
+              },
+              "required": [
+                "reason"
+              ],
+              "additionalProperties": false
             }
           },
           "required": [
             "kind",
             "receipt_id",
+            "fact_key",
+            "source_kind",
+            "source_id",
+            "source_hash",
+            "page",
+            "quote"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "statement_entry"
+            },
+            "receipt_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "fact_key": {
+              "type": "string"
+            },
+            "source_kind": {
+              "enum": [
+                "document",
+                "dossier_member",
+                "financial_file"
+              ]
+            },
+            "source_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "source_hash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 600
+            },
+            "quote": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            }
+          },
+          "required": [
+            "kind",
+            "receipt_id",
+            "fact_key",
+            "source_kind",
+            "source_id",
+            "source_hash",
+            "page",
+            "quote",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "calculated"
+            },
+            "receipt_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "calculation_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32
+            },
+            "fact_key": {
+              "enum": [
+                "current_assets",
+                "current_liabilities",
+                "cash",
+                "unrestricted_short_term_equivalents",
+                "trade_receivables",
+                "total_equity",
+                "total_assets",
+                "total_liabilities",
+                "interest_bearing_debt",
+                "operating_profit",
+                "depreciation_amortization",
+                "interest_expense",
+                "net_revenue",
+                "cash_from_operations",
+                "eligible_cash_and_equivalents"
+              ]
+            },
+            "source_kind": {
+              "enum": [
+                "document",
+                "dossier_member",
+                "financial_file"
+              ]
+            },
+            "source_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "source_hash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 600
+            },
+            "quote": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            }
+          },
+          "required": [
+            "kind",
+            "receipt_id",
+            "calculation_id",
             "fact_key",
             "source_kind",
             "source_id",
@@ -3374,7 +3514,7 @@
         },
         "facts": {
           "type": "array",
-          "maxItems": 14,
+          "maxItems": 15,
           "items": {
             "type": "object",
             "properties": {
@@ -3393,7 +3533,8 @@
                   "depreciation_amortization",
                   "interest_expense",
                   "net_revenue",
-                  "cash_from_operations"
+                  "cash_from_operations",
+                  "eligible_cash_and_equivalents"
                 ]
               },
               "raw_value": {
@@ -3445,6 +3586,36 @@
             "confirmed"
           ],
           "additionalProperties": false
+        },
+        "intake_review": {
+          "type": "object",
+          "properties": {
+            "intake_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "receipt_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 600
+            },
+            "quote": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            }
+          },
+          "required": [
+            "intake_id",
+            "receipt_id",
+            "page",
+            "quote"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [
@@ -3492,7 +3663,7 @@
         "fact_ids": {
           "type": "array",
           "minItems": 1,
-          "maxItems": 14,
+          "maxItems": 15,
           "uniqueItems": true,
           "items": {
             "type": "string",
@@ -3509,6 +3680,21 @@
               "type": "boolean"
             },
             "da_addback_to_operating_profit": {
+              "type": "boolean"
+            },
+            "international_operating_profit_reconciled": {
+              "type": "boolean"
+            },
+            "source_rounding_reviewed": {
+              "type": "boolean"
+            },
+            "assessment_basis": {
+              "enum": [
+                "standalone",
+                "consolidated"
+              ]
+            },
+            "expense_presentation_sign_reviewed": {
               "type": "boolean"
             }
           },
@@ -3621,7 +3807,8 @@
             "depreciation_amortization",
             "interest_expense",
             "net_revenue",
-            "cash_from_operations"
+            "cash_from_operations",
+            "eligible_cash_and_equivalents"
           ]
         },
         "raw_value": {
@@ -3839,6 +4026,844 @@
               "type": "string",
               "minLength": 1,
               "maxLength": 100
+            },
+            "calculations": {
+              "type": "array",
+              "maxItems": 15,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]{0,31}$"
+                  },
+                  "key": {
+                    "enum": [
+                      "current_assets",
+                      "current_liabilities",
+                      "cash",
+                      "unrestricted_short_term_equivalents",
+                      "trade_receivables",
+                      "total_equity",
+                      "total_assets",
+                      "total_liabilities",
+                      "interest_bearing_debt",
+                      "operating_profit",
+                      "depreciation_amortization",
+                      "interest_expense",
+                      "net_revenue",
+                      "cash_from_operations",
+                      "eligible_cash_and_equivalents"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  },
+                  "assumptions": {
+                    "type": "array",
+                    "maxItems": 8,
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 500
+                    }
+                  },
+                  "expression": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 64
+                    },
+                    "maxItems": 63,
+                    "minItems": 1
+                  },
+                  "inputs": {
+                    "type": "array",
+                    "minItems": 0,
+                    "maxItems": 128,
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]{0,63}$"
+                        },
+                        "value": {
+                          "type": "string",
+                          "pattern": "^-?[0-9]{1,30}(\\.[0-9]{1,12})?$"
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        },
+                        "raw_token": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 100
+                        },
+                        "page": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 600
+                        },
+                        "quote": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 4000
+                        },
+                        "period_start": {
+                          "type": "string",
+                          "format": "date"
+                        },
+                        "period_end": {
+                          "type": "string",
+                          "format": "date"
+                        },
+                        "basis": {
+                          "enum": [
+                            "standalone",
+                            "consolidated"
+                          ]
+                        },
+                        "currency": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 3
+                        },
+                        "unit_multiplier": {
+                          "type": "string",
+                          "pattern": "^[1-9][0-9]{0,11}$"
+                        },
+                        "dimension": {
+                          "enum": [
+                            "money",
+                            "scalar"
+                          ]
+                        },
+                        "variable_id": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]{0,63}$"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "value",
+                        "label",
+                        "raw_token",
+                        "page",
+                        "quote",
+                        "period_start",
+                        "period_end",
+                        "basis",
+                        "currency",
+                        "unit_multiplier",
+                        "dimension"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "computed_value": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "blocked_reason": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "receipt_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "source_kind": {
+                    "enum": [
+                      "document",
+                      "dossier_member",
+                      "financial_file"
+                    ]
+                  },
+                  "source_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "source_hash": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "proof": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "variable_id": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]{0,63}$"
+                          },
+                          "leaf_ids": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]{0,63}$"
+                            },
+                            "maxItems": 128,
+                            "minItems": 0
+                          },
+                          "relation_ids": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]{0,63}$"
+                            },
+                            "maxItems": 100,
+                            "minItems": 0
+                          },
+                          "depth": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 100
+                          },
+                          "exact_value": {
+                            "type": "object",
+                            "properties": {
+                              "numerator": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 1002
+                              },
+                              "denominator": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 1002
+                              },
+                              "decimal": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "maxLength": 1044
+                              }
+                            },
+                            "required": [
+                              "numerator",
+                              "denominator",
+                              "decimal"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "steps": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]{0,63}$"
+                                },
+                                "label": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 500
+                                },
+                                "kind": {
+                                  "enum": [
+                                    "identity",
+                                    "rollforward",
+                                    "expression"
+                                  ]
+                                },
+                                "terms": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "variable_id": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][a-z0-9_]{0,63}$"
+                                      },
+                                      "coefficient": {
+                                        "enum": [
+                                          "1",
+                                          "-1"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "variable_id",
+                                      "coefficient"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "maxItems": 32,
+                                  "minItems": 2
+                                },
+                                "reason": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 1000
+                                },
+                                "assumptions": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 500
+                                  },
+                                  "maxItems": 8,
+                                  "minItems": 0
+                                },
+                                "evidence": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "page": {
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "maximum": 600
+                                      },
+                                      "quote": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 4000
+                                      }
+                                    },
+                                    "required": [
+                                      "page",
+                                      "quote"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "maxItems": 16,
+                                  "minItems": 1
+                                },
+                                "output_variable_id": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]{0,63}$"
+                                },
+                                "expression": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 64
+                                  },
+                                  "maxItems": 63,
+                                  "minItems": 1
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "label",
+                                "kind",
+                                "terms",
+                                "reason",
+                                "assumptions",
+                                "evidence"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "maxItems": 100,
+                            "minItems": 0
+                          },
+                          "variables": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]{0,63}$"
+                                },
+                                "key": {
+                                  "enum": [
+                                    "current_assets",
+                                    "current_liabilities",
+                                    "cash",
+                                    "unrestricted_short_term_equivalents",
+                                    "trade_receivables",
+                                    "total_equity",
+                                    "total_assets",
+                                    "total_liabilities",
+                                    "interest_bearing_debt",
+                                    "operating_profit",
+                                    "depreciation_amortization",
+                                    "interest_expense",
+                                    "net_revenue",
+                                    "cash_from_operations",
+                                    null,
+                                    "eligible_cash_and_equivalents"
+                                  ]
+                                },
+                                "label": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 500
+                                },
+                                "dimension": {
+                                  "enum": [
+                                    "money",
+                                    "scalar"
+                                  ]
+                                },
+                                "nature": {
+                                  "enum": [
+                                    "instant",
+                                    "duration"
+                                  ]
+                                },
+                                "as_of": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ],
+                                  "maxLength": 10
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "key",
+                                "label",
+                                "dimension",
+                                "nature",
+                                "as_of"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "maxItems": 240,
+                            "minItems": 0
+                          },
+                          "intermediate_values": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "variable_id": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]{0,63}$"
+                                },
+                                "value": {
+                                  "type": "object",
+                                  "properties": {
+                                    "numerator": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 1002
+                                    },
+                                    "denominator": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 1002
+                                    },
+                                    "decimal": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ],
+                                      "maxLength": 1044
+                                    }
+                                  },
+                                  "required": [
+                                    "numerator",
+                                    "denominator",
+                                    "decimal"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "required": [
+                                "variable_id",
+                                "value"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "maxItems": 240,
+                            "minItems": 0
+                          }
+                        },
+                        "required": [
+                          "variable_id",
+                          "leaf_ids",
+                          "relation_ids",
+                          "depth",
+                          "exact_value",
+                          "steps",
+                          "variables",
+                          "intermediate_values"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "reasoning_version": {
+                    "const": "AIC-FINANCIAL-REASONING-1"
+                  },
+                  "blocked_details": {
+                    "type": "object",
+                    "properties": {
+                      "missing_variables": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]{0,63}$"
+                            },
+                            "label": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 500
+                            },
+                            "source_status": {
+                              "enum": [
+                                "not_observed",
+                                "observed_unlinked",
+                                "scope_mismatch",
+                                "allocation_unproven"
+                              ]
+                            },
+                            "source_candidates": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "observation_id": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9_]{0,63}$"
+                                  },
+                                  "label": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 500
+                                  },
+                                  "page": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 600
+                                  },
+                                  "quote": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 4000
+                                  },
+                                  "status": {
+                                    "enum": [
+                                      "not_observed",
+                                      "observed_unlinked",
+                                      "scope_mismatch",
+                                      "allocation_unproven"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "observation_id",
+                                  "label",
+                                  "page",
+                                  "quote",
+                                  "status"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "maxItems": 8,
+                              "minItems": 0
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "label"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "maxItems": 20,
+                        "minItems": 0
+                      },
+                      "assumptions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        },
+                        "maxItems": 8,
+                        "minItems": 0
+                      }
+                    },
+                    "required": [
+                      "missing_variables",
+                      "assumptions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "key",
+                  "reason",
+                  "assumptions",
+                  "expression",
+                  "inputs"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "reasoning": {
+              "type": "object",
+              "properties": {
+                "version": {
+                  "const": "AIC-FINANCIAL-REASONING-1"
+                },
+                "receipt_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "coverage": {
+                  "type": "object",
+                  "properties": {
+                    "pages_read": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 600
+                      },
+                      "maxItems": 600,
+                      "minItems": 0
+                    },
+                    "pages_available": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 600
+                      },
+                      "maxItems": 600,
+                      "minItems": 0
+                    },
+                    "complete": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "pages_read",
+                    "pages_available",
+                    "complete"
+                  ],
+                  "additionalProperties": false
+                },
+                "diagnostics": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                      },
+                      "detail": {
+                        "type": "string",
+                        "maxLength": 1000
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "detail"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "maxItems": 200,
+                  "minItems": 0
+                },
+                "targets": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "enum": [
+                          "current_assets",
+                          "current_liabilities",
+                          "cash",
+                          "unrestricted_short_term_equivalents",
+                          "trade_receivables",
+                          "total_equity",
+                          "total_assets",
+                          "total_liabilities",
+                          "interest_bearing_debt",
+                          "operating_profit",
+                          "depreciation_amortization",
+                          "interest_expense",
+                          "net_revenue",
+                          "cash_from_operations",
+                          "eligible_cash_and_equivalents"
+                        ]
+                      },
+                      "status": {
+                        "enum": [
+                          "resolved",
+                          "unresolved",
+                          "conflict"
+                        ]
+                      },
+                      "origin": {
+                        "enum": [
+                          "direct",
+                          "derived"
+                        ]
+                      },
+                      "value": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 100
+                      },
+                      "code": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 100
+                      },
+                      "steps": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100
+                      }
+                    },
+                    "required": [
+                      "key",
+                      "status",
+                      "origin",
+                      "value",
+                      "code",
+                      "steps"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "maxItems": 15,
+                  "minItems": 0
+                },
+                "proof_hash": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "version",
+                "receipt_id",
+                "coverage",
+                "diagnostics",
+                "targets",
+                "proof_hash"
+              ],
+              "additionalProperties": false
+            },
+            "accounting_profile": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "enum": [
+                    "US_GAAP_DISTRIBUTION_1",
+                    "CN_ASBE_DISTRIBUTION_1"
+                  ]
+                },
+                "country": {
+                  "enum": [
+                    "US",
+                    "CN"
+                  ]
+                },
+                "accounting_regime": {
+                  "enum": [
+                    "US_GAAP",
+                    "CN_ASBE"
+                  ]
+                },
+                "mapping_version": {
+                  "const": "international-accounting-v1"
+                },
+                "method_version": {
+                  "enum": [
+                    "1.0.0-us-gaap-pilot.1",
+                    "1.0.0-cn-asbe-pilot.1"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "country",
+                "accounting_regime",
+                "mapping_version",
+                "method_version"
+              ]
+            },
+            "source_rounding": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "quantums",
+                "evidence"
+              ],
+              "properties": {
+                "quantums": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "total_assets": {
+                      "type": "string",
+                      "pattern": "^[0-9]+(\\.[0-9]+)?$"
+                    },
+                    "total_liabilities": {
+                      "type": "string",
+                      "pattern": "^[0-9]+(\\.[0-9]+)?$"
+                    },
+                    "total_equity": {
+                      "type": "string",
+                      "pattern": "^[0-9]+(\\.[0-9]+)?$"
+                    }
+                  },
+                  "required": [
+                    "total_assets",
+                    "total_liabilities",
+                    "total_equity"
+                  ]
+                },
+                "evidence": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "page",
+                      "quote"
+                    ],
+                    "properties": {
+                      "page": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 600
+                      },
+                      "quote": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                }
+              }
             }
           },
           "required": [
@@ -3850,7 +4875,7 @@
         },
         "facts": {
           "type": "array",
-          "maxItems": 14,
+          "maxItems": 15,
           "items": {
             "$ref": "#/definitions/FinancialFactRead"
           }
@@ -4037,6 +5062,584 @@
         "raw"
       ],
       "additionalProperties": false
+    },
+    "FinancialReasoningPage": {
+      "type": "object",
+      "properties": {
+        "summary": {
+          "type": "object",
+          "properties": {
+            "version": {
+              "const": "AIC-FINANCIAL-REASONING-1"
+            },
+            "receipt_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "coverage": {
+              "type": "object",
+              "properties": {
+                "pages_read": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 600
+                  },
+                  "maxItems": 600,
+                  "minItems": 0
+                },
+                "pages_available": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 600
+                  },
+                  "maxItems": 600,
+                  "minItems": 0
+                },
+                "complete": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "pages_read",
+                "pages_available",
+                "complete"
+              ],
+              "additionalProperties": false
+            },
+            "diagnostics": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "detail": {
+                    "type": "string",
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "code",
+                  "detail"
+                ],
+                "additionalProperties": false
+              },
+              "maxItems": 200,
+              "minItems": 0
+            },
+            "targets": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "enum": [
+                      "current_assets",
+                      "current_liabilities",
+                      "cash",
+                      "unrestricted_short_term_equivalents",
+                      "trade_receivables",
+                      "total_equity",
+                      "total_assets",
+                      "total_liabilities",
+                      "interest_bearing_debt",
+                      "operating_profit",
+                      "depreciation_amortization",
+                      "interest_expense",
+                      "net_revenue",
+                      "cash_from_operations",
+                      "eligible_cash_and_equivalents"
+                    ]
+                  },
+                  "status": {
+                    "enum": [
+                      "resolved",
+                      "unresolved",
+                      "conflict"
+                    ]
+                  },
+                  "origin": {
+                    "enum": [
+                      "direct",
+                      "derived"
+                    ]
+                  },
+                  "value": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 100
+                  },
+                  "code": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 100
+                  },
+                  "steps": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                },
+                "required": [
+                  "key",
+                  "status",
+                  "origin",
+                  "value",
+                  "code",
+                  "steps"
+                ],
+                "additionalProperties": false
+              },
+              "maxItems": 15,
+              "minItems": 0
+            },
+            "proof_hash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "version",
+            "receipt_id",
+            "coverage",
+            "diagnostics",
+            "targets",
+            "proof_hash"
+          ],
+          "additionalProperties": false
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "variable": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]{0,63}$"
+                  },
+                  "key": {
+                    "enum": [
+                      "current_assets",
+                      "current_liabilities",
+                      "cash",
+                      "unrestricted_short_term_equivalents",
+                      "trade_receivables",
+                      "total_equity",
+                      "total_assets",
+                      "total_liabilities",
+                      "interest_bearing_debt",
+                      "operating_profit",
+                      "depreciation_amortization",
+                      "interest_expense",
+                      "net_revenue",
+                      "cash_from_operations",
+                      null,
+                      "eligible_cash_and_equivalents"
+                    ]
+                  },
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  },
+                  "dimension": {
+                    "enum": [
+                      "money",
+                      "scalar"
+                    ]
+                  },
+                  "nature": {
+                    "enum": [
+                      "instant",
+                      "duration"
+                    ]
+                  },
+                  "as_of": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 10
+                  }
+                },
+                "required": [
+                  "id",
+                  "key",
+                  "label",
+                  "dimension",
+                  "nature",
+                  "as_of"
+                ],
+                "additionalProperties": false
+              },
+              "observations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]{0,63}$"
+                    },
+                    "value": {
+                      "type": "string",
+                      "pattern": "^-?[0-9]{1,30}(\\.[0-9]{1,12})?$"
+                    },
+                    "label": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 500
+                    },
+                    "raw_token": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    "page": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 600
+                    },
+                    "quote": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 4000
+                    },
+                    "period_start": {
+                      "type": "string",
+                      "format": "date"
+                    },
+                    "period_end": {
+                      "type": "string",
+                      "format": "date"
+                    },
+                    "basis": {
+                      "enum": [
+                        "standalone",
+                        "consolidated"
+                      ]
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 3
+                    },
+                    "unit_multiplier": {
+                      "type": "string",
+                      "pattern": "^[1-9][0-9]{0,11}$"
+                    },
+                    "dimension": {
+                      "enum": [
+                        "money",
+                        "scalar"
+                      ]
+                    },
+                    "variable_id": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]{0,63}$"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "value",
+                    "label",
+                    "raw_token",
+                    "page",
+                    "quote",
+                    "period_start",
+                    "period_end",
+                    "basis",
+                    "currency",
+                    "unit_multiplier",
+                    "dimension",
+                    "variable_id"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 50,
+                "minItems": 0
+              }
+            },
+            "required": [
+              "variable",
+              "observations"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 50,
+          "minItems": 0
+        },
+        "relations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{0,63}$"
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "kind": {
+                "enum": [
+                  "identity",
+                  "rollforward",
+                  "expression"
+                ]
+              },
+              "terms": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "variable_id": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]{0,63}$"
+                    },
+                    "coefficient": {
+                      "enum": [
+                        "1",
+                        "-1"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "variable_id",
+                    "coefficient"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 32,
+                "minItems": 2
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "assumptions": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 500
+                },
+                "maxItems": 8,
+                "minItems": 0
+              },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "page": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 600
+                    },
+                    "quote": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 4000
+                    }
+                  },
+                  "required": [
+                    "page",
+                    "quote"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 16,
+                "minItems": 1
+              },
+              "output_variable_id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{0,63}$"
+              },
+              "expression": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                },
+                "maxItems": 63,
+                "minItems": 1
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "kind",
+              "terms",
+              "reason",
+              "assumptions",
+              "evidence"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 10,
+          "minItems": 0
+        },
+        "next_offset": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      },
+      "required": [
+        "summary",
+        "rows",
+        "relations",
+        "next_offset"
+      ],
+      "additionalProperties": false
+    },
+    "FinancialReasoningReviewRequest": {
+      "type": "object",
+      "properties": {
+        "set_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "expected_revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "excluded_observation_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
+          },
+          "maxItems": 500,
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "excluded_relation_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
+          },
+          "maxItems": 100,
+          "minItems": 0,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "set_id",
+        "expected_revision",
+        "reason",
+        "excluded_observation_ids"
+      ],
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "properties": {
+            "excluded_observation_ids": {
+              "minItems": 1
+            }
+          }
+        },
+        {
+          "required": [
+            "excluded_relation_ids"
+          ],
+          "properties": {
+            "excluded_relation_ids": {
+              "minItems": 1
+            }
+          }
+        }
+      ]
+    },
+    "FinancialReasoningReviewResult": {
+      "type": "object",
+      "properties": {
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "set_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "receipt_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "required": [
+        "revision",
+        "set_id",
+        "receipt_id"
+      ],
+      "additionalProperties": false
+    },
+    "AccountingProfileV1": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "enum": [
+            "US_GAAP_DISTRIBUTION_1",
+            "CN_ASBE_DISTRIBUTION_1"
+          ]
+        },
+        "country": {
+          "enum": [
+            "US",
+            "CN"
+          ]
+        },
+        "accounting_regime": {
+          "enum": [
+            "US_GAAP",
+            "CN_ASBE"
+          ]
+        },
+        "mapping_version": {
+          "const": "international-accounting-v1"
+        },
+        "method_version": {
+          "enum": [
+            "1.0.0-us-gaap-pilot.1",
+            "1.0.0-cn-asbe-pilot.1"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "country",
+        "accounting_regime",
+        "mapping_version",
+        "method_version"
+      ]
     }
   }
 }

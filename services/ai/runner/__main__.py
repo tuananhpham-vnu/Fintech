@@ -26,7 +26,7 @@ def health(settings: Settings) -> dict:
     else:
         checks["model"] = {"ok": bool(settings.model_id and settings.prompt_version), "model_id": settings.model_id,
                            "prompt_version": settings.prompt_version}
-        checks["gemini_api_key"] = {"ok": settings.gemini_key_configured}
+        checks[settings.provider_name + "_api_key"] = {"ok": settings.provider_key_configured}
         try:
             module = importlib.import_module("extraction")
             checks["extraction_package"] = {"ok": getattr(module, "IMPLEMENTED", False),

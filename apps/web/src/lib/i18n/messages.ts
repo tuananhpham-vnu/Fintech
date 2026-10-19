@@ -1,5 +1,35 @@
 import type { Locale } from '@/lib/api/contracts'
 export const messages = {
+  financialIntakeCountry: [
+    'This MVP accepts Vietnamese financial statements. US and China intake is not enabled.',
+    'MVP hiện tiếp nhận BCTC Việt Nam. Chưa bật tiếp nhận BCTC Mỹ và Trung Quốc.',
+    '此 MVP 仅支持越南财务报表，尚未启用美国和中国报表。',
+  ],
+  financialReviewChanged: [
+    'Sources changed. Refresh and confirm the common review again.',
+    'Nguồn hoặc số liệu đã thay đổi. Làm mới và xác nhận rà soát chung lại.',
+    '来源或数据已更改，请刷新后重新统一确认。',
+  ],
+  financialIntakePending: [
+    'Wait for processing and resolve duplicate statements before confirming.',
+    'Chờ xử lý hoàn tất và chọn giữ/thay tài liệu trùng trước khi xác nhận.',
+    '请等待处理完成并解决重复报表后再确认。',
+  ],
+  financialBctcSourceRequired: [
+    'Every input needs a current financial statement source.',
+    'Mỗi số liệu cần gắn với nguồn BCTC hiện tại. Hãy bổ sung trang và trích dẫn nguồn.',
+    '每项数据须关联当前财务报表及其页码和引文。',
+  ],
+  financialIntakeFormat: [
+    'Use a valid PDF, XLS, XLSX, PNG, JPG or ZIP file.',
+    'Chọn file PDF, XLS, XLSX, PNG, JPG hoặc ZIP có nội dung đúng định dạng.',
+    '请选择内容格式正确的 PDF、XLS、XLSX、PNG、JPG 或 ZIP 文件。',
+  ],
+  financialIntakeLimit: [
+    'The financial statement file or case exceeds its intake limit.',
+    'File hoặc tổng tài liệu trong hồ sơ vượt giới hạn tiếp nhận BCTC.',
+    '报表文件或档案内文件总量超过接收上限。',
+  ],
   assessmentNotReady: [
     'Run document review on the current sources and wait for processing to finish before assessment.',
     'Hãy rà soát tài liệu nguồn hiện tại và chờ xử lý hoàn tất trước khi đánh giá.',
@@ -128,14 +158,14 @@ export const messages = {
     '阅读原件、核查提取数据并保留来源版本。',
   ],
   transactionTitle: [
-    'Risk in the context of a transaction',
-    'Rủi ro theo từng giao dịch',
-    '结合交易评估风险',
+    'Financial health across years',
+    'Sức khỏe tài chính qua các năm',
+    '跨年度财务健康',
   ],
   transactionHelp: [
-    'Keep payment risk separate from delivery and refund risk.',
-    'Tách rủi ro thanh toán với rủi ro giao hàng và hoàn tiền.',
-    '区分付款风险、交付风险和退款风险。',
+    'Review seven indicators and compare compatible reporting periods.',
+    'Xem bảy chỉ tiêu và so sánh các kỳ báo cáo phù hợp.',
+    '查看七项指标并比较口径一致的报告期。',
   ],
   humanTitle: ['Specialist judgment', 'Nhận định của chuyên viên', '专员判断'],
   humanHelp: [
@@ -821,6 +851,11 @@ export const messages = {
     'The selected pages do not support this reporting period or basis. Check the year and standalone/consolidated tables.',
     'Các trang chọn chưa khớp kỳ hoặc cơ sở báo cáo. Kiểm tra cột năm và bảng riêng lẻ/hợp nhất.',
     '所选页面与期间或口径不符，请核对年份列及单体/合并报表。',
+  ],
+  financialIndustryScopeMismatch: [
+    'A statement still has a different industry from the current company record. Reopen period review for each affected year, save the current industry and confirm all reviews again. No new AI extraction is needed.',
+    'Có kỳ báo cáo còn lưu ngành khác thông tin doanh nghiệp hiện tại. Mở rà soát kỳ cho từng năm bị ảnh hưởng, lưu theo ngành hiện tại rồi xác nhận rà soát tất cả. Không cần chạy lại AI.',
+    '部分报告期保存的行业与当前企业资料不同。请重新核查受影响年度，按当前行业保存后再次确认全部核查。无需重新运行AI。',
   ],
   financialImportPages: [
     'Choose up to 16 relevant statement pages, including at most 8 scanned pages. Select fewer pages if the text limit is reached.',

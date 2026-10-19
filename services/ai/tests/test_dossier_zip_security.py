@@ -23,6 +23,14 @@ MIB = 1024 * 1024
 PDF = b"%PDF-1.7\nsynthetic fixture\n"
 
 
+def test_financial_profile_accepts_supported_members_without_relaxing_legacy_profile():
+    payload=archive(('source.pdf',PDF),('book.xlsx',b'PK\x03\x04synthetic'),('scan.png',b'\x89PNG\r\n\x1a\nsynthetic'),('notes.txt',b'not a statement'))
+    financial=reader.read_archive(payload,reader.FINANCIAL_POLICY)
+    assert [entry['rejection_code'] for entry in financial]==[None,None,None,'ARCHIVE_UNSUPPORTED_FORMAT']
+    legacy=reader.read_archive(payload,reader.DOSSIER_POLICY)
+    assert sum(entry['rejection_code'] is None for entry in legacy)==1
+
+
 def archive(*entries, compression=zipfile.ZIP_STORED, stream=False):
     class Unseekable(io.BytesIO):
         def seekable(self):

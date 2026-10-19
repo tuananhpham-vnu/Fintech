@@ -1,0 +1,164 @@
+{
+  "type": "object",
+  "properties": {
+    "variables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
+          },
+          "key": {
+            "enum": [
+              "current_assets",
+              "current_liabilities",
+              "cash",
+              "unrestricted_short_term_equivalents",
+              "trade_receivables",
+              "total_equity",
+              "total_assets",
+              "total_liabilities",
+              "interest_bearing_debt",
+              "operating_profit",
+              "depreciation_amortization",
+              "interest_expense",
+              "net_revenue",
+              "cash_from_operations",
+              null,
+              "eligible_cash_and_equivalents"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "dimension": {
+            "enum": [
+              "money",
+              "scalar"
+            ]
+          },
+          "nature": {
+            "enum": [
+              "instant",
+              "duration"
+            ]
+          },
+          "as_of": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 10
+          }
+        },
+        "required": [
+          "id",
+          "key",
+          "label",
+          "dimension",
+          "nature",
+          "as_of"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 160,
+      "minItems": 0
+    },
+    "observations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
+          },
+          "value": {
+            "type": "string",
+            "pattern": "^-?[0-9]{1,30}(\\.[0-9]{1,12})?$"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "raw_token": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 600
+          },
+          "quote": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "period_start": {
+            "type": "string",
+            "format": "date"
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date"
+          },
+          "basis": {
+            "enum": [
+              "standalone",
+              "consolidated"
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 3
+          },
+          "unit_multiplier": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,11}$"
+          },
+          "dimension": {
+            "enum": [
+              "money",
+              "scalar"
+            ]
+          },
+          "variable_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
+          }
+        },
+        "required": [
+          "id",
+          "value",
+          "label",
+          "raw_token",
+          "page",
+          "quote",
+          "period_start",
+          "period_end",
+          "basis",
+          "currency",
+          "unit_multiplier",
+          "dimension",
+          "variable_id"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 300,
+      "minItems": 0
+    }
+  },
+  "required": [
+    "variables",
+    "observations"
+  ],
+  "additionalProperties": false
+}

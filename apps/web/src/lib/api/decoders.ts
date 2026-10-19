@@ -1,6 +1,9 @@
 import { rolePairs } from '@/lib/domain/cases'
+import { decodeAccountingProfile, isFullFiscalYear } from './accounting-profile'
 import {
   type Assessment,
+  type CaseAggregation,
+  type PartialAssessment,
   type Case,
   type CaseDetail,
   type Counterparty,
@@ -235,6 +238,187 @@ export function readiness(value: unknown): Readiness {
   }
   return value as Readiness
 }
+export function partialAssessment(value: unknown): PartialAssessment {
+  if (!object(value)) fail()
+  exactKeys(value, [
+    'kind',
+    'available_points',
+    'available_max_points',
+    'unresolved_max_points',
+    'lower_bound',
+    'upper_bound',
+    'total_metric_count',
+    'components',
+    'unresolved_metric_ids',
+  ])
+  if (value.kind !== 'data_limited_bounds' || value.total_metric_count !== 7) fail()
+  for (const key of [
+    'available_points',
+    'available_max_points',
+    'unresolved_max_points',
+    'lower_bound',
+    'upper_bound',
+  ]) {
+    const number = value[key]
+    if (
+      typeof number !== 'string' ||
+      !/^\d{1,3}(\.\d{1,12})?$/.test(number) ||
+      Number(number) > 100
+    )
+      fail()
+  }
+  list(value, ['components'])
+  stringList(value, ['unresolved_metric_ids'])
+  const maxById: Record<string, string> = {
+    'AIC-M01': '15',
+    'AIC-M02': '10',
+    'AIC-M03': '20',
+    'AIC-M04': '10',
+    'AIC-M05': '15',
+    'AIC-M06': '10',
+    'AIC-M07': '20',
+  }
+  const components = value.components as Obj[],
+    unresolved = value.unresolved_metric_ids as string[]
+  if (
+    !components.length ||
+    components.length > 6 ||
+    !unresolved.length ||
+    components.length + unresolved.length !== 7
+  )
+    fail()
+  const ids: string[] = []
+  let covered = 0
+  for (const part of components) {
+    if (!object(part)) fail()
+    exactKeys(part, ['metric_id', 'points', 'max_points'])
+    strings(part, ['metric_id', 'points', 'max_points'])
+    const id = part.metric_id as string,
+      max = maxById[id]
+    if (
+      !max ||
+      part.max_points !== max ||
+      !/^\d{1,3}(\.\d{1,12})?$/.test(part.points as string) ||
+      Number(part.points) > Number(max)
+    )
+      fail()
+    ids.push(id)
+    covered += Number(max)
+  }
+  if (
+    unresolved.some((id) => !Object.hasOwn(maxById, id)) ||
+    new Set([...ids, ...unresolved]).size !== 7 ||
+    value.available_max_points !== String(covered) ||
+    value.unresolved_max_points !== String(100 - covered) ||
+    Number(value.available_points) > covered ||
+    Number(value.lower_bound) > Number(value.available_points) ||
+    Number(value.upper_bound) < Number(value.available_points) ||
+    Number(value.lower_bound) > Number(value.upper_bound)
+  )
+    fail()
+  return value as PartialAssessment
+}
+
+export function caseAggregation(value: unknown): CaseAggregation {
+  if (!object(value)) fail()
+  exactKeys(
+    value,
+    ['method', 'included_set_ids', 'excluded_sets', 'metrics'],
+    ['accounting_profile'],
+  )
+  const profile =
+    value.accounting_profile === undefined
+      ? null
+      : decodeAccountingProfile(value.accounting_profile)
+  if (value.method !== 'mean_metric_points_v1') fail()
+  stringList(value, ['included_set_ids'])
+  list(value, ['excluded_sets', 'metrics'])
+  const included = value.included_set_ids as string[],
+    metrics = value.metrics as Obj[]
+  if (new Set(included).size !== included.length || metrics.length !== 7) fail()
+  const metricIds = new Set<string>(),
+    used = new Set<string>(),
+    excluded = new Set<string>()
+  const maxima: Record<string, number> = {
+    'AIC-M01': 15,
+    'AIC-M02': 10,
+    'AIC-M03': 20,
+    'AIC-M04': 10,
+    'AIC-M05': 15,
+    'AIC-M06': 10,
+    'AIC-M07': 20,
+  }
+  for (const item of value.excluded_sets as Obj[]) {
+    if (!object(item)) fail()
+    exactKeys(item, ['set_id', 'set_revision', 'reasons'])
+    strings(item, ['set_id'])
+    revision(item, 'set_revision')
+    stringList(item, ['reasons'])
+    if (excluded.has(item.set_id as string) || included.includes(item.set_id as string)) fail()
+    excluded.add(item.set_id as string)
+  }
+  for (const metric of metrics) {
+    if (!object(metric)) fail()
+    exactKeys(metric, ['metric_id', 'contributions', 'omitted_sets'])
+    strings(metric, ['metric_id'])
+    list(metric, ['contributions', 'omitted_sets'])
+    const id = metric.metric_id as string,
+      sets = new Set<string>(),
+      periods = new Set<string>()
+    if (!Object.hasOwn(maxima, id) || metricIds.has(id)) fail()
+    metricIds.add(id)
+    for (const part of metric.contributions as Obj[]) {
+      if (!object(part) || !object(part.period)) fail()
+      exactKeys(part, [
+        'set_id',
+        'set_revision',
+        'period',
+        'points',
+        'raw_value',
+        'source_fact_ids',
+      ])
+      exactKeys(part.period, ['kind', 'start_date', 'end_date'])
+      strings(part, ['set_id', 'points'])
+      revision(part, 'set_revision')
+      stringList(part, ['source_fact_ids'])
+      strings(part.period, ['kind', 'start_date', 'end_date'])
+      const period = part.period,
+        setId = part.set_id as string,
+        year = (period.end_date as string).slice(0, 4)
+      const validPeriod = profile
+        ? isFullFiscalYear(period as { kind: string; start_date: string; end_date: string })
+        : period.kind === 'FY' &&
+          /^\d{4}$/.test(year) &&
+          period.start_date === `${year}-01-01` &&
+          period.end_date === `${year}-12-31`
+      if (
+        !validPeriod ||
+        !/^\d+(\.\d{1,12})?$/.test(part.points as string) ||
+        Number(part.points) > maxima[id] ||
+        !included.includes(setId) ||
+        sets.has(setId) ||
+        periods.has(year) ||
+        !(part.source_fact_ids as string[]).length ||
+        (part.raw_value !== null &&
+          (typeof part.raw_value !== 'string' || !/^-?\d+(\.\d+)?$/.test(part.raw_value)))
+      )
+        fail()
+      sets.add(setId)
+      periods.add(year)
+      used.add(setId)
+    }
+    for (const item of metric.omitted_sets as Obj[]) {
+      if (!object(item)) fail()
+      exactKeys(item, ['set_id', 'blockers'])
+      strings(item, ['set_id'])
+      stringList(item, ['blockers'])
+      if (sets.has(item.set_id as string)) fail()
+    }
+  }
+  if (included.some((id) => !used.has(id))) fail()
+  return value as CaseAggregation
+}
+
 export function assessment(value: unknown): Assessment {
   if (!object(value)) fail()
   if (value.checked_case_revision !== undefined) revision(value, 'checked_case_revision')
@@ -251,6 +435,16 @@ export function assessment(value: unknown): Assessment {
   } else {
     if (value.purpose !== undefined) fail()
     strings(value, ['policy_version'])
+  }
+  if (value.case_aggregation !== undefined) {
+    const aggregated = caseAggregation(value.case_aggregation)
+    const version = aggregated.accounting_profile?.method_version ?? '1.0.0'
+    if (
+      value.purpose !== 'company_health' ||
+      value.financial_set_id !== null ||
+      value.method_version !== `AIC-FHI-1.0/${version}/mean_metric_points_v1`
+    )
+      fail()
   }
   revision(value, 'case_revision')
   list(value, ['factors'])
@@ -287,6 +481,18 @@ export function assessment(value: unknown): Assessment {
         if (part[key] !== undefined && typeof part[key] !== 'string') fail()
       if (part.blockers !== undefined) list(part, ['blockers'])
       if (part.flags !== undefined) stringList(part, ['flags'])
+    }
+    if (health.partial_assessment !== undefined) {
+      if (
+        value.purpose !== 'company_health' ||
+        health.status !== 'blocked' ||
+        health.score !== null ||
+        health.band !== null ||
+        health.score_quality !== 'unavailable' ||
+        value.overall_score != null
+      )
+        fail()
+      partialAssessment(health.partial_assessment)
     }
   }
   if (value.transaction_review != null) {

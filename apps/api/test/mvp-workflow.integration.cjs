@@ -304,16 +304,10 @@ test(
           assert.equal((await workflow.detail(a.session, company.id)).transaction_review, null)
           const finance = new FinancialRegistry(db, config, core, mutations),
             service = new AssessmentService(db, config, core, mutations, finance, workflow)
-          const blocked = (
-            await service.run(a.session, company.id, randomUUID(), {
-              expected_revision: await revision(item),
-            })
-          ).body
-          validateContract('Assessment', blocked, true)
-          assert.equal(blocked.transaction_review, null)
-          assert.equal(blocked.financial_health.score, null)
-          assert.ok(blocked.financial_health.blockers.includes('FINANCIAL_INPUTS_REQUIRED'))
-          assert.ok(!blocked.financial_health.blockers.includes('REVIEW_REQUIRED'))
+          await rejects(service.run(a.session,company.id,randomUUID(),{expected_revision:await revision(item)}),'ASSESSMENT_NOT_READY')
+          const blocked=await service.workspace(a.session,company.id)
+          assert.ok(blocked.readiness.blockers.some(b=>b.code==='FINANCIAL_REVIEW_ALL_REQUIRED'))
+          assert.equal(blocked.assessment,null)
           const values = {
             current_assets: '200',
             current_liabilities: '100',
@@ -344,7 +338,7 @@ test(
             accounting_regime: 'VN_TT133',
             currency: 'VND',
             unit_multiplier: '1',
-            industry_scope: 'DISTRIBUTION_WHOLESALE_PILOT',
+            industry_scope: 'UNKNOWN',
             observation_kind: 'actual',
             audit_status: 'unaudited',
             statement_version: 'synthetic-company-v1',
@@ -423,42 +417,16 @@ test(
             },
           })
           const ready = await configured.workspace(a.session, company.id, set.id)
-          assert.equal(ready.readiness.numeric_assessment_allowed, true)
-          const result = (
-            await configured.run(a.session, company.id, randomUUID(), {
-              expected_revision: await revision(item),
-              financial_set_id: set.id,
-            })
-          ).body
-          assert.equal(result.financial_health.score, '82.5')
-          assert.equal(result.financial_health.band, 'AIC-F2')
-          assert.equal(result.pd, null)
-          assert.equal(result.financial_health.components.length, 7)
-          assert.equal(result.policy_version, null)
-          await rejects(configured.get(b.session, result.id), 'NOT_FOUND')
-          assert.equal((await configured.get(a.session, result.id)).stale, false)
-          await finance.revise(a.session, set.id, randomUUID(), {
-            ...factInput,
-            expected_revision: await revision(item),
-            facts: factInput.facts.map((f) =>
-              f.key === 'operating_profit' ? { ...f, raw_value: '0' } : f,
-            ),
-          })
-          const historical = await configured.get(a.session, result.id)
-          assert.equal(historical.stale, true)
-          assert.equal(historical.financial_health.score, '82.5', 'Immutable history retained')
-          assert.equal(
-            (await configured.workspace(a.session, company.id, set.id)).readiness
-              .numeric_assessment_allowed,
-            false,
-          )
-          await rejects(
-            configured.acknowledge(a.session, result.id, randomUUID(), {
-              expected_revision: await revision(item),
-              reason: 'SYNTHETIC stale result',
-            }),
-            'STALE_ASSESSMENT',
-          )
+          assert.equal(ready.readiness.numeric_assessment_allowed,false,'Individual legacy decisions cannot replace the common company review')
+          await rejects(configured.run(a.session,company.id,randomUUID(),{expected_revision:await revision(item),financial_set_id:set.id}),'ASSESSMENT_NOT_READY')
+          const {FinancialReviewService}=require('../dist/financial/financial-review.service')
+          const {financialReviewState}=require('../dist/financial/financial-review-state')
+          const state=await db.transaction(async tx=>financialReviewState(tx,await core.assertCaseAccess(tx,a.session.user,company.id,true)))
+          await rejects(new FinancialReviewService(mutations,configuredFinance).confirm(a.session,company.id,randomUUID(),{
+            expected_revision:await revision(item),confirmed:true,source_snapshot_hash:state.source_snapshot_hash,
+            bridge_assertions:{quick_assets_non_overlapping:true,quick_assets_eligible:true,da_addback_to_operating_profit:true}
+          }),'BCTC_SOURCE_REQUIRED')
+          assert.equal((await configured.workspace(a.session,company.id)).assessment,null)
           const workspacePage = await core.cases(a.session.user, {})
           validateContract('WorkspacePage', workspacePage, true)
         },
@@ -2046,9 +2014,9 @@ test(
             },
           })
           const unselected = await finance.get(item.session, item.caseId)
-          assert.equal(unselected.selected_set_id, null)
-          assert.equal(unselected.metrics.length, 0)
-          assert.ok(unselected.blockers.includes('EXPLICIT_STATEMENT_SET_SELECTION_REQUIRED'))
+          assert.equal(unselected.selected_set_id, set.id)
+          assert.equal(unselected.metrics.length, 7)
+          assert.ok(!unselected.blockers.includes('EXPLICIT_STATEMENT_SET_SELECTION_REQUIRED'))
           const selected = await finance.get(item.session, item.caseId, second.body.set.id)
           assert.equal(selected.selected_set_id, second.body.set.id)
           assert.equal(selected.metrics.length, 7)

@@ -1,0 +1,61 @@
+const { test } = require('node:test')
+const assert = require('node:assert/strict')
+const sample = require('./helpers/fhi-input.cjs')
+const { scoreFhi } = require('../dist/financial/fhi-scorer')
+const { partialAssessment } = require('../dist/financial/partial-assessment')
+const { Decimal } = require('../dist/financial/decimal')
+const context = engine => ({ company: true, policyActive: true, reviewAllowed: true,
+  blockers: [...new Set(engine.blockers.map(b => b.code))] })
+function incomplete() {
+  const input = sample()
+  input.facts = input.facts.filter(f => !['trade_receivables', 'depreciation_amortization'].includes(f.key))
+  return scoreFhi(input)
+}
+test('incomplete data preserves weights and official nulls; bounds contain the complete reference', () => {
+  const full = scoreFhi(sample()), engine = incomplete(), snapshot = JSON.stringify(engine)
+  const result = partialAssessment(engine, context(engine))
+  assert.equal(full.calculation.display_total, '82.5')
+  assert.equal(full.calculation.candidate_band, 'AIC-F2')
+  assert.equal(result.available_points, '66.00')
+  assert.equal(result.available_max_points, '80')
+  assert.equal(result.unresolved_max_points, '20')
+  assert.equal(result.lower_bound, '66.0')
+  assert.equal(result.upper_bound, '86.0')
+  assert.deepEqual(result.unresolved_metric_ids, ['AIC-M02', 'AIC-M04'])
+  assert.equal(result.components.length, 5)
+  assert.equal(JSON.stringify(engine), snapshot)
+  assert.equal(engine.calculation.display_total, null)
+  for (const key of ['score', 'band', 'grade', 'pd']) assert.equal(engine[key], null)
+  assert.equal(partialAssessment(full, context(full)), null)
+})
+test('no summary bypasses stale, scope, invalid source, policy or transaction guards', () => {
+  const engine = incomplete(), ctx = context(engine)
+  for (const key of ['company', 'policyActive', 'reviewAllowed'])
+    assert.equal(partialAssessment(engine, { ...ctx, [key]: false }), null)
+  for (const code of ['INVALID_SCOPE', 'OUT_OF_PILOT_SCOPE', 'STALE_FACT', 'SOURCE_UNAVAILABLE',
+    'FHI_METHOD_UNCONFIGURED', 'FINANCIAL_REVIEW_ALL_REQUIRED', 'SOURCE_PROCESSING',
+    'BALANCE_SHEET_UNRECONCILED', 'EBITDA_NON_POSITIVE', 'UNKNOWN_FUTURE_GUARD'])
+    assert.equal(partialAssessment(engine, { ...ctx, blockers: [...ctx.blockers, code] }), null, code)
+  const wrong = structuredClone(engine)
+  wrong.metrics[0].max_points = '100'
+  assert.equal(partialAssessment(wrong, ctx), null)
+  const duplicate = structuredClone(engine)
+  duplicate.metrics[0] = duplicate.metrics[1]
+  assert.equal(partialAssessment(duplicate, ctx), null)
+  const empty = sample(); empty.facts = []
+  const noData = scoreFhi(empty)
+  assert.equal(partialAssessment(noData, context(noData)), null)
+})
+test('score bounds round outwards even when the known sum repeats or equals zero', () => {
+  const engine = incomplete()
+  for (const m of engine.metrics) if (m.status === 'available') m.points = Decimal.parse('0').toExact()
+  engine.metrics[0].points = Decimal.fraction(1n, 3n).toExact()
+  let partial = partialAssessment(engine, context(engine))
+  assert.equal(partial.lower_bound, '0.3')
+  assert.equal(partial.upper_bound, '20.4')
+  engine.metrics[0].points = Decimal.parse('0').toExact()
+  partial = partialAssessment(engine, context(engine))
+  assert.equal(partial.available_points, '0.00')
+  assert.equal(partial.lower_bound, '0.0')
+  assert.equal(partial.upper_bound, '20.0')
+})

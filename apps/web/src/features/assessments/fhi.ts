@@ -37,6 +37,9 @@ export function hasCompleteFhi(result: Assessment | null | undefined) {
         matches.length === 1 &&
         part.points !== null &&
         (part.raw_value !== null ||
+          (result?.purpose === 'company_health' &&
+            result.case_aggregation?.method === 'mean_metric_points_v1' &&
+            !!result.case_aggregation.metrics.find(m => m.metric_id === metric.id)?.contributions.length) ||
           (part.verification_state === 'verified_zero_debt_exception' &&
             part.flags?.includes('VERIFIED_ZERO_INTEREST_ZERO_DEBT'))) &&
         part.max_points === metric.max &&

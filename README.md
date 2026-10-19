@@ -1,6 +1,8 @@
 # AIC Rating — FinTechathon 2026
 
-Frontend và API hiện dùng PostgreSQL, lưu nguồn bất biến, worker PDF/ZIP, rà soát hồ sơ/giao dịch, yêu cầu bổ sung, bảng câu hỏi và Assessment có lịch sử/ghi nhận đã xem. Migrations hiện đến **0021**. Hợp đồng AI 1.0.2 được giữ nguyên; hợp đồng Assessment bổ sung nằm tại [aic-assessment](packages/contracts/aic-assessment/README.md). Luồng [đọc BCTC Việt Nam / Mỹ / Trung Quốc](docs/implementation/AIC-INTERNATIONAL-FINANCIAL-IMPORT-2026-10-18.md) dùng contract riêng, đối chiếu nguồn và xác minh trước khi tính tỷ số; chưa có điểm tín dụng/PD quốc tế đã kiểm định. Xem [runtime và phạm vi pilot được duyệt](docs/implementation/AIC-PILOT-RUNTIME.md). Code đã kiểm chứng local theo phạm vi từng báo cáo; chưa chứng nhận toàn hệ thống production.
+Bản refactor BCTC ngày 19/10: xem [luồng nghiệp vụ, cập nhật DB và kết quả kiểm tra](docs/implementation/AIC-COMPANY-FINANCIAL-REFACTOR-2026-10-19.md). Luồng doanh nghiệp dùng xác nhận rà soát chung, nhận PDF/Excel/ảnh/ZIP và giữ nguyên method chấm điểm hiện tại. `pnpm dev:all` tự chuẩn bị API và migration cho DB local.
+
+Frontend và API hiện dùng PostgreSQL, lưu nguồn bất biến, worker PDF/ZIP, rà soát hồ sơ/giao dịch, yêu cầu bổ sung, bảng câu hỏi và Assessment có lịch sử/ghi nhận đã xem. Migrations hiện đến **0023**. Hợp đồng AI 1.0.2 được giữ nguyên; hợp đồng Assessment bổ sung nằm tại [aic-assessment](packages/contracts/aic-assessment/README.md). Luồng [đọc BCTC Việt Nam / Mỹ / Trung Quốc](docs/implementation/AIC-INTERNATIONAL-FINANCIAL-IMPORT-2026-10-18.md) dùng contract riêng, đối chiếu nguồn và xác minh trước khi tính tỷ số; chưa có điểm tín dụng/PD quốc tế đã kiểm định. Xem [runtime và phạm vi pilot được duyệt](docs/implementation/AIC-PILOT-RUNTIME.md). Code đã kiểm chứng local theo phạm vi từng báo cáo; chưa chứng nhận toàn hệ thống production.
 
 Nhánh làm việc của Đức: **`duc`**. Commit và push công việc trên nhánh này; bàn giao vào `main` qua pull request để người phụ trách module đối ứng review.
 
@@ -34,15 +36,22 @@ pnpm build
 
 Xem [frontend README](apps/web/README.md) để chạy QA tổng hợp riêng và cấu hình backend tương lai. `lint` gồm kiểm tra ranh giới kiến trúc và Prettier; chưa có ESLint trong dependency gốc.
 
-Để chạy cả stack local, cần PostgreSQL đang hoạt động, `.venv` đã cài dependency AI và root `.env` có cấu hình thật. Sau khi build API, chạy từ gốc repo:
+Để chạy cả stack local, cần PostgreSQL đang hoạt động, đã cài dependency Node, có Python `.venv` và root `.env` có `DATABASE_URL`, `INTERNAL_API_KEY`, key của provider AI đang chọn cùng cấu hình method hiện tại. Chạy một lệnh từ gốc repo:
 
 ```powershell
-pnpm api:build
-pnpm build
-pnpm local:serve
+pnpm dev:all
 ```
 
-Lệnh này chạy web đã build tại `http://127.0.0.1:3000`, API `3001`, AI live `8100`, worker PDF đơn và worker tiếp nhận/trích xuất ZIP. Dùng `pnpm dev:all` nếu cần Next development mode. Giữ cửa sổ terminal mở; `Ctrl+C` dừng các dịch vụ do lệnh tạo. `pnpm dev` chỉ chạy frontend. Không chạy hai stack cùng lúc; `EADDRINUSE` nghĩa là cổng đang được một tiến trình khác dùng. Launcher kiểm tra cổng trước khi khởi động, không tự dừng tiến trình khác. ZIP tối đa 32 MiB; PDF đơn tối đa 10 MiB và 10 trang. Kết quả trích xuất vẫn cần đối chiếu nguồn.
+`AI_PROVIDER=gemini` (mặc định) dùng `GEMINI_API_KEY`; `AI_PROVIDER=deepseek` dùng
+`DEEPSEEK_API_KEY`, `DEEPSEEK_MODEL_ID=deepseek-flash` và endpoint mặc định
+`https://api.deepseek.com`. Có thể giữ cả hai key trong `.env` rồi chọn bằng
+`AI_PROVIDER`; đổi cấu hình cần khởi động lại stack. Xem [hướng dẫn adapter và OCR](services/ai/docs/providers.md).
+
+Launcher kiểm tra cổng, bổ sung dependency AI nếu thiếu, build API từ source hiện tại và kiểm tra toàn bộ lịch sử/checksum migration. Khi có migration mới, nó tạo bản sao lưu DB trong thư mục riêng tư ở Temp, kiểm tra bản sao lưu rồi mới áp migration và cập nhật quyền runtime cho các role đã cấu hình. Lần chạy sau không sao lưu lại nếu schema đã đủ. `DATABASE_URL` là kết nối owner; `AIC_API_DATABASE_URL` và `AIC_WORKER_DATABASE_URL` có thể dùng role hạn chế trên cùng DB. Chuẩn bị tự động chỉ nhận URL PostgreSQL loopback, không có query options; production vẫn dùng migration runner riêng.
+
+Trong launcher local, các giá trị có trong root `.env` được ưu tiên hơn biến cùng tên đang giữ trong terminal. Đường dẫn policy/cache tương đối được tính từ gốc repo. Dùng `pnpm dev:all --check` để build và kiểm tra cấu hình API, không bật dịch vụ hay sửa DB. Policy đã duyệt trên máy này nằm tại `data/local/approved-fhi-policy.json` (private, không vào Git); dùng đường dẫn trong workspace để tránh `AppData` bị ứng dụng Windows đóng gói chuyển hướng sang vùng riêng.
+
+Lệnh này chạy Next development tại `http://127.0.0.1:3000`, API `3001`, AI live `8100`, worker PDF đơn, worker tiếp nhận/trích xuất ZIP và worker BCTC đa định dạng. Launcher chờ AI/API sẵn sàng trước khi bật worker và chỉ báo hoàn tất khi web truy cập được. Giữ cửa sổ terminal mở; `Ctrl+C` dừng các dịch vụ do lệnh tạo. `pnpm dev` chỉ chạy frontend. Muốn xem web đã build, chạy `pnpm build` rồi `pnpm local:serve`. Không chạy hai stack cùng lúc; cổng đang dùng sẽ khiến launcher dừng trước bước chuẩn bị. Luồng BCTC mới: ZIP tối đa 32 MiB, PDF/Excel/ảnh tối đa 25 MB và PDF tối đa 600 trang; luồng PDF lịch sử vẫn giữ giới hạn cũ. Kết quả trích xuất vẫn cần đối chiếu nguồn.
 
 Kiểm thử local ngày 18/10/2026 đã mở Chrome thật ở desktop 1440×900: chạy/lưu Assessment có giới hạn dữ liệu, ghi nhận đã xem, yêu cầu bổ sung và lời mời/câu trả lời có biên nhận. PDF thật và ZIP nhỏ đã có bằng chứng live; BCTC còn dữ kiện bị giữ lại do grounding và cần kiểm chứng tài chính. Xem [báo cáo triển khai và nghiệm thu UI](docs/implementation/AIC-IMPLEMENTATION-AND-DESKTOP-UAT-2026-10-18.md) để biết từng ca đã chạy/phần còn thiếu. `next start` trong launcher này chỉ là bản web production build chạy local; backend vẫn là local runtime. Không đồng nhất với nghiệm thu deployment production qua HTTPS.
 

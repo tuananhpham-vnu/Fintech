@@ -7,13 +7,13 @@ export type CounterpartyCreateInput = {
   country: string
   tax_id: string | null
   industry_code: string | null
-  source: {
+  source?: {
     kind: 'declaration'
     reported_by: 'organization' | 'counterparty'
     reported_reference: string
     statement: string
   }
-  reason: string
+  reason?: string
 }
 export type CounterpartyUpdateInput = CounterpartyCreateInput & { expected_revision: number }
 
@@ -25,13 +25,17 @@ export function counterpartyWriteProjection(
     country: body.country,
     tax_id: body.tax_id,
     industry_code: body.industry_code,
-    source: {
-      kind: body.source.kind,
-      reported_by: body.source.reported_by,
-      reported_reference: body.source.reported_reference,
-      statement: body.source.statement,
-    },
-    reason: body.reason,
+    ...(body.source
+      ? {
+          source: {
+            kind: body.source.kind,
+            reported_by: body.source.reported_by,
+            reported_reference: body.source.reported_reference,
+            statement: body.source.statement,
+          },
+        }
+      : {}),
+    ...(body.reason ? { reason: body.reason } : {}),
   }
 }
 

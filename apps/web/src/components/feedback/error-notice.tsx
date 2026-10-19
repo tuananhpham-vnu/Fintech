@@ -8,6 +8,21 @@ export function ErrorNotice({ error, retry }: { error: unknown; retry?: () => vo
   if (!error) return null
   const api = error instanceof ApiError ? error : null
   const specific: Record<string, MessageKey> = {
+    MVP_COUNTRY_NOT_ENABLED: 'financialIntakeCountry',
+    FINANCIAL_REVIEW_CHANGED: 'financialReviewChanged',
+    FINANCIAL_REVIEW_ALL_REQUIRED: 'financialReviewChanged',
+    SOURCE_PROCESSING_OR_DUPLICATE: 'financialIntakePending',
+    INTAKE_SOURCE_PROCESSING: 'financialIntakePending',
+    BCTC_SOURCE_REQUIRED: 'financialBctcSourceRequired',
+    FINANCIAL_PERIOD_REVIEW_REQUIRED: 'financialIntakePending',
+    FINANCIAL_INDUSTRY_SCOPE_MISMATCH: 'financialIndustryScopeMismatch',
+    FINANCIAL_DUPLICATE_DECISION_REQUIRED: 'financialIntakePending',
+    FINANCIAL_INTAKE_SET_MISMATCH: 'financialImportScopeMismatch',
+    INTAKE_HAS_FINANCIAL_DATA: 'financialImportReviewRequired',
+    UNSUPPORTED_SOURCE_FORMAT: 'financialIntakeFormat',
+    SOURCE_FORMAT_MISMATCH: 'financialIntakeFormat',
+    SOURCE_TOO_LARGE: 'financialIntakeLimit',
+    FINANCIAL_SOURCE_CASE_LIMIT: 'financialIntakeLimit',
     FINANCIAL_COUNTRY_MISMATCH: 'financialImportCountryMismatch',
     FINANCIAL_SCOPE_MISMATCH: 'financialImportScopeMismatch',
     FINANCIAL_PAGE_SELECTION_REQUIRED: 'financialImportPages',
@@ -61,7 +76,11 @@ export function ErrorNotice({ error, retry }: { error: unknown; retry?: () => vo
     <div className="aic-error" role="alert">
       <AlertCircle size={19} />
       <div>
-        <p>{t(key)}</p>
+        <p>
+          {api?.code === 'FINANCIAL_REASONING_CONFLICT'
+            ? 'Có số liệu hoặc quan hệ kế toán mâu thuẫn. Mở phần suy luận để rà soát dòng nguồn trước khi xác nhận chung.'
+            : t(key)}
+        </p>
         {api?.requestId && (
           <details>
             <summary>{t('requestId')}</summary>

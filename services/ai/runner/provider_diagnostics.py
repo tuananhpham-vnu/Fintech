@@ -13,7 +13,7 @@ import traceback
 from pathlib import Path
 from uuid import UUID
 
-from providers.gemini import ProviderError, ProviderUnavailable
+from providers.base import ModelOutputError, ProviderError, ProviderUnavailable
 from .errors import PROVIDER_UNAVAILABLE, ServiceError
 
 PREFIX = "AIC_SAFE_PROVIDER_DIAGNOSTIC "
@@ -25,7 +25,7 @@ def emit_unexpected(error: Exception, operation: object, document_id: object, re
     if os.environ.get("AIC_SAFE_PROVIDER_DIAGNOSTICS") != "1":
         return
     identifier = _uuid(request_id)
-    if operation not in ("inspect", "extract", "evaluate") or identifier is None:
+    if operation not in ("inspect", "extract", "evaluate", "financial-import", "financial-discovery") or identifier is None:
         return
     root = Path(__file__).resolve().parents[1]
     frames = []
@@ -66,12 +66,14 @@ def classify(error: BaseException) -> dict:
         seen.add(id(current))
         current = current.__cause__
     for item in reversed(chain):
+        if isinstance(item, ModelOutputError):
+            return {"category": item.code}
         if not isinstance(item, (ProviderError, ProviderUnavailable)):
             continue
         message = str(item)
-        match = re.fullmatch(r"Gemini HTTP ([1-5][0-9]{2})", message)
+        match = re.fullmatch(r"(?:Gemini|DeepSeek|AgentRouter|MotAPIs) HTTP ([1-5][0-9]{2})", message)
         if match is None:
-            match = re.fullmatch(r"Gemini unavailable after [1-9][0-9]* attempts \(HTTP ([1-5][0-9]{2})\)", message)
+            match = re.fullmatch(r"(?:Gemini|DeepSeek|AgentRouter|MotAPIs) unavailable after [1-9][0-9]* attempts \(HTTP ([1-5][0-9]{2})\)", message)
         if match:
             status = int(match.group(1))
             category = ("RATE_LIMIT_OR_QUOTA" if status == 429 else
@@ -79,15 +81,17 @@ def classify(error: BaseException) -> dict:
                         "UPSTREAM_NOT_FOUND" if status == 404 else
                         "UPSTREAM_SERVER_ERROR" if status >= 500 else "UPSTREAM_HTTP_ERROR")
             return {"category": category, "http_status": status}
-        if re.fullmatch(r"Gemini unavailable after [1-9][0-9]* attempts \(timeout\)", message):
+        if re.fullmatch(r"(?:Gemini|DeepSeek|AgentRouter|MotAPIs) unavailable after [1-9][0-9]* attempts \(timeout\)", message):
             return {"category": "TIMEOUT"}
-        if re.fullmatch(r"Gemini unavailable after [1-9][0-9]* attempts \(deadline\)", message):
+        if re.fullmatch(r"(?:Gemini|DeepSeek|AgentRouter|MotAPIs) unavailable after [1-9][0-9]* attempts \(deadline\)", message):
             return {"category": "DEADLINE"}
-        if re.fullmatch(r"Gemini unavailable after [1-9][0-9]* attempts \((?:ConnectError|ReadError|WriteError|CloseError|ProxyError|RemoteProtocolError|LocalProtocolError|PoolTimeout)\)", message):
+        if re.fullmatch(r"(?:Gemini|DeepSeek|AgentRouter|MotAPIs) unavailable after [1-9][0-9]* attempts \((?:ConnectError|ReadError|WriteError|CloseError|ProxyError|RemoteProtocolError|LocalProtocolError|PoolTimeout)\)", message):
             return {"category": "NETWORK_OR_TRANSPORT"}
-        if message in ("GEMINI_API_KEY is not configured", "MODEL_ID is not configured"):
+        if message in ("GEMINI_API_KEY is not configured", "DEEPSEEK_API_KEY is not configured", "MODEL_ID is not configured", "DEEPSEEK_MODEL_ID is not configured", "AGENTROUTER_API_KEY is not configured", "AGENTROUTER_MODEL_ID is not configured", "MOTAPIS_API_KEY is not configured", "MOTAPIS_MODEL_ID is not configured"):
             return {"category": "PROVIDER_CONFIGURATION_MISSING"}
     if isinstance(error, ServiceError):
+        if error.code in {'INVALID_MODEL_OUTPUT', 'MODEL_OUTPUT_BLOCKED', 'MODEL_OUTPUT_TRUNCATED', 'MODEL_OUTPUT_EMPTY'}:
+            return {'category': error.code}
         message = str(error)
         if message.startswith("Extraction time budget exhausted before ") or message.startswith("Extraction time budget exhausted waiting for a model slot ("):
             return {"category": "DEADLINE_OR_SLOT_WAIT"}
@@ -97,13 +101,15 @@ def classify(error: BaseException) -> dict:
 
 
 def emit_failure(error: ServiceError, operation: object, document_id: object, request_id: object) -> dict | None:
-    if os.environ.get("AIC_SAFE_PROVIDER_DIAGNOSTICS") != "1" or error.code != PROVIDER_UNAVAILABLE:
+    if os.environ.get("AIC_SAFE_PROVIDER_DIAGNOSTICS") != "1" or error.code not in {
+        PROVIDER_UNAVAILABLE, 'INVALID_MODEL_OUTPUT', 'MODEL_OUTPUT_BLOCKED', 'MODEL_OUTPUT_TRUNCATED', 'MODEL_OUTPUT_EMPTY'
+    }:
         return None
     identifier = _uuid(request_id)
-    if operation not in ("inspect", "extract", "evaluate") or identifier is None:
+    if operation not in ("inspect", "extract", "evaluate", "financial-import", "financial-discovery") or identifier is None:
         return None
     event = {"operation": operation, "request_id": identifier,
-             "service_code": PROVIDER_UNAVAILABLE, "service_status": 503, **classify(error)}
+             "service_code": error.code, "service_status": error.status, **classify(error)}
     document = _uuid(document_id)
     if document:
         event["document_id"] = document

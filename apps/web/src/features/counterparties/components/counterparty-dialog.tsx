@@ -10,40 +10,14 @@ import { useState } from 'react'
 
 const labels = {
   en: {
-    notice:
-      'This staff declaration records reported information. Identity remains unresolved after saving.',
-    reporter: 'Reported by',
-    organization: 'Organization',
-    counterparty: 'Counterparty',
-    reference: 'Declaration reference',
-    statement: 'Reported information',
-    reason: 'Reason for saving',
     rebase: 'Keep my draft and use this revision',
     compare: 'Current saved record (your draft is preserved)',
   },
   vi: {
-    notice:
-      'Lời khai do chuyên viên nhập chỉ ghi nhận thông tin được báo cáo. Danh tính vẫn chưa được xác minh sau khi lưu.',
-    reporter: 'Bên khai báo',
-    organization: 'Tổ chức',
-    counterparty: 'Đối tác',
-    reference: 'Tham chiếu lời khai',
-    statement: 'Thông tin được khai báo',
-    reason: 'Lý do lưu',
     rebase: 'Giữ bản nháp và dùng phiên bản này',
     compare: 'Bản ghi hiện tại (bản nháp của bạn được giữ lại)',
   },
-  'zh-CN': {
-    notice: '此员工录入的声明仅记录所报告的信息。保存后身份仍未核实。',
-    reporter: '报告方',
-    organization: '本机构',
-    counterparty: '交易对手',
-    reference: '声明参考信息',
-    statement: '所报告的信息',
-    reason: '保存原因',
-    rebase: '保留草稿并使用此版本',
-    compare: '当前已保存的记录（您的草稿会保留）',
-  },
+  'zh-CN': { rebase: '保留草稿并使用此版本', compare: '当前已保存的记录（您的草稿会保留）' },
 }
 export function PartyDialog({
   initial,
@@ -63,28 +37,14 @@ export function PartyDialog({
     [country, setCountry] = useState(initial?.country ?? 'VN'),
     [revision, setRevision] = useState(initial?.revision ?? 0),
     [latest, setLatest] = useState<Counterparty | null>(null),
-    [refreshing, setRefreshing] = useState(false),
-    [reportedBy, setReportedBy] = useState<'organization' | 'counterparty'>('organization'),
-    [reference, setReference] = useState(''),
-    [statement, setStatement] = useState(''),
-    [reason, setReason] = useState('')
+    [refreshing, setRefreshing] = useState(false)
   const dirty =
     name !== (initial?.name ?? '') ||
     tax !== (initial?.tax_id ?? '') ||
     industry !== (initial?.industry_code ?? '') ||
-    country !== (initial?.country ?? 'VN') ||
-    !!reference ||
-    !!statement ||
-    !!reason ||
-    reportedBy !== 'organization'
+    country !== (initial?.country ?? 'VN')
   function submit() {
-    if (
-      !name.trim() ||
-      !country.trim() ||
-      !reference.trim() ||
-      !statement.trim() ||
-      !reason.trim()
-    ) {
+    if (!name.trim() || !country.trim()) {
       action.setError(new ApiError(422, 'INVALID_INPUT', ''))
       return
     }
@@ -93,13 +53,6 @@ export function PartyDialog({
       country: country.trim(),
       tax_id: tax.trim() || null,
       industry_code: industry.trim() || null,
-      source: {
-        kind: 'declaration',
-        reported_by: reportedBy,
-        reported_reference: reference.trim(),
-        statement: statement.trim(),
-      },
-      reason: reason.trim(),
     }
     void action.run(
       (keys) =>
@@ -130,7 +83,6 @@ export function PartyDialog({
         }}
       >
         <fieldset disabled={action.busy || refreshing}>
-          <p className="muted">{copy.notice}</p>
           <label className="field-label">
             {t('name')} *
             <input
@@ -156,45 +108,49 @@ export function PartyDialog({
           </label>
           <label className="field-label">
             {t('industry')}
-            <input maxLength={50} value={industry} onChange={(e) => setIndustry(e.target.value)} />
-          </label>
-          <label className="field-label">
-            {copy.reporter} *
-            <select
-              value={reportedBy}
-              onChange={(e) => setReportedBy(e.target.value as typeof reportedBy)}
-            >
-              <option value="organization">{copy.organization}</option>
-              <option value="counterparty">{copy.counterparty}</option>
+            <select value={industry} onChange={(e) => setIndustry(e.target.value)}>
+              <option value="">Chưa xác định</option>
+              <option value="DISTRIBUTION_WHOLESALE_PILOT">
+                Phân phối / bán buôn — method hiện tại
+              </option>
+              {['MANUFACTURING', 'RETAIL', 'BUSINESS_SERVICES', 'CONSUMER_DURABLES', 'OTHER'].map(
+                (code) => (
+                  <option key={code} value={code}>
+                    {
+                      (
+                        {
+                          MANUFACTURING: 'Sản xuất',
+                          RETAIL: 'Bán lẻ',
+                          BUSINESS_SERVICES: 'Dịch vụ doanh nghiệp',
+                          CONSUMER_DURABLES: 'Hàng tiêu dùng lâu bền',
+                          OTHER: 'Ngành khác',
+                        } as Record<string, string>
+                      )[code]
+                    }{' '}
+                    — chưa hỗ trợ phát điểm
+                  </option>
+                ),
+              )}
+              {industry &&
+                ![
+                  'DISTRIBUTION_WHOLESALE_PILOT',
+                  'MANUFACTURING',
+                  'RETAIL',
+                  'BUSINESS_SERVICES',
+                  'CONSUMER_DURABLES',
+                  'OTHER',
+                ].includes(industry) && (
+                  <option value={industry}>{industry} — cần rà soát mã ngành</option>
+                )}
             </select>
+            {industry !== 'DISTRIBUTION_WHOLESALE_PILOT' && (
+              <small>
+                Method hiện tại chỉ phát điểm cho phạm vi Phân phối / bán buôn. Hồ sơ ngành khác vẫn
+                có thể lưu và rà soát.
+              </small>
+            )}
           </label>
-          <label className="field-label">
-            {copy.reference} *
-            <input
-              required
-              maxLength={500}
-              value={reference}
-              onChange={(e) => setReference(e.target.value)}
-            />
-          </label>
-          <label className="field-label">
-            {copy.statement} *
-            <textarea
-              required
-              maxLength={4000}
-              value={statement}
-              onChange={(e) => setStatement(e.target.value)}
-            />
-          </label>
-          <label className="field-label">
-            {copy.reason} *
-            <textarea
-              required
-              maxLength={4000}
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-            />
-          </label>
+
           <ErrorNotice error={action.error} />
           {action.error instanceof ApiError && action.error.status === 409 && initial && (
             <div className="aic-recovery">

@@ -1,4 +1,4 @@
-"""Smoke hybrid thật: rule + Gemini cho ca khó + HITL. Cần GEMINI_API_KEY (env hoặc .env gốc repo).
+"""Smoke hybrid thật: rule + provider được chọn cho ca khó + HITL. Cần key của AI_PROVIDER.
 
 Chạy: cd services/ai && ../../.venv/bin/python scripts/hybrid_smoke.py
 Ghi evidence/hybrid-smoke-<time>.json. Dữ liệu giả lập dev, không phải đo chất lượng.
@@ -14,7 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 import rules  # noqa: E402
-from providers.gemini import GeminiConfig, GeminiProvider, ProviderUnavailable  # noqa: E402
+from providers.base import ProviderUnavailable  # noqa: E402
+from providers.factory import create_provider  # noqa: E402
 from providers.semantic import PaymentConditionResolver  # noqa: E402
 from runner.config import DEFAULT_CONTRACTS_DIR  # noqa: E402
 from runner.contracts import Contracts  # noqa: E402
@@ -45,7 +46,7 @@ def hard_case(raw: str):
 def main() -> int:
     contracts = Contracts(DEFAULT_CONTRACTS_DIR)
     try:
-        resolver = PaymentConditionResolver(GeminiProvider(GeminiConfig.from_env()), contracts)
+        resolver = PaymentConditionResolver(create_provider(), contracts)
     except ProviderUnavailable as exc:
         print(f"NOT RUN: {exc}")
         return 2

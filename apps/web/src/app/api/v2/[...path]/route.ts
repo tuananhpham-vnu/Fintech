@@ -65,15 +65,17 @@ async function forward(request: Request, context: { params: Promise<{ path: stri
     return error(400, 'IDEMPOTENCY_REQUIRED')
   let body: ArrayBuffer | undefined
   if (write) {
-    const max = endpoint.endsWith('/financial-files')
-      ? 26_000_000
-      : endpoint.endsWith('/dossier-archives')
-        ? 33 * 1024 * 1024
-        : endpoint.endsWith('/document-archives')
-          ? 21 * 1024 * 1024
-          : endpoint.endsWith('/documents')
-            ? 11 * 1024 * 1024
-            : 1024 * 1024
+    const max = endpoint.endsWith('/financial-intakes')
+      ? 33 * 1024 * 1024
+      : endpoint.endsWith('/financial-files')
+        ? 26_000_000
+        : endpoint.endsWith('/dossier-archives')
+          ? 33 * 1024 * 1024
+          : endpoint.endsWith('/document-archives')
+            ? 21 * 1024 * 1024
+            : endpoint.endsWith('/documents')
+              ? 11 * 1024 * 1024
+              : 1024 * 1024
     if (Number(request.headers.get('content-length') ?? 0) > max)
       return error(413, 'PAYLOAD_TOO_LARGE')
     const reader = request.body?.getReader(),

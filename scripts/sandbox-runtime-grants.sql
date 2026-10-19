@@ -33,3 +33,8 @@ GRANT UPDATE(status,revision,purpose,content,document_types,approved_payload,app
 GRANT INSERT ON aic.mvp_document_results TO :"worker_role";
 GRANT UPDATE(state,attempts,fence,worker_id,snapshot_case_revision,lease_expires_at,error_code,retryable,updated_at)
   ON aic.mvp_document_jobs TO :"worker_role";
+
+GRANT SELECT,INSERT,UPDATE ON aic.financial_intakes TO :"api_role";
+GRANT SELECT,INSERT ON aic.financial_review_confirmations TO :"api_role";
+GRANT SELECT,INSERT ON aic.financial_reasoning_runs,aic.financial_reasoning_observations,
+  aic.financial_reasoning_relations,aic.financial_reasoning_derivations TO :"api_role";

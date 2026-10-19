@@ -29,6 +29,7 @@
 
 # --- Python ---
 .venv/
+.venv-docling/
 venv/
 __pycache__/
 *.pyc
@@ -77,3 +78,7 @@ logs/
 .idea/
 .DS_Store
 ~$*
+
+# Private source-grounded reasoning checks and Chrome screenshots.
+/.reports/
+/output/

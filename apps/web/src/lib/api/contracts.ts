@@ -218,6 +218,7 @@ export type Factor = {
   limitations: string[]
 }
 export type Assessment = {
+  case_aggregation?: CaseAggregation
   purpose?: 'company_health'
   checked_case_revision?: number
   financial_set_id?: string | null
@@ -244,6 +245,7 @@ export type Assessment = {
   pd?: null
   /** METHOD-SYNC-01 draft expansions, not released wire schemas. */
   financial_health?: {
+    partial_assessment?: PartialAssessment
     status: string
     score: string | null
     band: string | null
@@ -265,6 +267,43 @@ export type Assessment = {
     evidence_refs?: string[]
     limitations?: string[]
   } | null
+}
+export type PartialAssessment = {
+  kind: 'data_limited_bounds'
+  available_points: string
+  available_max_points: string
+  unresolved_max_points: string
+  lower_bound: string
+  upper_bound: string
+  total_metric_count: 7
+  components: { metric_id: string; points: string; max_points: string }[]
+  unresolved_metric_ids: string[]
+}
+export type CaseAggregation = {
+  accounting_profile?: AccountingProfile
+  method: 'mean_metric_points_v1'
+  included_set_ids: string[]
+  excluded_sets: { set_id: string; set_revision: number; reasons: string[] }[]
+  metrics: {
+    metric_id: string
+    contributions: {
+      set_id: string
+      set_revision: number
+      period: { kind: string; start_date: string; end_date: string }
+      points: string
+      raw_value: string | null
+      source_fact_ids: string[]
+    }[]
+    omitted_sets: { set_id: string; blockers: string[] }[]
+  }[]
+}
+
+export type AccountingProfile = {
+  id: 'US_GAAP_DISTRIBUTION_1' | 'CN_ASBE_DISTRIBUTION_1'
+  country: 'US' | 'CN'
+  accounting_regime: 'US_GAAP' | 'CN_ASBE'
+  mapping_version: 'international-accounting-v1'
+  method_version: '1.0.0-us-gaap-pilot.1' | '1.0.0-cn-asbe-pilot.1'
 }
 export type FhiComponent = {
   flags?: string[]

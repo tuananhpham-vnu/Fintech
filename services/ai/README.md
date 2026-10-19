@@ -4,6 +4,15 @@ Một FastAPI app nội bộ chứa 3 route theo `packages/contracts/internal-op
 Runner/bootstrap, `evaluate` và guards: **Tuấn Anh** (M3). Package `extraction` (`inspect`, `extract`): **Nguyên** (M2).
 Backend (**Đức**) là bên duy nhất ghi DB: service này không có DB, không gọi ngược app, chỉ trả JSON.
 
+Runtime hỗ trợ Gemini, DeepSeek và Agent Router qua cùng giao diện adapter; Gemini vẫn là mặc định khi không cấu hình.
+Xem [cấu hình chọn provider, OCR và kiểm tra](docs/providers.md). `pnpm dev:all` vẫn
+khởi chạy cả stack với key của provider được chọn.
+
+OCR local cho BCTC trên Windows: chạy `pnpm ai:ocr:setup` một lần ở gốc repo,
+rồi đặt `OCR_ENGINE=docling` trong `.env`. `pnpm dev:all` kiểm tra runtime/model trước
+khi bật dịch vụ. Docling + EasyOCR `vi,en` đọc chữ và bảng tại máy; Gemini được giữ
+cho nhận diện kỳ và đề xuất số liệu. Xem [hướng dẫn OCR local](docs/local-ocr.md).
+
 ## Chạy
 
 Cần Python 3.11 và venv ở thư mục gốc repo.
@@ -20,17 +29,31 @@ export INTERNAL_API_KEY=<lấy qua kênh nhóm, không commit>
 | Biến môi trường | Mặc định | Ý nghĩa |
 |---|---|---|
 | `INTERNAL_API_KEY` | (bắt buộc) | So khớp header `X-Internal-Key`. Không đặt thì mọi route trả 403 (fail closed) |
-| `AI_MODE` | `mock` | `mock`: trả gold có nhãn. `live`: `evaluate` chạy 5 rule deterministic, ca khó mới gọi Gemini qua guard; kết quả Gemini chỉ là gợi ý (`LLM_SUGGESTION`), luôn chuyển người duyệt xác nhận bằng `correct_field` ([HITL](docs/hitl.md)); `inspect`/`extract` gọi package của Nguyên. **Không tự chuyển sang mock khi live lỗi** |
-| `MODEL_ID`, `PROMPT_VERSION` | `gemini-3.1-flash-lite` (provider) | Model Gemini cho tác vụ ngữ nghĩa và spike; xem [decision log](docs/model-prompt-decision-log.md) |
+| `AI_MODE` | `mock` | `mock`: trả gold có nhãn. `live`: `evaluate` chạy 5 rule deterministic, ca khó mới gọi provider đã chọn qua guard; kết quả model chỉ là gợi ý (`LLM_SUGGESTION`), luôn chuyển người duyệt xác nhận bằng `correct_field` ([HITL](docs/hitl.md)); `inspect`/`extract` gọi package của Nguyên. **Không tự chuyển sang mock khi live lỗi** |
+| `AI_PROVIDER` | `gemini` | Chọn `gemini`, `deepseek`, `agentrouter` hoặc `motapis` cho semantic, extraction và nhận diện BCTC; OCR phụ thuộc khả năng nhận ảnh của endpoint |
+| `GEMINI_MODEL_ID`, `MODEL_ID` | `gemini-3.1-flash-lite` | Model Gemini; `GEMINI_MODEL_ID` ưu tiên hơn `MODEL_ID` cũ |
+| `DEEPSEEK_MODEL_ID`, `DEEPSEEK_BASE_URL` | `deepseek-flash`, `https://api.deepseek.com` | Model/endpoint DeepSeek; độc lập với model Gemini cũ |
+| `PROMPT_VERSION` | rỗng | Phiên bản prompt cho health/spike; xem [decision log](docs/model-prompt-decision-log.md) |
 | `GEMINI_API_KEY` | rỗng | Đặt trong env của server hoặc `.env` ở gốc repo (gitignored, nạp tự động, không ghi đè env); `health` chỉ báo có/không |
+| `DEEPSEEK_API_KEY` | rỗng | Bắt buộc khi chọn DeepSeek; không cần key Gemini khi chạy DeepSeek |
+| `AI_FINANCIAL_CALCULATIONS` | `0` | `1`: đề xuất công thức cho chỉ tiêu còn thiếu; backend tính chính xác, người dùng rà soát và áp dụng trước xác nhận chung |
+| `AI_FINANCIAL_REASONING` | `0` | `1`: kho quan sát ngoài 14 key, tìm trang nguồn và suy luận nhiều bước; backend giải chính xác, giữ điều kiện rà soát. Khi bật, thay lượt đề xuất đơn bước cho receipt mới; receipt cũ vẫn đọc được |
+| `AI_REASONING_CACHE` | `0` | `1`: cache OCR/quan sát riêng trong `AI_STORAGE_DIR/reasoning-cache`, gắn hash nguồn/model/prompt, TTL 30 phút, tối đa 256 file × 1 MB; không thay kho chứng cứ DB |
+| `AGENTROUTER_API_KEY` | rỗng | Key riêng của gateway Agent Router; không dùng key DeepSeek/Gemini thay thế |
+| `AGENTROUTER_MODEL_ID`, `AGENTROUTER_BASE_URL` | `deepseek-v4-flash`, `https://agentrouter.org/v1` | Model core và OpenAI Chat Completions endpoint của Agent Router |
+| `AGENTROUTER_VISION_ENABLED` | `0` | Chỉ bật `1` sau khi kiểm chứng gateway/model nhận ảnh; mặc định không suy diễn khả năng OCR từ tên model |
+| `MOTAPIS_API_KEY` | rỗng | Key riêng phía server cho Mot APIs; không chuyển tiếp key DeepSeek/Gemini/Agent Router |
+| `MOTAPIS_MODEL_ID`, `MOTAPIS_BASE_URL` | `gpt-6-luna`, `https://motapis.com/v1` | Gateway Chat Completions; tên model phải thuộc danh sách tài khoản trả về từ `/v1/models` |
+| `MOTAPIS_VISION_ENABLED` | `0` | Bật `1` sau khi kiểm chứng ảnh thực tế. Model cùng tên trên gateway khác chưa chứng minh khả năng OCR |
+| `AI_SPEND_LEDGER_DIR` | `AI_STORAGE_DIR` | Thư mục riêng tùy chọn cho sổ ngân sách khi đổi provider. Không xóa hoặc đặt lại sổ cũ; trần mới phải nằm trong ngân sách còn lại đã duyệt |
 | `CONTRACTS_DIR` | `packages/contracts` | Bị kiểm `SHA256SUMS` lúc khởi động; sửa tay thì service từ chối chạy |
 | `AI_MAX_REQUEST_BYTES` | `10000000` | Body lớn hơn bị từ chối 413 `PAYLOAD_TOO_LARGE` trước khi parse (đọc theo stream, không tin Content-Length) |
 | `ENABLE_TEST_CONSOLE` | tắt | `1`: bật trang test thủ công `GET /console` (xem bên dưới). Render đang bật |
 | `AI_FIXTURES_DIR` | `packages/contracts/fixtures` | Gold cho mock: 3 JSON + 6 PDF text từ bundle; 2 scan 6MB chỉ có trong bundle |
 | `AI_STORAGE_DIR` | rỗng | Live `inspect`/`extract`: thư mục gốc chứa file theo `storage_key` (chỉ đọc). Không đặt thì 503 |
-| `OCR_ENGINE` | `gemini` | Trang scan: `gemini` (ảnh trang gửi Gemini), `tesseract` (binary + gói `vie`, local/Docker), `none` (scan -> 503) |
+| `OCR_ENGINE` | `provider` | `docling`: chữ/bảng local với EasyOCR Việt/Anh; `provider`: gửi ảnh cho provider; `gemini` là alias cũ; `tesseract`: binary local; `none`: từ chối scan |
 | `AI_MAX_PDF_BYTES`, `AI_MAX_PAGES`, `AI_EXTRACT_DEADLINE_S` | `25000000`, `10`, `240` | Giới hạn file, số trang cho extract, budget tổng một lần extract (OCR + model + repair) |
-| `AI_MAX_MODEL_CALLS`, `AI_MAX_MODEL_QUEUE` | `4`, `16` | Số lời gọi Gemini/OCR chạy cùng lúc trong process / được chờ; hàng chờ đầy hoặc chờ quá budget -> 503 |
+| `AI_MAX_MODEL_CALLS`, `AI_MAX_MODEL_QUEUE` | `4`, `16` | Số lời gọi model/OCR chạy cùng lúc trong process / được chờ; hàng chờ đầy hoặc chờ quá budget -> 503 |
 
 Deploy Render: [`render.yaml`](../../render.yaml) + [runbook](docs/deploy-render.md).
 
@@ -44,7 +67,7 @@ Trang test thủ công, chỉ có khi `ENABLE_TEST_CONSOLE=1`: `http://127.0.0.1
 - Kết quả hiển thị theo rule, assessment, evidence (trích dẫn + trang), đề xuất bổ sung, diagnostics và lỗi kèm `details[].path`.
 - Ca mẫu nằm ở `runner/console/presets.json`, sinh bởi `scripts/build_console_presets.py`. Đổi gold hoặc contract thì chạy lại script này.
 
-Trang chỉ gồm file tĩnh và dữ liệu giả lập. **Không dán hồ sơ thật**: service đang public, và ca khó được gửi sang Gemini.
+Trang chỉ gồm file tĩnh và dữ liệu giả lập. **Không dán hồ sơ thật**: service đang public, và ca khó được gửi sang provider đã chọn.
 
 ## Hợp đồng cho Đức (backend gọi service)
 
@@ -66,7 +89,7 @@ Trang chỉ gồm file tĩnh và dữ liệu giả lập. **Không dán hồ sơ
 ## Extraction (M2, Nguyên)
 
 - `inspect`: PyMuPDF đọc cấu trúc (số trang thật kể cả >10, mã hóa, file đính kèm), kiểm SHA-256 và `storage_key`. Không OCR, không LLM.
-- `extract`: text nhúng theo trang (trang ảnh -> OCR) -> Gemini đề xuất field theo `field-registry.json` -> code kiểm căn cứ:
+- `extract`: text nhúng theo trang (trang ảnh -> OCR) -> provider đề xuất field theo `field-registry.json` -> code kiểm căn cứ:
   quote phải nguyên văn trên đúng trang, giá trị (MST, tiền, ngày, enum, tiền tệ, mã) phải có trong quote. Không qua
   thì field `null` + `uncertain`/`ambiguous` + diagnostic; điều khoản thanh toán qua guard của `providers/semantic.py`.
   Output model sai schema: hỏi lại tối đa 1 lần, vẫn sai -> 422 `INVALID_MODEL_OUTPUT`. Dòng nghi prompt injection bị

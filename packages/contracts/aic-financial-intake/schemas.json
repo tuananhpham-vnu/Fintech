@@ -1,0 +1,787 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "contract_version": "AIC-FINANCIAL-INTAKE-1",
+  "definitions": {
+    "FinancialIntakePeriod": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "FY",
+            "INTERIM",
+            "TTM"
+          ]
+        },
+        "start_date": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "end_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "basis": {
+          "enum": [
+            "standalone",
+            "consolidated"
+          ]
+        },
+        "pages": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 600
+          },
+          "maxItems": 16,
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "page": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 600
+              },
+              "quote": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 20000
+              }
+            },
+            "required": [
+              "page",
+              "quote"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 6,
+          "minItems": 1
+        }
+      },
+      "required": [
+        "kind",
+        "start_date",
+        "end_date",
+        "basis",
+        "pages",
+        "evidence"
+      ],
+      "additionalProperties": false
+    },
+    "FinancialIntakeDiscovery": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "AIC-FINANCIAL-INTAKE-1"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "page_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 600
+        },
+        "document_type": {
+          "enum": [
+            "financial_statement",
+            "other",
+            "unknown"
+          ]
+        },
+        "entity_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "tax_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "periods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FinancialIntakePeriod"
+          },
+          "maxItems": 12
+        },
+        "period_issues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "candidate_index": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 11
+              },
+              "kind": {
+                "enum": [
+                  "FY",
+                  "INTERIM",
+                  "TTM"
+                ]
+              },
+              "end_date": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date"
+              },
+              "basis": {
+                "enum": [
+                  "standalone",
+                  "consolidated"
+                ]
+              },
+              "pages": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 600
+                },
+                "maxItems": 16
+              },
+              "code": {
+                "enum": [
+                  "PERIOD_DATE_INVALID",
+                  "QUOTE_NOT_IN_SOURCE",
+                  "PERIOD_PAGES_UNREAD",
+                  "PERIOD_CONTEXT_REQUIRED",
+                  "NON_REPORTING_DATE_IGNORED",
+                  "EXTRA_QUOTE_REJECTED",
+                  "DUPLICATE_MERGED"
+                ]
+              },
+              "severity": {
+                "enum": [
+                  "info",
+                  "blocking"
+                ]
+              }
+            },
+            "required": [
+              "candidate_index",
+              "kind",
+              "end_date",
+              "basis",
+              "pages",
+              "code",
+              "severity"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 48
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "model_id": {
+              "type": "string"
+            },
+            "prompt_version": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "model_id",
+            "prompt_version"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "contract_version",
+        "sha256",
+        "page_count",
+        "document_type",
+        "entity_name",
+        "tax_id",
+        "periods",
+        "warnings",
+        "provenance"
+      ],
+      "additionalProperties": false
+    },
+    "FinancialIntakePrepared": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "AIC-FINANCIAL-INTAKE-1"
+        },
+        "original_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "content_type": {
+          "type": "string"
+        },
+        "pdf_base64": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 33333336
+        },
+        "page_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 600
+        },
+        "locations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "page": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "sheet": {
+                "type": "string"
+              },
+              "cells": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 100000
+              },
+              "image": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "page"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 600
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 1000
+        }
+      },
+      "required": [
+        "contract_version",
+        "original_sha256",
+        "sha256",
+        "content_type",
+        "pdf_base64",
+        "page_count",
+        "locations",
+        "warnings"
+      ],
+      "additionalProperties": false
+    },
+    "FinancialReviewState": {
+      "type": "object",
+      "properties": {
+        "confirmed": {
+          "type": "boolean"
+        },
+        "stale": {
+          "type": "boolean"
+        },
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "confirmed_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "source_snapshot_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "processing": {
+          "type": "boolean"
+        },
+        "unresolved_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "confirmed",
+        "stale",
+        "id",
+        "confirmed_at",
+        "source_snapshot_hash",
+        "processing"
+      ],
+      "additionalProperties": false
+    },
+    "FinancialIntakeItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "parent_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "content_type": {
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "queued",
+            "running",
+            "ready",
+            "needs_review",
+            "failed",
+            "duplicate",
+            "skipped",
+            "expanded"
+          ]
+        },
+        "attempts": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "prepared_source_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "classification": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/FinancialIntakeDiscovery"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "statements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "receipt_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "set_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "end_date": {
+                "type": "string",
+                "format": "date"
+              },
+              "basis": {
+                "type": "string"
+              },
+              "fact_count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 15
+              },
+              "missing_keys": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 15
+              },
+              "kind": {
+                "enum": [
+                  "FY",
+                  "INTERIM",
+                  "TTM"
+                ]
+              },
+              "start_date": {
+                "type": "string",
+                "format": "date"
+              }
+            },
+            "required": [
+              "receipt_id",
+              "set_id",
+              "end_date",
+              "basis",
+              "fact_count",
+              "missing_keys"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 12
+        },
+        "origin": {
+          "type": "object"
+        },
+        "duplicate_of": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "replacement_of": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "superseded_by": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "error_code": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "parent_id",
+        "name",
+        "sha256",
+        "content_type",
+        "state",
+        "attempts",
+        "prepared_source_id",
+        "classification",
+        "statements",
+        "origin",
+        "duplicate_of",
+        "replacement_of",
+        "superseded_by",
+        "error_code",
+        "created_at"
+      ],
+      "additionalProperties": false
+    },
+    "FinancialIntakePage": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "AIC-FINANCIAL-INTAKE-1"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FinancialIntakeItem"
+          },
+          "maxItems": 256
+        },
+        "review": {
+          "$ref": "#/definitions/FinancialReviewState"
+        },
+        "capabilities": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "countries",
+            "country"
+          ],
+          "properties": {
+            "countries": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "VN",
+                  "US",
+                  "CN"
+                ]
+              }
+            },
+            "country": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "required": [
+        "contract_version",
+        "revision",
+        "items",
+        "review"
+      ],
+      "additionalProperties": false
+    },
+    "FinancialIntakeExistingInput": {
+      "type": "object",
+      "properties": {
+        "expected_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "source_kind": {
+          "enum": [
+            "document",
+            "dossier_member",
+            "financial_file"
+          ]
+        },
+        "source_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "required": [
+        "expected_revision",
+        "source_kind",
+        "source_id"
+      ],
+      "additionalProperties": false
+    },
+    "FinancialIntakeDecision": {
+      "type": "object",
+      "properties": {
+        "expected_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "action": {
+          "enum": [
+            "retry",
+            "replace",
+            "keep_existing",
+            "exclude",
+            "compare_periods",
+            "select_period_source",
+            "keep_period_source"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "receipt_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "set_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "expected_set_revision": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "expected_revision",
+        "action"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "enum": [
+                  "select_period_source",
+                  "keep_period_source"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "receipt_id",
+              "set_id",
+              "expected_set_revision"
+            ]
+          }
+        }
+      ]
+    },
+    "FinancialReviewConfirmInput": {
+      "type": "object",
+      "properties": {
+        "expected_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "confirmed": {
+          "const": true
+        },
+        "source_snapshot_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "bridge_assertions": {
+          "type": "object",
+          "properties": {
+            "quick_assets_non_overlapping": {
+              "type": "boolean"
+            },
+            "quick_assets_eligible": {
+              "type": "boolean"
+            },
+            "da_addback_to_operating_profit": {
+              "type": "boolean"
+            },
+            "international_operating_profit_reconciled": {
+              "type": "boolean"
+            },
+            "source_rounding_reviewed": {
+              "type": "boolean"
+            },
+            "assessment_basis": {
+              "enum": [
+                "standalone",
+                "consolidated"
+              ]
+            },
+            "expense_presentation_sign_reviewed": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "quick_assets_non_overlapping",
+            "quick_assets_eligible",
+            "da_addback_to_operating_profit"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "expected_revision",
+        "confirmed",
+        "source_snapshot_hash",
+        "bridge_assertions"
+      ],
+      "additionalProperties": false
+    },
+    "FinancialReviewConfirmOutput": {
+      "type": "object",
+      "properties": {
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "review": {
+          "$ref": "#/definitions/FinancialReviewState"
+        },
+        "verified_fact_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "revision",
+        "review",
+        "verified_fact_count"
+      ],
+      "additionalProperties": false
+    },
+    "AccountingProfileV1": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "enum": [
+            "US_GAAP_DISTRIBUTION_1",
+            "CN_ASBE_DISTRIBUTION_1"
+          ]
+        },
+        "country": {
+          "enum": [
+            "US",
+            "CN"
+          ]
+        },
+        "accounting_regime": {
+          "enum": [
+            "US_GAAP",
+            "CN_ASBE"
+          ]
+        },
+        "mapping_version": {
+          "const": "international-accounting-v1"
+        },
+        "method_version": {
+          "enum": [
+            "1.0.0-us-gaap-pilot.1",
+            "1.0.0-cn-asbe-pilot.1"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "country",
+        "accounting_regime",
+        "mapping_version",
+        "method_version"
+      ]
+    }
+  }
+}

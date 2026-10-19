@@ -20,7 +20,7 @@ export const casesApi = {
       { signal },
     ),
   createCompany: (
-    body: { schema_version: 'AIC-COMPANY-HEALTH-1'; counterparty_id: string; reason: string },
+    body: { schema_version: 'AIC-COMPANY-HEALTH-1'; counterparty_id: string; reason?: string },
     key: string,
   ) => request('/company-assessments', caseRecord, { method: 'POST', body, idempotencyKey: key }),
   cases: (cursor = '', signal?: AbortSignal) =>

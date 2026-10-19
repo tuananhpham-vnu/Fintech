@@ -26,7 +26,7 @@ export const FHI_FACT_KEYS = Object.freeze([
   'net_revenue',
   'cash_from_operations',
 ] as const)
-export type FhiFactKey = (typeof FHI_FACT_KEYS)[number]
+export type FhiFactKey = (typeof FHI_FACT_KEYS)[number] | 'eligible_cash_and_equivalents'
 export type FhiMetricId =
   'AIC-M01' | 'AIC-M02' | 'AIC-M03' | 'AIC-M04' | 'AIC-M05' | 'AIC-M06' | 'AIC-M07'
 export type FhiGroup = 'liquidity' | 'capital' | 'leverage' | 'profitability'

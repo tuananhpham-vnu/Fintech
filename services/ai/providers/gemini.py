@@ -10,23 +10,16 @@ import json
 import logging
 import os
 import time
-from dataclasses import dataclass, field
-from typing import Any, Callable, Sequence
+from dataclasses import dataclass
+from typing import Callable, Sequence
 
 import httpx
+from .base import GenerateResult, ModelOutputError, ProviderError, ProviderUnavailable
 
 logger = logging.getLogger("providers.gemini")
 
 BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 RETRYABLE = {429, 500, 502, 503, 504}
-
-
-class ProviderUnavailable(RuntimeError):
-    """Không gọi được provider (thiếu key, hết retry, lỗi mạng)."""
-
-
-class ProviderError(RuntimeError):
-    """Provider trả lỗi không retry được hoặc output không parse được."""
 
 
 @dataclass(frozen=True)
@@ -40,21 +33,15 @@ class GeminiConfig:
     @classmethod
     def from_env(cls) -> "GeminiConfig":
         from runner.config import load_dotenv
-        load_dotenv()
+        if os.environ.get("AI_LOAD_DOTENV", "1") != "0":
+            load_dotenv()
         return cls(api_key=os.environ.get("GEMINI_API_KEY") or None,
-                   model_id=os.environ.get("MODEL_ID", "gemini-3.1-flash-lite"))
-
-
-@dataclass
-class GenerateResult:
-    data: Any
-    model_version: str | None
-    latency_ms: int
-    attempts: int
-    usage: dict = field(default_factory=dict)
+                   model_id=os.environ.get("GEMINI_MODEL_ID") or os.environ.get("MODEL_ID", "gemini-3.1-flash-lite"))
 
 
 class GeminiProvider:
+    name = "gemini"
+    supports_images = True
     def __init__(self, config: GeminiConfig, client: httpx.Client | None = None,
                  sleep: Callable[[float], None] = time.sleep, clock: Callable[[], float] = time.monotonic):
         if not config.api_key:
@@ -69,6 +56,9 @@ class GeminiProvider:
     @property
     def model_id(self) -> str:
         return self.config.model_id
+
+    def close(self) -> None:
+        self._client.close()
 
     def _request(self, method: str, path: str, body: dict | None = None,
                  deadline: float | None = None) -> tuple[dict, int]:
@@ -137,9 +127,24 @@ class GeminiProvider:
         started = time.monotonic()
         data, attempts = self._request("POST", f"models/{self.config.model_id}:generateContent", body, deadline)
         latency = int((time.monotonic() - started) * 1000)
+        if data.get("promptFeedback", {}).get("blockReason"):
+            raise ModelOutputError("MODEL_OUTPUT_BLOCKED")
+        candidates = data.get("candidates") or []
+        if not candidates:
+            raise ModelOutputError("MODEL_OUTPUT_EMPTY")
+        candidate = candidates[0]
+        finish = candidate.get("finishReason")
+        if finish == "MAX_TOKENS":
+            raise ModelOutputError("MODEL_OUTPUT_TRUNCATED")
+        if finish and finish != "STOP":
+            # RECITATION/SAFETY and other provider refusals must not be retried as broken JSON.
+            raise ModelOutputError("MODEL_OUTPUT_BLOCKED")
+        parts = candidate.get("content", {}).get("parts", [])
+        output = "".join(p.get("text", "") for p in parts if not p.get("thought"))
+        if not output.strip():
+            raise ModelOutputError("MODEL_OUTPUT_EMPTY")
         try:
-            parts = data["candidates"][0]["content"]["parts"]
-            parsed = json.loads("".join(p.get("text", "") for p in parts))
+            parsed = json.loads(output)
         except (KeyError, IndexError, json.JSONDecodeError) as exc:
             raise ProviderError("Gemini returned no parseable JSON") from exc
         return GenerateResult(parsed, data.get("modelVersion"), latency, attempts, data.get("usageMetadata", {}))

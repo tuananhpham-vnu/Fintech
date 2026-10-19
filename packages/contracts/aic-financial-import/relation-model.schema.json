@@ -1,0 +1,203 @@
+{
+  "type": "object",
+  "properties": {
+    "variables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
+          },
+          "key": {
+            "enum": [
+              "current_assets",
+              "current_liabilities",
+              "cash",
+              "unrestricted_short_term_equivalents",
+              "trade_receivables",
+              "total_equity",
+              "total_assets",
+              "total_liabilities",
+              "interest_bearing_debt",
+              "operating_profit",
+              "depreciation_amortization",
+              "interest_expense",
+              "net_revenue",
+              "cash_from_operations",
+              null,
+              "eligible_cash_and_equivalents"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "dimension": {
+            "enum": [
+              "money",
+              "scalar"
+            ]
+          },
+          "nature": {
+            "enum": [
+              "instant",
+              "duration"
+            ]
+          },
+          "as_of": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 10
+          }
+        },
+        "required": [
+          "id",
+          "key",
+          "label",
+          "dimension",
+          "nature",
+          "as_of"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 80,
+      "minItems": 0
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "kind": {
+            "enum": [
+              "identity",
+              "rollforward",
+              "expression"
+            ]
+          },
+          "terms": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "variable_id": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]{0,63}$"
+                },
+                "coefficient": {
+                  "enum": [
+                    "1",
+                    "-1"
+                  ]
+                }
+              },
+              "required": [
+                "variable_id",
+                "coefficient"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 32,
+            "minItems": 2
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "assumptions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            },
+            "maxItems": 8,
+            "minItems": 0
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "page": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 600
+                },
+                "quote": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4000
+                }
+              },
+              "required": [
+                "page",
+                "quote"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 16,
+            "minItems": 1
+          },
+          "output_variable_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
+          },
+          "expression": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "maxItems": 63,
+            "minItems": 1
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "kind",
+          "terms",
+          "reason",
+          "assumptions",
+          "evidence"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 100,
+      "minItems": 0
+    },
+    "requested_pages": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 600
+      },
+      "maxItems": 8,
+      "minItems": 0
+    }
+  },
+  "required": [
+    "variables",
+    "relations",
+    "requested_pages"
+  ],
+  "additionalProperties": false
+}

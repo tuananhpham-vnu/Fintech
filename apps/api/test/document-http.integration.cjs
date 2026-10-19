@@ -222,6 +222,12 @@ test(
           body,
         })
       }
+      // Historical fixtures use the internal persistence service. Public transaction creation is retired.
+      async function seedLegacyCase(body) {
+        const {MvpCaseService}=require('../dist/foundation/mvp-case.service')
+        const session=await app.get(SessionService).resolve(decodeURIComponent(member.cookie.split('=').slice(1).join('=')))
+        return app.get(MvpCaseService).create(session,randomUUID(),body)
+      }
       let accepted
       async function mutate(route, body, key = randomUUID()) {
         const r = await fetch(base + route, {
@@ -238,10 +244,11 @@ test(
         return { status: r.status, body: await r.json(), headers: r.headers }
       }
       await t.test(
-        'both core cases created through HTTP and independently review/request/approve/export with FHI disabled',
+        'historical core cases remain reviewable through HTTP after transaction creation is retired',
         async () => {
+          assert.equal((await mutate('/cases',{})).status,410)
           for (const kind of ['RECEIVABLE', 'PREPAYMENT']) {
-            const created = await mutate('/cases', {
+            const created = await seedLegacyCase({
               counterparty_id: cp,
               exposure_kind: kind,
               lifecycle_stage: 'active',
@@ -428,7 +435,7 @@ test(
       await t.test(
         'v2 native form and financial registry through actual HTTP; direct capability needs no specialist cookies',
         async () => {
-          const current = await mutate('/cases', {
+          const current = await seedLegacyCase({
             counterparty_id: cp,
             exposure_kind: 'RECEIVABLE',
             lifecycle_stage: 'proposed',

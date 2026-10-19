@@ -1,10 +1,10 @@
-"""Smoke M2 thật: PDF bundle -> PyMuPDF -> Gemini -> guard căn cứ. Cần GEMINI_API_KEY (env hoặc .env gốc repo).
+"""Smoke M2 thật: PDF bundle -> PyMuPDF -> provider được chọn -> guard căn cứ. Cần key của AI_PROVIDER.
 
 Chạy: cd services/ai && ../../.venv/Scripts/python.exe scripts/extraction_smoke.py [tên file ...]
       (Linux: ../../.venv/bin/python). Có tên file thì chỉ chạy các fixture đó, vd. 04_contract.pdf.
 Ghi evidence/extraction-smoke-<time>.json: field nào khớp gold, field nào bị guard từ chối, mã diagnostic, độ trễ.
 Gold CHỈ dùng để chấm output model sau khi chạy, không bao giờ làm output. Dữ liệu giả lập dev, không phải holdout.
-Có scan 07/08 trong AI_FIXTURES_DIR thì chạy cả đường OCR (OCR_ENGINE, mặc định gemini).
+Có scan 07/08 trong AI_FIXTURES_DIR thì chạy cả đường OCR (OCR_ENGINE, mặc định provider).
 """
 from __future__ import annotations
 

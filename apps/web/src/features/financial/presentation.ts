@@ -3,7 +3,7 @@ import { displayDecimal } from '@/lib/utils/format'
 
 /** Presentation only; move the decimal point as text, never round scorer inputs. */
 export function formatRatio(value: string | null | undefined, metric: string, locale: Locale) {
-  if (value == null || !/^-?\d+(?:\.\d+)?$/.test(value)) return '—'
+  if (value == null || !/^-?\d+(?:\.\d+)?$/.test(value)) return 'N/A'
   const percent = ['AIC-M03', 'AIC-M06', 'AIC-M07'].includes(metric)
   let shown = value
   if (percent) {
@@ -29,14 +29,14 @@ export function formatExactRatio(
   metric: string,
   locale: Locale,
 ) {
-  if (!ratio) return '—'
+  if (!ratio) return 'N/A'
   if (ratio.decimal !== null) return formatRatio(ratio.decimal, metric, locale)
   if (
     !/^-?\d+$/.test(ratio.numerator) ||
     !/^\d+$/.test(ratio.denominator) ||
     BigInt(ratio.denominator) === BigInt(0)
   )
-    return '—'
+    return 'N/A'
   const n = BigInt(ratio.numerator),
     d = BigInt(ratio.denominator),
     negative = n < BigInt(0)

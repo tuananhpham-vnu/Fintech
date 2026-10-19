@@ -519,7 +519,7 @@ def test_gemini_ocr_sends_page_image(contracts, storage):
     ocr = GeminiOcr(model)
     assert ocr.page_text(b"\x89PNG...", 1, Deadline(60)) == "Hợp đồng số: HĐ01."
     assert model.calls[0]["media"] == [("image/png", b"\x89PNG...")]
-    assert ocr.version == "gemini-ocr-v2-multilingual:fake-model-1"
+    assert ocr.version == "gemini-ocr-v3-tables:fake-model-1"
 
 
 @pytest.mark.parametrize("entry", SCAN_FIXTURES, ids=lambda f: f["filename"])

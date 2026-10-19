@@ -19,6 +19,11 @@ type Kind =
 // Presentation only: keys, raw source text and submitted values are never rewritten.
 const labels: Record<Kind, Record<string, Text>> = {
   fact: {
+    eligible_cash_and_equivalents: [
+      'Eligible cash and cash equivalents',
+      'Tiền và tương đương tiền đủ điều kiện (trình bày gộp)',
+      '符合条件的现金及现金等价物合计',
+    ],
     current_assets: ['Current assets', 'Tài sản ngắn hạn', '流动资产'],
     current_liabilities: ['Current liabilities', 'Nợ ngắn hạn', '流动负债'],
     cash: ['Cash', 'Tiền', '现金'],
@@ -158,6 +163,11 @@ const labels: Record<Kind, Record<string, Text>> = {
     unknown: ['Audit status unknown', 'Chưa rõ tình trạng kiểm toán', '审计状态未知'],
   },
   blocker: {
+    OPERATING_PROFIT_BRIDGE_UNAVAILABLE: [
+      'A complete CAS operating-profit reconciliation needs source review.',
+      'Cần bảng điều chỉnh lợi nhuận hoạt động theo CAS có chứng cứ đầy đủ.',
+      '需要具有完整来源依据的中国准则经营利润调节表。',
+    ],
     FHI_METHOD_UNCONFIGURED: [
       'Financial health method is not configured',
       'Phương pháp sức khỏe tài chính chưa được cấu hình',
