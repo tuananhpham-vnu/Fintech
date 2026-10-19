@@ -45,9 +45,12 @@ if (require.main === module) {
     startupStage = 'APPLICATION'
     const app = await createApplication(config)
     startupStage = 'LISTEN'
-    await app.listen(config.port, '127.0.0.1')
+    // Loopback by default. Hosted deployments (Render) set AIC_LISTEN_HOST=0.0.0.0 explicitly.
+    const host = process.env.AIC_LISTEN_HOST || '127.0.0.1'
+    if (!['127.0.0.1', '0.0.0.0'].includes(host)) throw new Error('Invalid AIC_LISTEN_HOST')
+    await app.listen(config.port, host)
     process.stdout.write(
-      `AIC ${config.runtimeMode} listening on loopback:${config.port}\n`,
+      `AIC ${config.runtimeMode} listening on ${host === '0.0.0.0' ? 'all interfaces' : 'loopback'}:${config.port}\n`,
     )
   })().catch((error: unknown) => {
     process.stderr.write(startupFailure(error, startupStage))

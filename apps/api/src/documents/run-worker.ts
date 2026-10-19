@@ -8,7 +8,7 @@ import { DocumentAiTransport } from "../ai-adapters/document-ai-transport";
 import { DocumentWorker } from "./document-worker";
 
 /** Explicit local worker process; never starts as an API import side effect. */
-async function main() {
+export async function main() {
   const config = loadConfig();
   assertDocumentRuntime(config);
   const automaticRetry = process.env.AIC_DOCUMENT_AUTOMATIC_RETRY ?? "true";

@@ -1,0 +1,25 @@
+# Docker build context for deploy/*/Dockerfile. Never ship secrets, local data or build output.
+.git
+**/.env
+**/.env.*
+!**/.env.example
+**/node_modules
+**/.venv
+**/venv
+**/__pycache__
+**/*.pyc
+**/*.egg-info
+**/.pytest_cache
+**/.next
+**/dist
+**/logs
+storage
+data
+uploads
+services/ai/evidence
+services/ai/tests
+apps/api/test
+apps/web/tests
+tests
+*.log
+**/*.tsbuildinfo

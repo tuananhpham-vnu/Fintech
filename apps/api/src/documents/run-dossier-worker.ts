@@ -7,7 +7,7 @@ import { DocumentAiTransport } from "../ai-adapters/document-ai-transport";
 import { DossierRepository } from "./dossier.repository";
 import { DossierWorker } from "./dossier-worker";
 
-async function main() {
+export async function main() {
   const config = loadConfig();
   assertDocumentRuntime(config);
   if (

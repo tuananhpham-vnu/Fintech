@@ -5,7 +5,7 @@ import { CoreRepository } from "../foundation/core.repository";
 import { CaseMutations } from "../foundation/case-mutations";
 import { FinancialIntakeService } from "./financial-intake.service";
 
-async function main() {
+export async function main() {
   const config = loadConfig();
   assertDocumentRuntime(config);
   if (

@@ -10,10 +10,15 @@ export async function bootstrapSandbox() {
   if (process.env.NODE_ENV === 'production' || process.env.AIC_SANDBOX_BOOTSTRAP !== 'true')
     throw new Error('Explicit sandbox opt-in required')
   const url = new URL(process.env.DATABASE_URL || '')
+  // Hosted demo (e.g. Supabase) needs a second explicit opt-in and a TLS connection string.
+  const remoteDemo =
+    process.env.AIC_SANDBOX_REMOTE_DEMO === 'true' &&
+    ['require', 'verify-ca', 'verify-full', 'no-verify'].includes(url.searchParams.get('sslmode') || '')
   if (
     !['postgres:', 'postgresql:'].includes(url.protocol) ||
-    !['localhost', '127.0.0.1', '[::1]'].includes(url.hostname) ||
-    !/^\/aic_mvp_[a-z0-9_]+$/.test(url.pathname)
+    (!remoteDemo &&
+      (!['localhost', '127.0.0.1', '[::1]'].includes(url.hostname) ||
+        !/^\/aic_mvp_[a-z0-9_]+$/.test(url.pathname)))
   )
     throw new Error('Fresh named loopback sandbox required')
   const orgId = process.env.AIC_SANDBOX_ORGANIZATION_ID || ''
