@@ -296,9 +296,14 @@ def _dates_in(quote: str) -> set[date]:
 
 def _date(value: str, quote: str) -> Checked:
     parsed = normalize.iso_date(value)
+    dates = _dates_in(quote)
+    if parsed is None:
+        # Model nhỏ hay chép ngày theo nguồn (dd/mm/yyyy) thay vì ISO: chỉ nhận khi đọc ra đúng MỘT ngày theo cùng
+        # quy tắc với nguồn và đó cũng là ngày duy nhất trong trích dẫn.
+        written = _dates_in(value)
+        parsed = next(iter(written)) if len(written) == 1 and len(dates) == 1 else None
     if parsed is None:
         return _reject("UNPARSEABLE_DATE")
-    dates = _dates_in(quote)
     if len(dates) > 1:
         return _reject("AMBIGUOUS_DATE")
     return Checked(parsed.isoformat()) if parsed in dates else _reject("VALUE_NOT_IN_QUOTE")
@@ -552,11 +557,26 @@ def _role_supported(key: str, value: str, spans: list[Span], texts: list[str],
     return False
 
 
+def _source_lines(text: str, span: Span) -> str:
+    """Các dòng nguồn chứa trích dẫn (không lan sang tiêu đề/dòng khác như source_context theo câu)."""
+    start = text.rfind("\n", 0, span.start) + 1
+    end = text.find("\n", span.end)
+    return text[start:] if end == -1 else text[start:end]
+
+
+# Field văn bản tự do không có nhãn đứng trước giá trị: ngữ cảnh trích dẫn ít nhất phải nói về đúng chủ đề,
+# để một dòng bất kỳ (vd. banner "Dữ liệu kiểm thử") chép nguyên văn không thành giá trị hợp lệ.
+_TOPIC_CUES = {"acceptance.scope_text": re.compile(r"nghiệm thu|acceptance|accepted|验收", re.I)}
+
+
 def check_source(key: str, value_type: str, value: str, spans: list[Span], texts: list[str],
                  registry: "Registry", document_type: str | None = None) -> Checked:
     """Check full source context separately from quotation authenticity."""
     if key in _ROLES and not _role_supported(key, value, spans, texts, document_type):
         return _reject("UNVERIFIED_FIELD_ROLE")
+    cue = _TOPIC_CUES.get(key)
+    if cue and not any(cue.search(comparison_text(_source_lines(texts[s.page - 1], s))) for s in spans):
+        return _reject("UNVERIFIED_FIELD_LABEL")
     supporting = spans
     if value_type == "decimal":
         supporting = [s for s in spans if check_value(key, value_type, value, s.text, registry).value is not None]

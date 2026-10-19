@@ -47,6 +47,8 @@ pnpm dev:all
 `https://api.deepseek.com`. Có thể giữ cả hai key trong `.env` rồi chọn bằng
 `AI_PROVIDER`; đổi cấu hình cần khởi động lại stack. Xem [hướng dẫn adapter và OCR](services/ai/docs/providers.md).
 
+Khi đã đặt `AI_PROVIDER`, cấu hình này được dùng chung cho trích xuất, OCR qua provider và trợ lý hồ sơ. Nếu không đặt `AI_PROVIDER`, luồng local dùng `LLM_PROVIDER`/Ollama; Gemini trong luồng này vẫn cần `ALLOW_CLOUD_LLM=true`. OCR Docling hỗ trợ cả tiến trình giữ model và giao thức xử lý một trang cũ.
+
 Launcher kiểm tra cổng, bổ sung dependency AI nếu thiếu, build API từ source hiện tại và kiểm tra toàn bộ lịch sử/checksum migration. Khi có migration mới, nó tạo bản sao lưu DB trong thư mục riêng tư ở Temp, kiểm tra bản sao lưu rồi mới áp migration và cập nhật quyền runtime cho các role đã cấu hình. Lần chạy sau không sao lưu lại nếu schema đã đủ. `DATABASE_URL` là kết nối owner; `AIC_API_DATABASE_URL` và `AIC_WORKER_DATABASE_URL` có thể dùng role hạn chế trên cùng DB. Chuẩn bị tự động chỉ nhận URL PostgreSQL loopback, không có query options; production vẫn dùng migration runner riêng.
 
 Trong launcher local, các giá trị có trong root `.env` được ưu tiên hơn biến cùng tên đang giữ trong terminal. Đường dẫn policy/cache tương đối được tính từ gốc repo. Dùng `pnpm dev:all --check` để build và kiểm tra cấu hình API, không bật dịch vụ hay sửa DB. Policy đã duyệt trên máy này nằm tại `data/local/approved-fhi-policy.json` (private, không vào Git); dùng đường dẫn trong workspace để tránh `AppData` bị ứng dụng Windows đóng gói chuyển hướng sang vùng riêng.

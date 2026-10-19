@@ -6,6 +6,7 @@ const { randomBytes } = require('node:crypto')
 const { spawnSync, execFileSync } = require('node:child_process')
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'aic-pg-check-'))
 const bin = process.env.AIC_POSTGRES_BIN || 'C:/Program Files/PostgreSQL/18/bin'
+const exe = process.platform === 'win32' ? '.exe' : '' // macOS/Linux: set AIC_POSTGRES_BIN
 const data = path.join(root, 'data'),
   pw = path.join(root, 'password')
 const port = 15432,
@@ -42,7 +43,7 @@ function run(file, args, options = {}) {
 }
 let started = false
 try {
-  run(path.join(bin, 'initdb.exe'), [
+  run(path.join(bin, 'initdb' + exe), [
     '-D',
     data,
     '-U',
@@ -52,7 +53,7 @@ try {
     '--encoding=UTF8',
     '--locale=C',
   ])
-  run(path.join(bin, 'pg_ctl.exe'), [
+  run(path.join(bin, 'pg_ctl' + exe), [
     '-D',
     data,
     '-l',
@@ -77,7 +78,7 @@ try {
 } finally {
   if (started) {
     const result = spawnSync(
-      path.join(bin, 'pg_ctl.exe'),
+      path.join(bin, 'pg_ctl' + exe),
       ['-D', data, '-m', 'fast', '-w', 'stop'],
       { stdio: 'inherit', windowsHide: true, timeout: 30000 },
     )

@@ -65,6 +65,7 @@ fixtures/real/
 !.env.example
 *.pem
 *.key
+.kaggle/
 
 # Original import retained locally; apps/web is the evaluated application.
 /apps/FE Fintech/
@@ -82,3 +83,5 @@ logs/
 # Private source-grounded reasoning checks and Chrome screenshots.
 /.reports/
 /output/
+# Local demo models/binaries (delete the whole dir to remove)
+MODEL_DIR/

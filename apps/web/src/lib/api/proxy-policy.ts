@@ -8,6 +8,8 @@ const routes: [string, RegExp][] = [
   ['POST', /^company-assessments$/],
   ['GET', /^company-assessments\/capabilities$/],
   ['GET', new RegExp(`^cases/${id}$`)],
+  ['POST', new RegExp(`^cases/${id}/assistant/messages$`)],
+  ['GET', new RegExp(`^cases/${id}/assistant/search$`)],
   ['PATCH', new RegExp(`^cases/${id}/exposure$`)],
   ['GET|POST', new RegExp(`^cases/${id}/financial-intakes$`)],
   ['POST', new RegExp(`^cases/${id}/financial-intakes/existing$`)],

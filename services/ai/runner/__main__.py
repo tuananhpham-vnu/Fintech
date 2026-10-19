@@ -24,9 +24,12 @@ def health(settings: Settings) -> dict:
         missing = [n for n in names if not (settings.fixtures_dir / n).is_file()]
         checks["mock_fixtures"] = {"ok": not missing, "missing": missing, "dir": str(settings.fixtures_dir)}
     else:
-        checks["model"] = {"ok": bool(settings.model_id and settings.prompt_version), "model_id": settings.model_id,
-                           "prompt_version": settings.prompt_version}
-        checks[settings.provider_name + "_api_key"] = {"ok": settings.provider_key_configured}
+        if settings.legacy_llm_provider:
+            checks['llm'] = _llm_check()
+        else:
+            checks["model"] = {"ok": bool(settings.model_id and settings.prompt_version), "model_id": settings.model_id,
+                               "prompt_version": settings.prompt_version}
+            checks[settings.provider_name + "_api_key"] = {"ok": settings.provider_key_configured}
         try:
             module = importlib.import_module("extraction")
             checks["extraction_package"] = {"ok": getattr(module, "IMPLEMENTED", False),
@@ -35,6 +38,29 @@ def health(settings: Settings) -> dict:
             checks["extraction_package"] = {"ok": False, "error": "not installed"}
     report["ok"] = all(c["ok"] for c in checks.values())
     return report
+
+
+def _llm_check() -> dict:
+    """Provider LLM đang chọn có dùng được không. Ollama: model đã pull chưa (không gửi nội dung hồ sơ)."""
+    from providers import build_provider, cloud_allowed, provider_name
+    from providers.gemini import ProviderUnavailable
+    name = provider_name()
+    try:
+        provider = build_provider()
+    except ProviderUnavailable as exc:
+        return {"ok": False, "provider": name, "error": str(exc)}
+    check = {"ok": True, "provider": name, "model_id": provider.model_id, "cloud": name != "ollama"}
+    if name == "ollama":
+        try:
+            models = provider.list_models()
+        except ProviderUnavailable as exc:
+            return {**check, "ok": False, "error": str(exc)}
+        check["ok"] = provider.model_id in models or f"{provider.model_id}:latest" in models
+        if not check["ok"]:
+            check["error"] = f"run: ollama pull {provider.model_id}"
+    else:
+        check["ok"] = cloud_allowed()
+    return check
 
 
 def main(argv: list[str] | None = None) -> int:

@@ -1,6 +1,8 @@
 import { FinancialIntakeController } from '../controllers/financial-intake.controller';
 import { FinancialIntakeService } from '../financial/financial-intake.service';
 import { FinancialReviewService } from '../financial/financial-review.service';
+import { AssistantController } from '../assistant/assistant.controller';
+import { AssistantService } from '../assistant/assistant.service';
 import {
   DynamicModule,
   Module,
@@ -79,6 +81,7 @@ export class FoundationModule implements NestModule {
               FinancialIntakeController,
               AssessmentsController,
               CompanyHealthController,
+              AssistantController,
             ]
           : []),
       ],
@@ -105,6 +108,7 @@ export class FoundationModule implements NestModule {
               FinancialIntakeService,
               FinancialReviewService,
               AssessmentService,
+              AssistantService,
               {
                 provide: DOCUMENT_REPOSITORY,
                 useExisting: PostgresDocumentRepository,

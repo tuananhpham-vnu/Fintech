@@ -1,0 +1,492 @@
+{
+  "generated_at": "2026-10-18T01:31:22+07:00",
+  "rows": [
+    {
+      "file": "01_registration.pdf",
+      "ok": false,
+      "latency_ms": 5763,
+      "fields_expected": 2,
+      "fields_matched": 0,
+      "mismatched": {
+        "borrower.name": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "borrower.tax_id": {
+          "got": null,
+          "quality": "uncertain"
+        }
+      },
+      "methods": [
+        "text"
+      ],
+      "diagnostics": [
+        [
+          "UNGROUNDED_VALUE",
+          "borrower.name"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "borrower.tax_id"
+        ]
+      ],
+      "provenance": {
+        "model_id": "gemma3:4b",
+        "prompt_version": "extraction-v2",
+        "ocr_version": "none",
+        "schema_version": "1.0.2"
+      },
+      "contract_violations": []
+    },
+    {
+      "file": "02_financials.pdf",
+      "ok": false,
+      "latency_ms": 14249,
+      "fields_expected": 9,
+      "fields_matched": 0,
+      "mismatched": {
+        "borrower.name": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "borrower.tax_id": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "financial.period_end": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "financial.scope": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "financial.unit_multiplier": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "financial.total_assets": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "financial.liabilities": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "financial.equity": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "money.currency": {
+          "got": null,
+          "quality": "uncertain"
+        }
+      },
+      "methods": [
+        "text"
+      ],
+      "diagnostics": [
+        [
+          "UNGROUNDED_VALUE",
+          "borrower.name"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "borrower.tax_id"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "financial.period_end"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "financial.scope"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "financial.unit_multiplier"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "financial.total_assets"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "financial.liabilities"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "financial.equity"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "money.currency"
+        ]
+      ],
+      "provenance": {
+        "model_id": "gemma3:4b",
+        "prompt_version": "extraction-v2",
+        "ocr_version": "none",
+        "schema_version": "1.0.2"
+      },
+      "contract_violations": []
+    },
+    {
+      "file": "03_loan_request.pdf",
+      "ok": false,
+      "latency_ms": 9927,
+      "fields_expected": 9,
+      "fields_matched": 0,
+      "mismatched": {
+        "borrower.name": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "borrower.tax_id": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "loan.amount": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "money.currency": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "receipt.amount": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "receipt.contract_ref": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "receipt.scope_ref": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "receipt.claim_type": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "receipt.expected_date": {
+          "got": null,
+          "quality": "uncertain"
+        }
+      },
+      "methods": [
+        "text"
+      ],
+      "diagnostics": [
+        [
+          "UNGROUNDED_VALUE",
+          "borrower.name"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "borrower.tax_id"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "loan.amount"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "money.currency"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "receipt.amount"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "receipt.contract_ref"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "receipt.scope_ref"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "receipt.claim_type"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "receipt.expected_date"
+        ]
+      ],
+      "provenance": {
+        "model_id": "gemma3:4b",
+        "prompt_version": "extraction-v2",
+        "ocr_version": "none",
+        "schema_version": "1.0.2"
+      },
+      "contract_violations": []
+    },
+    {
+      "file": "04_contract.pdf",
+      "ok": false,
+      "latency_ms": 11788,
+      "fields_expected": 7,
+      "fields_matched": 0,
+      "mismatched": {
+        "contract.ref": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "parties.borrower.tax_id": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "parties.counterparty.tax_id": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "contract.amount": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "contract.scope_ref": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "money.currency": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "contract.payment_condition": {
+          "got": null,
+          "quality": "uncertain"
+        }
+      },
+      "methods": [
+        "text"
+      ],
+      "diagnostics": [
+        [
+          "UNGROUNDED_VALUE",
+          "contract.ref"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "parties.borrower.tax_id"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "parties.counterparty.tax_id"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "contract.amount"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "contract.scope_ref"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "money.currency"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "contract.payment_condition"
+        ]
+      ],
+      "provenance": {
+        "model_id": "gemma3:4b",
+        "prompt_version": "extraction-v2",
+        "ocr_version": "none",
+        "schema_version": "1.0.2"
+      },
+      "contract_violations": []
+    },
+    {
+      "file": "05_wrong_record.pdf",
+      "ok": false,
+      "latency_ms": 15818,
+      "fields_expected": 9,
+      "fields_matched": 0,
+      "mismatched": {
+        "acceptance.ref": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "acceptance.contract_ref": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "parties.borrower.tax_id": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "parties.counterparty.tax_id": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "acceptance.date": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "acceptance.scope_ref": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "acceptance.scope_text": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "acceptance.amount": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "money.currency": {
+          "got": null,
+          "quality": "uncertain"
+        }
+      },
+      "methods": [
+        "text"
+      ],
+      "diagnostics": [
+        [
+          "UNGROUNDED_VALUE",
+          "acceptance.ref"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "acceptance.contract_ref"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "parties.borrower.tax_id"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "parties.counterparty.tax_id"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "acceptance.date"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "acceptance.scope_ref"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "acceptance.scope_text"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "acceptance.amount"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "money.currency"
+        ]
+      ],
+      "provenance": {
+        "model_id": "gemma3:4b",
+        "prompt_version": "extraction-v2",
+        "ocr_version": "none",
+        "schema_version": "1.0.2"
+      },
+      "contract_violations": []
+    },
+    {
+      "file": "06_correct_record.pdf",
+      "ok": false,
+      "latency_ms": 16725,
+      "fields_expected": 9,
+      "fields_matched": 0,
+      "mismatched": {
+        "acceptance.ref": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "acceptance.contract_ref": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "parties.borrower.tax_id": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "parties.counterparty.tax_id": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "acceptance.date": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "acceptance.scope_ref": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "acceptance.scope_text": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "acceptance.amount": {
+          "got": null,
+          "quality": "uncertain"
+        },
+        "money.currency": {
+          "got": null,
+          "quality": "uncertain"
+        }
+      },
+      "methods": [
+        "text"
+      ],
+      "diagnostics": [
+        [
+          "UNGROUNDED_VALUE",
+          "acceptance.ref"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "acceptance.contract_ref"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "parties.borrower.tax_id"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "parties.counterparty.tax_id"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "acceptance.date"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "acceptance.scope_ref"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "acceptance.scope_text"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "acceptance.amount"
+        ],
+        [
+          "UNGROUNDED_VALUE",
+          "money.currency"
+        ]
+      ],
+      "provenance": {
+        "model_id": "gemma3:4b",
+        "prompt_version": "extraction-v2",
+        "ocr_version": "none",
+        "schema_version": "1.0.2"
+      },
+      "contract_violations": []
+    }
+  ],
+  "note": "Dev synthetic fixtures; gold used only to score live output after the fact."
+}

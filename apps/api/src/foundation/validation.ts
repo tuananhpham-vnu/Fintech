@@ -57,6 +57,10 @@ const definitions = {
   ...JSON.parse(fs.readFileSync(path.resolve(__dirname,
     '../../../../packages/contracts/aic-financial-intake/schemas.json'), 'utf8')).definitions,
 };
+// The assistant owns an independent bundle, including its own shared definitions.
+// Compile it separately so chat UUID/amount definitions cannot replace financial contracts.
+const chatDefinitions = JSON.parse(fs.readFileSync(path.resolve(__dirname,
+  '../../../../packages/contracts/aic-chat/schemas.json'), 'utf8')).definitions;
 const ajv = new Ajv({
   strict: false,
   allErrors: true,
@@ -69,7 +73,8 @@ export function validateContract(name: string, value: unknown, output = false) {
   if (!validators.has(name))
     validators.set(
       name,
-      ajv.compile({ definitions, $ref: `#/definitions/${name}` }),
+      ajv.compile({ definitions: Object.hasOwn(definitions, name) ? definitions : chatDefinitions,
+        $ref: `#/definitions/${name}` }),
     );
   if (!validators.get(name)(value))
     throw new FoundationError(

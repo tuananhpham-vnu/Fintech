@@ -47,6 +47,7 @@ class Settings:
     deepseek_key_configured: bool = False
     agentrouter_key_configured: bool = False
     motapis_key_configured: bool = False
+    legacy_llm_provider: bool = False
 
     @property
     def provider_key_configured(self) -> bool:
@@ -80,4 +81,5 @@ class Settings:
             deepseek_key_configured=bool(env.get("DEEPSEEK_API_KEY")),
             agentrouter_key_configured=bool(env.get("AGENTROUTER_API_KEY")),
             motapis_key_configured=bool(env.get("MOTAPIS_API_KEY")),
+            legacy_llm_provider=bool(env.get('LLM_PROVIDER') and not env.get('AI_PROVIDER')),
         )

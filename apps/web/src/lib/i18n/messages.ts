@@ -331,6 +331,7 @@ export const messages = {
   review: ['Document review', 'Rà soát hồ sơ', '文件审查'],
   information: ['Non-financial information', 'Thông tin phi tài chính', '非财务信息'],
   assessment: ['Financial health', 'Sức khỏe tài chính', '财务健康'],
+  assistant: ['Case assistant', 'Trợ lý hồ sơ', '档案助手'],
   history: ['Requests & history', 'Yêu cầu & lịch sử', '请求与历史'],
   back: ['Back to cases', 'Về danh sách hồ sơ', '返回档案列表'],
   revision: ['Revision', 'Lần cập nhật', '修订版本'],

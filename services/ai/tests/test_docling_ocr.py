@@ -13,7 +13,7 @@ def local_ocr(tmp_path,monkeypatch):
     script.write_text(textwrap.dedent('''
         import json,os,sys,time
         if '--version' in sys.argv:
-            print(json.dumps({'version':'docling-test/easyocr'}));sys.exit(0)
+            print(json.dumps({'version':'docling-test/easyocr','protocol':'json-lines-v1'}));sys.exit(0)
         assert 'GEMINI_API_KEY' not in os.environ and 'INTERNAL_API_KEY' not in os.environ
         assert os.environ['HF_HUB_OFFLINE']=='1'
         import base64
@@ -26,7 +26,7 @@ def local_ocr(tmp_path,monkeypatch):
     monkeypatch.setattr(ocr,'DOCLING_SCRIPT',script)
     monkeypatch.setenv('GEMINI_API_KEY','PRIVATE-TEST-KEY')
     monkeypatch.setenv('INTERNAL_API_KEY','PRIVATE-INTERNAL')
-    engine=ocr.DoclingOcr(sys.executable,artifacts_path=str(tmp_path))
+    engine=ocr.DoclingOcr(sys.executable,engine='easyocr',lang='vi,en',artifacts_path=str(tmp_path))
     yield engine
     engine.close()
 

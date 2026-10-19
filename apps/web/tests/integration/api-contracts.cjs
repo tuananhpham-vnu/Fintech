@@ -90,6 +90,10 @@ async function main() {
       assert.ok(policy.isPublicApiRoute('GET', 'dossier-members/m1/extraction-summary'))
       assert.ok(policy.isPublicApiRoute('GET', 'documents/d1/source'))
       assert.ok(policy.isPublicApiRoute('GET', 'documents/d1/extraction-summary'))
+      assert.ok(policy.isPublicApiRoute('POST', 'cases/c1/assistant/messages'))
+      assert.ok(policy.isPublicApiRoute('GET', 'cases/c1/assistant/search'))
+      assert.equal(policy.isPublicApiRoute('GET', 'cases/c1/assistant/messages'), false)
+      assert.equal(policy.isPublicApiRoute('POST', 'cases/c1/assistant/search'), false)
       for (const p of [
         'internal/v2/analyze',
         '../auth/me',

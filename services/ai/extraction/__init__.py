@@ -49,6 +49,7 @@ class Config:
     docling_engine: str = 'easyocr'
     docling_lang: str = 'vi,en'
     docling_artifacts: str | None = None
+    docling_hf_home: str | None = None
 
     @classmethod
     def from_env(cls) -> "Config":
@@ -61,14 +62,16 @@ class Config:
                    max_bytes=int(env.get("AI_MAX_PDF_BYTES", DEFAULT_MAX_BYTES)),
                    max_pages=int(env.get("AI_MAX_PAGES", 10)),
                    deadline_s=float(env.get("AI_EXTRACT_DEADLINE_S", 240)),
-                   ocr_engine=env.get("OCR_ENGINE", "provider").strip().lower(),
+                   ocr_engine=env.get("OCR_ENGINE", "provider" if env.get('AI_PROVIDER') else
+                                      "docling" if env.get('DOCLING_PYTHON') else "none").strip().lower(),
                    ocr_lang=env.get("OCR_LANG", "vie"),
                    tesseract_cmd=env.get("TESSERACT_CMD") or None,
                    docling_python=env.get('DOCLING_PYTHON') or str(Path(__file__).resolve().parents[3] / '.venv-docling' /
                        ('Scripts/python.exe' if os.name == 'nt' else 'bin/python')),
-                   docling_engine=env.get('DOCLING_ENGINE','easyocr'),
-                   docling_lang=env.get('DOCLING_LANG','vi,en'),
-                   docling_artifacts=env.get('DOCLING_ARTIFACTS_PATH') or str(Path(__file__).resolve().parents[3] / 'data/local/docling/models'))
+                   docling_engine=env.get('DOCLING_ENGINE','easyocr' if env.get('AI_PROVIDER') else 'auto'),
+                   docling_lang=env.get('DOCLING_LANG','vi,en' if env.get('AI_PROVIDER') else ''),
+                   docling_artifacts=env.get('DOCLING_ARTIFACTS_PATH') or (str(Path(__file__).resolve().parents[3] / 'data/local/docling/models') if env.get('AI_PROVIDER') else None),
+                   docling_hf_home=env.get('DOCLING_HF_HOME') or None)
 
 
 class Service:
@@ -108,6 +111,7 @@ class Service:
 
     def _default_extractor(self):
         from providers.base import ProviderUnavailable
+        from providers import build_provider, cloud_allowed
         from providers.factory import create_provider
         from runner.config import Settings
         from runner.contracts import Contracts
@@ -116,14 +120,16 @@ class Service:
         from .ocr import DoclingOcr, ProviderOcr, TesseractOcr
 
         try:
-            provider = create_provider()
+            provider = create_provider() if self.config.ocr_engine == 'provider' else build_provider()
         except ProviderUnavailable as exc:
             raise ServiceError(503, PROVIDER_UNAVAILABLE, "Live extract needs the selected provider key and model.") from exc
         if self.config.ocr_engine in ("provider", "gemini"):
+            if self.config.ocr_engine == 'gemini' and not os.environ.get('AI_PROVIDER') and not cloud_allowed():
+                raise ServiceError(503, PROVIDER_UNAVAILABLE, 'Cloud OCR needs ALLOW_CLOUD_LLM=true or an explicit AI_PROVIDER configuration.')
             ocr = ProviderOcr(provider)
         elif self.config.ocr_engine == 'docling':
             ocr = DoclingOcr(self.config.docling_python or '', self.config.docling_engine,
-                             self.config.docling_lang, self.config.docling_artifacts)
+                             self.config.docling_lang, self.config.docling_artifacts, hf_home=self.config.docling_hf_home)
         elif self.config.ocr_engine == "tesseract":
             ocr = TesseractOcr(self.config.tesseract_cmd, self.config.ocr_lang)
         elif self.config.ocr_engine == "none":

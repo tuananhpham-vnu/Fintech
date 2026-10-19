@@ -186,7 +186,7 @@ def main() -> int:
                       'docling-project--docling-models/model_artifacts/tableformer/accurate/tableformer_accurate.safetensors']
             if any(not (models/name).is_file() for name in required):
                 return 2
-        print(json.dumps({"version": f"docling-{metadata.version('docling')}/{args.engine}"}))
+        print(json.dumps({"version": f"docling-{metadata.version('docling')}/{args.engine}", 'protocol':'json-lines-v1'}))
         return 0
     if args.serve:
         for line in sys.stdin.buffer:

@@ -8,9 +8,9 @@ Văn bản OCR chỉ là dữ liệu nguồn; mọi trích dẫn sau đó vẫn 
 """
 from __future__ import annotations
 
-import shutil
 import json
 import os
+import shutil
 import atexit
 import base64
 import hashlib
@@ -76,10 +76,12 @@ class DoclingOcr:
     """Local, separately installed OCR. Never fall back to a cloud model."""
     document_deadline_s = 600
 
-    def __init__(self, python: str, engine='easyocr', lang='vi,en', artifacts_path: str | None = None):
+    def __init__(self, python: str, engine='auto', lang='', artifacts_path: str | None = None,
+                 *, hf_home: str | None = None, timeout_s: float = 300.0):
         if not python or not Path(python).is_file() or engine not in {'auto','easyocr','rapidocr','ocrmac'}:
             raise ServiceError(503, PROVIDER_UNAVAILABLE, 'Invalid Docling runtime configuration.')
         self.python, self.engine, self.lang = python, engine, lang
+        self.timeout_s = timeout_s
         names = {'PATH','SystemRoot','SYSTEMROOT','WINDIR','TEMP','TMP','TMPDIR','USERPROFILE',
                  'APPDATA','LOCALAPPDATA','HOME','LANG','LC_ALL'}
         allowed = {key.upper() for key in names}
@@ -92,6 +94,8 @@ class DoclingOcr:
                 raise ServiceError(503, PROVIDER_UNAVAILABLE, 'Docling models are missing; run pnpm ai:ocr:setup.')
             self.env['DOCLING_ARTIFACTS_PATH'] = str(models)
             self.env['HF_HOME'] = str(models.parent / 'hf')
+        if hf_home:
+            self.env['HF_HOME'] = hf_home
         self.args = [python, '-X', 'utf8', str(DOCLING_SCRIPT), '--engine', engine, '--lang', lang]
         self._lock = threading.Lock()
         self._worker = None
@@ -100,15 +104,31 @@ class DoclingOcr:
         try:
             result = subprocess.run(self.args + ['--version'], capture_output=True, timeout=15,
                                     check=True, env=self.env)
-            version = json.loads(result.stdout)['version']
+            info = json.loads(result.stdout)
+            version = info['version']
+            self._persistent = info.get('protocol') == 'json-lines-v1'
             manifest=Path(artifacts_path)/'aic-model-manifest.json' if artifacts_path else None
             fingerprint=hashlib.sha256(manifest.read_bytes()).hexdigest()[:16] if manifest and manifest.is_file() else 'unconfigured'
-            self.version = f'{version}:{lang}:aic-tables-v4:{fingerprint}'
+            self.version = f'{version}:{lang}:aic-tables-v4:{fingerprint}' if self._persistent else version
         except (OSError, subprocess.SubprocessError, ValueError, KeyError) as exc:
             raise ServiceError(503, PROVIDER_UNAVAILABLE, 'Docling runtime is unavailable; run pnpm ai:ocr:setup.') from exc
 
     def page_text(self, png: bytes, page: int, deadline: Deadline) -> str:
         deadline.check(f'OCR page {page}')
+        if not self._persistent:
+            with llm.GATE.slot(deadline, f'OCR page {page}'):
+                try:
+                    out = subprocess.run(self.args, input=png, capture_output=True, check=True, env=self.env,
+                                         timeout=max(.1, min(self.timeout_s, deadline.remaining())))
+                    result = json.loads(out.stdout)
+                    text = result['text']
+                    if not isinstance(text, str) or len(text) > 250000:
+                        raise ValueError()
+                except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError) as exc:
+                    raise ServiceError(503, PROVIDER_UNAVAILABLE, f'Local OCR failed on page {page}.') from exc
+            deadline.check(f'accepting OCR page {page}')
+            self.version = result.get('version', self.version)
+            return unicodedata.normalize('NFC', text)
         if not self._lock.acquire(timeout=deadline.remaining()):
             raise ServiceError(503,PROVIDER_UNAVAILABLE,'Local OCR queue deadline exhausted.')
         try:
