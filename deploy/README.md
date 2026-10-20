@@ -128,6 +128,10 @@ insert-only and refuses to run against an existing organization. Log in at `/log
 | Symptom | Cause / fix |
 |---|---|
 | `[predeploy] FAILED: Role aic_runtime does not exist` | Run Step 1.3, then **Manual Deploy → Deploy latest commit** |
+| `runtime DATABASE_URL check failed: 28P01: password authentication failed for user "aic_runtime"` | The password in `DATABASE_URL` is not the role's current password. Set it again in Supabase (`ALTER ROLE aic_runtime PASSWORD '…';`) **and** put the same value in Render's `DATABASE_URL`, then redeploy |
+| `runtime DATABASE_URL check failed: … logs in as "postgres"` | `DATABASE_URL` uses the owner user; it must be `aic_runtime.<ref>` |
+| `runtime DATABASE_URL check failed: … timeout exceeded when trying to connect` | The pooler did not accept the runtime login within the app's 5 s limit; check host/port 5432, then redeploy |
+| `<Name> worker failed: <code>: <message>` (backend log) | The real start-up error of the workers (sanitized, no credentials); the code and message tell which of the rows above applies |
 | `[predeploy] FAILED: password authentication failed` | Wrong password in `AIC_MIGRATION_DATABASE_URL`, or the user is not `postgres.<ref>` |
 | `self-signed certificate in certificate chain` | The URL is missing `sslrootcert=/app/deploy/certs/supabase-prod-ca-2021.crt` (Step 1.5) |
 | `Hostname/IP does not match certificate's altnames` | Use the pooler **host name** Supabase shows (`…pooler.supabase.com`), never an IP address |
