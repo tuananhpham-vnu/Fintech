@@ -33,21 +33,35 @@ git push -u origin deploy
    $b = New-Object byte[] 24; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); ($b | ForEach-Object { $_.ToString('x2') }) -join ''
    ```
    Save it as the **runtime password**.
-3. Supabase → **SQL Editor** → New query. Paste `deploy/supabase/create-runtime-role.sql`, put the runtime password
-   between the quotes, click **Run**. Expected: `Success. No rows returned`. Do not save the query.
+3. Supabase → **SQL Editor** → New query. Paste the contents of `deploy/supabase/create-runtime-role.sql`, then
+   type the runtime password between the quotes **in the editor only** (never edit the file in the repository),
+   click **Run**. Expected: `Success. No rows returned`. Do not save the query.
+   To change the password later: `ALTER ROLE aic_runtime PASSWORD '<new runtime password>';` in the SQL Editor,
+   then update `DATABASE_URL` in Render.
 4. Supabase → **Connect** → **Session pooler**. Copy the URI. It looks like
-   `postgresql://postgres.<ref>:[YOUR-PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres`.
+   `postgresql://postgres.<ref>:[YOUR-PASSWORD]@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres`
+   (your host may start with `aws-0-` instead; use exactly the host Supabase shows).
    Do **not** use "Direct connection" (IPv6 only; Render cannot reach it) or "Transaction pooler" (port 6543).
-5. Build the two connection strings (keep them in your password manager, never in Git or chat):
-   - **Owner** (`AIC_MIGRATION_DATABASE_URL`):
-     `postgresql://postgres.<ref>:<owner password>@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=no-verify`
-   - **Runtime** (`DATABASE_URL`): same host and port, but user **`aic_runtime.<ref>`** and the runtime password:
-     `postgresql://aic_runtime.<ref>:<runtime password>@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=no-verify`
+5. Build the two connection strings (keep them in your password manager, never in Git or chat). Both end with the
+   same TLS settings, which make the driver verify Supabase's certificate **and** the host name:
 
-   `sslmode=no-verify` encrypts the connection but does not verify Supabase's certificate (Node's PostgreSQL client
-   does not trust Supabase's own CA by default). For full verification: Supabase → Database settings → SSL
-   configuration → download the certificate, commit it as `deploy/certs/supabase-ca.crt`, and use
-   `?sslmode=verify-full&sslrootcert=/app/deploy/certs/supabase-ca.crt` instead.
+   ```text
+   AIC_MIGRATION_DATABASE_URL (owner, pre-deploy only):
+   postgresql://postgres.<ref>:<owner password>@<pooler host>:5432/postgres?sslmode=verify-full&sslrootcert=/app/deploy/certs/supabase-prod-ca-2021.crt
+
+   DATABASE_URL (restricted app role):
+   postgresql://aic_runtime.<ref>:<runtime password>@<pooler host>:5432/postgres?sslmode=verify-full&sslrootcert=/app/deploy/certs/supabase-prod-ca-2021.crt
+   ```
+
+   - `<ref>` is your project ref (the part after `postgres.` in the copied URI); `<pooler host>` is the copied host.
+   - The user name **must** include `.<ref>`: the pooler uses it to find your project.
+   - If a password contains anything other than letters and digits, URL-encode it first:
+     `[uri]::EscapeDataString('the-password')` in PowerShell.
+   - `/app/deploy/certs/supabase-prod-ca-2021.crt` is Supabase's public root CA, already inside the backend image
+     (see `deploy/certs/README.md` for its fingerprint). Supabase's pooler certificate is issued by this private CA,
+     which Node does not trust by default.
+   - The backend and the pre-deploy step **refuse to start** if a hosted database URL is not
+     `sslmode=verify-full` with this `sslrootcert`, so an unverified connection cannot be configured by mistake.
 
 Nothing else is created manually: the Render pre-deploy step creates all tables (23 migrations) and grants the
 runtime role its privileges.
@@ -115,7 +129,10 @@ insert-only and refuses to run against an existing organization. Log in at `/log
 |---|---|
 | `[predeploy] FAILED: Role aic_runtime does not exist` | Run Step 1.3, then **Manual Deploy → Deploy latest commit** |
 | `[predeploy] FAILED: password authentication failed` | Wrong password in `AIC_MIGRATION_DATABASE_URL`, or the user is not `postgres.<ref>` |
-| `self-signed certificate in certificate chain` | Use `?sslmode=no-verify`, or the CA certificate option in Step 1.5 |
+| `self-signed certificate in certificate chain` | The URL is missing `sslrootcert=/app/deploy/certs/supabase-prod-ca-2021.crt` (Step 1.5) |
+| `Hostname/IP does not match certificate's altnames` | Use the pooler **host name** Supabase shows (`…pooler.supabase.com`), never an IP address |
+| `must use sslmode=verify-full` / `must set sslrootcert` | Fix the URL ending exactly as in Step 1.5; unverified TLS is refused on purpose |
+| `tenant/user … not found` | User name must be `postgres.<ref>` or `aic_runtime.<ref>` (with your project ref) |
 | Backend log `API startup failed [APPLICATION/DATABASE_CONNECTION]` | Check `DATABASE_URL` (user `aic_runtime.<ref>`, runtime password, session pooler port 5432) |
 | `Production database connections require a restricted nonowner role` | `DATABASE_URL` uses the owner (`postgres.<ref>`); use `aic_runtime.<ref>` |
 | Login returns `ORIGIN_REJECTED` | `AIC_FRONTEND_ORIGIN` on aic-backend must equal the aic-web URL exactly |

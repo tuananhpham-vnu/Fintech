@@ -16,6 +16,8 @@ const { migrate } = require(path.join(ROOT, 'apps/api/dist/database/migrate.js')
 async function main() {
   const url = process.env.AIC_MIGRATION_DATABASE_URL
   if (!url) throw new Error('AIC_MIGRATION_DATABASE_URL is not set')
+  const tlsProblem = require('./db-url.cjs').databaseUrlProblem('AIC_MIGRATION_DATABASE_URL', url)
+  if (tlsProblem) throw new Error(tlsProblem)
   const { applied } = await migrate(url)
   process.stdout.write(`[predeploy] migrations applied: ${applied.length ? applied.join(', ') : 'none (up to date)'}\n`)
 

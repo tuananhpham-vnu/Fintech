@@ -17,6 +17,11 @@ if (missing.length) {
   process.stderr.write(`Backend start refused: missing environment variables ${missing.join(', ')}\n`)
   process.exit(1)
 }
+const tlsProblem = require('./db-url.cjs').databaseUrlProblem('DATABASE_URL', process.env.DATABASE_URL)
+if (tlsProblem) {
+  process.stderr.write(`Backend start refused: ${tlsProblem}\n`)
+  process.exit(1)
+}
 
 const shared = {
   ...process.env,
