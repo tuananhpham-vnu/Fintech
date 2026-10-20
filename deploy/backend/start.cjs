@@ -1,4 +1,5 @@
 // Backend container supervisor (Render). Starts, in order:
+//   0. Provision private directories in the container's writable layer
 //   1. Python AI service on 127.0.0.1:8100 (never public), waits for /healthz
 //   2. NestJS API on 0.0.0.0:$PORT (Render's public port)
 //   3. document + dossier + financial-intake workers in one Node process
@@ -75,6 +76,18 @@ function healthy(url) {
 async function main() {
   process.on('SIGTERM', () => shutdown(0))
   process.on('SIGINT', () => shutdown(0))
+
+  // Provision in this container, not pre-deploy's separate filesystem. No child
+  // may pin image-layer directories while another child triggers their copy-up.
+  try {
+    require('./prepare-storage.cjs').prepareStorage(
+      process.env.AIC_STORAGE_DIR, process.env.AI_SPEND_LEDGER_DIR,
+    )
+  } catch {
+    process.stderr.write('[supervisor] private storage provisioning failed; check Blueprint paths, owner and directory permissions\n')
+    return shutdown(1)
+  }
+  process.stdout.write('[supervisor] private storage provisioned before service startup\n')
 
   start('ai', process.env.AIC_PYTHON || 'python3', ['-m', 'runner', 'serve', '--host', '127.0.0.1', '--port', String(AI_PORT)],
         path.join(ROOT, 'services/ai'))

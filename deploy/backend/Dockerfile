@@ -25,9 +25,10 @@ FROM python:3.11-slim-bookworm AS runtime
 COPY --from=node /usr/local/bin/node /usr/local/bin/node
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PYTHONIOENCODING=utf-8 \
     PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
-# Non-root user; private dirs must be owned by the running uid with mode 0700 (API startup checks this).
+# Only the parent belongs in the image. The supervisor creates private/cache and ledger
+# in the writable layer BEFORE services pin directory identities (OverlayFS copy-up).
 RUN useradd --create-home --uid 10001 aic \
- && install -d -m 0700 -o aic -g aic /var/lib/aic/private /var/lib/aic/ledger
+ && install -d -m 0700 -o aic -g aic /var/lib/aic
 WORKDIR /app
 COPY services/ai services/ai
 RUN pip install -e ./services/ai

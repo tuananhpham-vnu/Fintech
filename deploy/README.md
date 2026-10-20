@@ -144,6 +144,56 @@ insert-only and refuses to run against an existing organization. Log in at `/log
 | Render event "Out of memory" on aic-backend | Change the aic-backend plan to Standard (2 GB, about $25/month); no code change |
 | First page load takes about a minute | aic-web (Free) was asleep; open it a few minutes before presenting |
 
+## Private directory startup check
+
+`PrivateDocumentFiles` pins every directory component's `(dev, ino, birthtimeNs)`,
+then creates `private/cache` and checks those identities again. Baking `private`
+into the Docker image lets that first write trigger OverlayFS copy-up after the
+pin. Copy-up can change directory metadata without an application replacing the
+directory; the unchanged guard correctly fails closed as `DIRECTORY_CHANGED`.
+See the [kernel's OverlayFS metadata/copy-up documentation](https://www.kernel.org/doc/html/latest/filesystems/overlayfs.html).
+The API and the document/dossier workers all construct this adapter, so which
+process reaches the first write depends on startup timing.
+
+The image now provisions only `/var/lib/aic` (UID/GID `aic`, mode `0700`).
+Before starting Python, API or workers, the supervisor creates `private`,
+`private/cache` and `ledger` at runtime with mode `0700`. It verifies existing
+components, rejects aliases and unsafe ownership/permissions, and never repairs
+permissions or deletes data. The Blueprint paths are required:
+`AIC_STORAGE_DIR=/var/lib/aic/private`, `AI_SPEND_LEDGER_DIR=/var/lib/aic/ledger`.
+This must run in the serving container, not Render's separate pre-deploy instance.
+All application directory identity, symlink and byte-integrity checks remain intact.
+
+Local checks (no DB or model calls):
+
+```powershell
+node apps/api/node_modules/typescript/bin/tsc -p apps/api/tsconfig.json
+node --test deploy/backend/storage.test.cjs apps/api/test/private-files.cjs apps/api/test/document-storage-integrity.cjs scripts/tests/private-cache-provision.test.cjs
+```
+
+The regression models copy-up against the real compiled adapter. It does not
+observe Render's filesystem or prove which stat field changed there. Docker was
+unavailable on the Windows debugging host. On a machine with Docker, run the
+included real-filesystem smoke in a **fresh** image/container:
+
+```powershell
+docker build -f deploy/backend/Dockerfile -t aic-backend:storage-check .
+docker run --rm --entrypoint node -e AIC_STORAGE_SMOKE=1 aic-backend:storage-check deploy/backend/storage.test.cjs
+```
+
+That smoke verifies UID 10001, runtime-only directories, concurrent independent
+Node processes, exact synthetic bytes, cleanup and a later ledger write without
+using credentials or external services.
+
+After an approved push to `deploy`, the Blueprint's commit trigger should rebuild
+the backend. Otherwise choose **Manual Deploy > Deploy latest commit** on
+`aic-backend`; **Restart service** alone reuses the old image. Look for
+`[supervisor] private storage provisioned before service startup`, then AI healthy,
+API listening and continuing worker polls without `DIRECTORY_CHANGED`. Confirm
+`/api/v2/health/ready` returns HTTP 200. If it still fails, collect only the failing
+component and before/after `dev`, `ino`, `birthtimeNs` from a disposable reproduction;
+do not bypass the guard or dump environment variables.
+
 ## Limits of this demo setup
 
 - Not production: one region, no backups configured on Supabase Free, no monitoring, synthetic data only.
